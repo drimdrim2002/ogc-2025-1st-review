@@ -1,0 +1,437 @@
+<article class="chapter" id="ch1">
+  <header>
+    <div class="kicker">1 / 10</div>
+    <h1>문제 이해: 배 안 어디에 차를 세우고, 어떤 순서로 넣고 뺄 것인가</h1>
+  </header>
+
+  <section>
+    <p class="lead">자동차 운반선은 여러 항구를 차례로 들르며 차를 싣고 내립니다. 배 안은 좁은 통로로 이어져 있어서, 안쪽 차를 내리려면 길을 막고 있는 바깥쪽 차를 먼저 치워야 합니다. 이 문제는 <strong>각 차를 배 안 어느 칸에 세울지</strong>, 그리고 <strong>항구마다 어떤 순서와 경로로 차를 움직일지</strong>를 정해서 전체 이동 비용을 최소로 만드는 문제입니다.</p>
+    <p>이 장은 풀이 이야기를 하지 않습니다. 입력이 어떻게 생겼는지를 실제 데이터 모양으로 먼저 보고, 지켜야 할 규칙, 비용 계산, 출력 형식, 채점 방식을 차례로 봅니다. 내용은 대회 사이트의 「문제 설명 및 순위 결정 방법」, 「개발 환경 및 베이스라인 알고리즘」 페이지와, 주최 측이 배포한 채점 코드 <code>util.py</code>의 <code>check_feasibility</code> 함수를 대조해서 정리했습니다.</p>
+    <div class="note">
+      <p><strong>이 문서를 읽는 법.</strong> 이 문서는 대회 사이트, 팀의 발표자료, 소스 코드를 보지 않고도 읽을 수 있게 썼습니다. 본문에 나오는 "발표자료 3쪽", "function.cpp 80~94줄" 같은 표시는 그 내용이 <strong>어디서 왔는지를 밝히는 출처</strong>이지, 찾아서 읽어야 한다는 뜻이 아닙니다. 설명에 필요한 그림, 표, 수식, 코드는 모두 이 문서 안에 옮겨 놓았습니다. 코드는 설명하는 부분만 발췌했고, 줄인 곳은 <code>...</code>이나 "(요지)"로 표시했습니다. 각 장 끝의 「이 장의 참고자료」는 더 공부하고 싶을 때를 위한 것이고, 항목 앞의 작은 딱지는 <span class="tagc">무료</span> 누구나 볼 수 있음, <span class="tagc">교과서</span> 유료 책, <span class="tagc">유료</span> 구독이 필요한 논문, <span class="tagc">한국어</span> 한국어 자료, <span class="tagc">실습</span> 코드를 따라 칠 수 있음을 뜻합니다.</p>
+    </div>
+  </section>
+
+  <!-- ================= 1부 ================= -->
+  <div class="part">1부 · 상황과 용어</div>
+
+  <section>
+    <h2>배 안은 그래프다</h2>
+    <p>대회 이름의 Roll-on Roll-off(RORO)는 차가 제 바퀴로 굴러 들어가고 굴러 나오는 선박을 말합니다. 문제는 배의 내부를 <strong>deck graph</strong>라는 그래프로 표현합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>용어</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>노드(node)</td><td>차 한 대를 세울 수 있는 칸. 한 노드에는 차가 한 대만 들어갑니다.</td></tr>
+        <tr><td>간선(edge)</td><td>두 칸 사이를 차가 지나다닐 수 있다는 뜻. 방향이 없고 길이는 모두 1입니다.</td></tr>
+        <tr><td>출입구(gate)</td><td>항상 <strong>노드 0</strong>. 배와 항구를 잇는 유일한 문입니다. 출입구에는 차를 세울 수 없습니다.</td></tr>
+        <tr><td>항구(port)</td><td>배는 항구 0, 1, …, P−1을 이 순서로 한 번씩 들릅니다. 항로는 주어져 있고 바꿀 수 없습니다.</td></tr>
+        <tr><td>수요(demand)</td><td>"항구 o에서 실어 항구 d에서 내릴 차 r대". (출발 항구, 도착 항구, 대수)로 주어집니다. 항상 o &lt; d입니다.</td></tr>
+        <tr><td>선적(loading)</td><td>항구에서 출입구를 거쳐 배 안의 빈 노드까지 차를 몰고 들어가는 것.</td></tr>
+        <tr><td>하역(unloading)</td><td>배 안의 노드에서 출입구를 거쳐 항구로 차를 몰고 나오는 것.</td></tr>
+        <tr><td>재배치(rehandling)</td><td>도착 항구가 아닌 곳에서 차를 움직이는 것. 방법이 두 가지입니다(아래).</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="왼쪽은 노드 여덟 개짜리 deck graph, 오른쪽은 일렬로 이어진 노드 다섯 개짜리 deck graph">
+        <g font-size="14" text-anchor="middle">
+          <!-- 왼쪽: 그림 1 그래프 -->
+          <g class="s-line" stroke-width="1.5">
+            <line x1="170" y1="262" x2="170" y2="212"/><line x1="170" y1="212" x2="170" y2="162"/>
+            <line x1="170" y1="162" x2="240" y2="162"/><line x1="170" y1="162" x2="170" y2="112"/>
+            <line x1="170" y1="112" x2="170" y2="62"/><line x1="170" y1="62" x2="100" y2="62"/><line x1="170" y1="62" x2="240" y2="62"/>
+          </g>
+          <circle cx="170" cy="262" r="17" class="f-crane"/><text x="170" y="267">0</text>
+          <circle cx="170" cy="212" r="17" class="f-bay"/><text x="170" y="217">1</text>
+          <circle cx="170" cy="162" r="17" class="f-steel"/><text x="170" y="167">2</text>
+          <circle cx="240" cy="162" r="17" class="f-bay"/><text x="240" y="167">3</text>
+          <circle cx="170" cy="112" r="17" class="f-bay"/><text x="170" y="117">4</text>
+          <circle cx="170" cy="62" r="17" class="f-hull"/><text x="170" y="67">5</text>
+          <circle cx="100" cy="62" r="17" class="f-bay"/><text x="100" y="67">6</text>
+          <circle cx="240" cy="62" r="17" class="f-bay"/><text x="240" y="67">7</text>
+          <text x="118" y="267" class="t-crane" font-size="13">출입구</text>
+          <text x="282" y="158" class="t-muted" font-size="12.5" text-anchor="start">노드 2에 차가 있으면</text>
+          <text x="282" y="176" class="t-muted" font-size="12.5" text-anchor="start">노드 5의 차는 나갈 수 없다</text>
+          <text x="170" y="22" font-size="13" class="t-muted">(가) 가지가 있는 배</text>
+          <!-- 오른쪽: 경로 그래프 -->
+          <g class="s-line" stroke-width="1.5">
+            <line x1="560" y1="262" x2="560" y2="62"/>
+          </g>
+          <circle cx="560" cy="262" r="17" class="f-crane"/><text x="560" y="267">0</text>
+          <circle cx="560" cy="212" r="17" class="f-bay"/><text x="560" y="217">1</text>
+          <circle cx="560" cy="162" r="17" class="f-bay"/><text x="560" y="167">2</text>
+          <circle cx="560" cy="112" r="17" class="f-bay"/><text x="560" y="117">3</text>
+          <circle cx="560" cy="62" r="17" class="f-bay"/><text x="560" y="67">4</text>
+          <text x="560" y="22" font-size="13" class="t-muted">(나) 일렬로 된 배 — 이 문서의 예시</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>대회 문제 설명의 그림 1, 그림 3을 다시 그린 것입니다. (가)에서 노드 5의 차를 내리려면 5 → 4 → 2 → 1 → 0으로 나와야 하는데, 노드 2에 다른 차가 있으면 막힙니다. (나)는 통로가 하나뿐이라 먼저 들어간 차가 가장 안쪽에 갇히는, 가장 단순한 배입니다. 이 문서는 (나)를 예시로 끝까지 씁니다.</figcaption>
+    </figure>
+    <p>실제 문제의 그래프에는 제약이 없습니다. 트리(순환이 없는 그래프)가 아니어도 되고, 격자처럼 순환이 있어도 되고, 평면 그래프(간선이 서로 교차하지 않게 종이 위에 그릴 수 있는 그래프)가 아니어도 됩니다. 대회 문제는 여러 층의 격자를 경사로(ramp)로 잇고 일부 칸을 장애물로 지운 모양으로 생성되었습니다(대회 사이트 「문제 생성 방법」).</p>
+  </section>
+
+  <section>
+    <h2>막힌 차를 치우는 두 가지 방법</h2>
+    <p>(가)에서 노드 5의 차를 내려야 하는데 노드 2에 다른 차가 서 있다고 합시다. 노드 2의 차는 아직 도착 항구가 아니지만 치워야 합니다. 문제는 두 가지 방법을 허용합니다.</p>
+    <ul class="plain">
+      <li><strong>위치변경(relocation).</strong> 배 안에서 다른 빈 칸으로 옮깁니다. 예: 2 → 3. 경로 하나로 끝납니다.</li>
+      <li><strong>임시 하역 후 재적재.</strong> 일단 항구로 내렸다가(2 → 1 → 0) 나중에 다시 싣습니다(0 → … → 빈 칸). 경로가 두 개 생깁니다. 다시 실을 때는 원래와 다른 칸에 세워도 됩니다. 항구에 임시로 내려 둘 수 있는 차의 수에는 제한이 없습니다.</li>
+    </ul>
+    <p>둘 다 비용이 듭니다. 그리고 재배치가 싫다고 차를 안 싣거나 안 내릴 수는 없습니다. 모든 수요는 반드시 출발 항구에서 실려 도착 항구에서 내려져야 합니다.</p>
+  </section>
+
+  <!-- ================= 2부 ================= -->
+  <div class="part">2부 · 입력: 무엇이 주어지는가</div>
+
+  <section>
+    <h2>문제 하나는 JSON 파일 하나</h2>
+    <p>문제 하나는 JSON 파일 하나이고, 필드는 일곱 개입니다. 알고리즘에는 이 JSON을 읽은 Python dict(<code>prob_info</code>)가 그대로 넘어옵니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>키</th><th>형</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td><code>N</code></td><td>정수</td><td>노드 개수. 노드 번호는 0 ~ N−1이고 0이 출입구입니다. 차를 세울 수 있는 칸은 1 ~ N−1, 즉 N−1개입니다.</td></tr>
+        <tr><td><code>E</code></td><td>[u, v]의 목록</td><td>간선 목록. 방향이 없으며 한 간선은 한 번만 적혀 있습니다. <code>[0, 1]</code>이 있으면 0→1, 1→0 둘 다 갈 수 있습니다.</td></tr>
+        <tr><td><code>P</code></td><td>정수</td><td>항구 개수. 배는 0, 1, …, P−1 순서로 들릅니다.</td></tr>
+        <tr><td><code>K</code></td><td>[[o, d], r]의 목록</td><td>수요 목록. "항구 o에서 실어 항구 d에서 내릴 차 r대". <strong>목록에서의 순번이 곧 수요 번호</strong>입니다(0부터).</td></tr>
+        <tr><td><code>F</code></td><td>정수</td><td>경로 하나마다 붙는 고정비.</td></tr>
+        <tr><td><code>LB</code></td><td>수</td><td>총비용의 하한값. 주최 측이 미리 계산해서 넣어 줍니다(4부에서 설명).</td></tr>
+        <tr><td><code>grid_graph</code></td><td>객체</td><td>그림을 그리기 위한 부가 정보. 풀이에는 필요 없습니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>대회 사이트에 실린 실제 문제 파일의 앞부분은 이렇게 생겼습니다.</p>
+<pre>{
+  "N": 49,
+  "E": [ [0, 1], [1, 2], [2, 3], [2, 4], ... ],
+  "P": 10,
+  "K": [
+    [ [0, 1], 4 ],      <span class="c">← 수요 0: 항구 0에서 실어 항구 1에서 내릴 차 4대</span>
+    [ [0, 2], 3 ],      <span class="c">← 수요 1: 항구 0 → 항구 2, 3대</span>
+    [ [0, 3], 2 ],      <span class="c">← 수요 2: 항구 0 → 항구 3, 2대</span>
+    ...
+  ],
+  "F": 100,
+  "LB": 13259,
+  "grid_graph": ...
+}</pre>
+    <div class="note">
+      <p><strong>같은 수요의 차는 서로 구별하지 않습니다.</strong> 수요 0의 차 4대는 모두 같은 차로 취급합니다. 그래서 해를 낼 때 "몇 번째 차"가 아니라 "몇 번 수요의 차"인지만 적으면 됩니다. 이 점은 뒤에서 풀이가 단순해지는 이유 중 하나입니다. 차를 한 대씩 따로 추적하지 않고 "이 구간을 가는 차가 몇 대"만 세면 되기 때문입니다(6장).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이 문서의 예시 문제</h2>
+    <p>대회 문제 설명에 나오는 예시를 입력 형식 그대로 적으면 다음과 같습니다. 배는 위 그림의 (나), 항구는 다섯 개(문제 설명에서는 A~E, 여기서는 0~4), 고정비는 10입니다. 이 문서는 7장까지 이 예시 하나를 계속 씁니다.</p>
+<pre>{
+  "N": 5,
+  "E": [[0, 1], [1, 2], [2, 3], [3, 4]],
+  "P": 5,
+  "K": [
+    [[0, 2], 2],   <span class="c">← 수요 0: 항구 0 → 2, 2대</span>
+    [[1, 4], 1],   <span class="c">← 수요 1: 항구 1 → 4, 1대</span>
+    [[2, 3], 1],   <span class="c">← 수요 2: 항구 2 → 3, 1대</span>
+    [[1, 3], 1],   <span class="c">← 수요 3: 항구 1 → 3, 1대</span>
+    [[3, 4], 1]    <span class="c">← 수요 4: 항구 3 → 4, 1대</span>
+  ],
+  "F": 10,
+  "LB": 137
+}</pre>
+    <p>차는 모두 6대이고 칸은 4개입니다. 수요를 항구 축 위에 그리면 어느 시점에 배에 몇 대가 있는지 보입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 250" role="img" aria-label="수요 다섯 개를 항구 0부터 4까지의 축 위에 막대로 그린 그림">
+        <g font-size="13">
+          <g class="s-muted" stroke-width="1" stroke-dasharray="3 4">
+            <line x1="180" y1="30" x2="180" y2="200"/><line x1="300" y1="30" x2="300" y2="200"/><line x1="420" y1="30" x2="420" y2="200"/><line x1="540" y1="30" x2="540" y2="200"/><line x1="660" y1="30" x2="660" y2="200"/>
+          </g>
+          <g text-anchor="middle" class="t-muted">
+            <text x="180" y="22">항구 0</text><text x="300" y="22">항구 1</text><text x="420" y="22">항구 2</text><text x="540" y="22">항구 3</text><text x="660" y="22">항구 4</text>
+          </g>
+          <g text-anchor="end"><text x="165" y="55">수요 0 (2대)</text><text x="165" y="87">수요 1 (1대)</text><text x="165" y="119">수요 2 (1대)</text><text x="165" y="151">수요 3 (1대)</text><text x="165" y="183">수요 4 (1대)</text></g>
+          <rect x="180" y="40" width="240" height="20" rx="3" class="f-steel"/>
+          <rect x="300" y="72" width="360" height="20" rx="3" class="f-crane"/>
+          <rect x="420" y="104" width="120" height="20" rx="3" class="f-hull"/>
+          <rect x="300" y="136" width="240" height="20" rx="3" class="f-hull"/>
+          <rect x="540" y="168" width="120" height="20" rx="3" class="f-steel"/>
+          <g text-anchor="middle" font-size="12.5">
+            <text x="240" y="225">2대</text><text x="360" y="225">4대</text><text x="480" y="225">3대</text><text x="600" y="225">2대</text>
+            <text x="165" y="225" class="t-muted" text-anchor="end">출항할 때 배에 있는 차</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>막대는 그 수요의 차가 배에 타고 있는 구간입니다. 항구 1을 떠날 때는 4대가 타고 있어 4칸이 꽉 찹니다. 수요 0의 차는 항구 2에서 내려야 하는데, 항구 1에서 나중에 탄 수요 1·3의 차가 통로 바깥쪽을 막게 됩니다. 이 충돌을 어떻게 푸느냐가 이 예시의 전부입니다.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= 3부 ================= -->
+  <div class="part">3부 · 규칙: 경로와 순서</div>
+
+  <section>
+    <h2>모든 움직임은 「경로」로 적는다</h2>
+    <p>차 한 대를 한 번 움직이는 것을 <strong>경로(route)</strong>라고 하고, 지나가는 노드 번호의 목록으로 적습니다. 종류는 출입구 0이 어디에 있느냐로 갈립니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>종류</th><th>모양</th><th>그 경로를 실행하는 시점에 만족해야 할 조건</th></tr></thead>
+      <tbody>
+        <tr><td>선적 경로</td><td><code>[0, …, i]</code><br>첫 노드가 0</td><td>경로 위의 모든 노드(마지막 노드 i 포함)에 차가 없어야 합니다. 실행하면 노드 i에 차가 놓입니다.</td></tr>
+        <tr><td>하역 경로</td><td><code>[i, …, 0]</code><br>마지막 노드가 0</td><td>첫 노드 i에는 내릴 차가 있어야 하고, 나머지 노드에는 차가 없어야 합니다. 실행하면 노드 i가 빕니다.</td></tr>
+        <tr><td>위치변경 경로</td><td><code>[i, …, j]</code><br>0이 양 끝에 없음</td><td>첫 노드 i에는 옮길 차가 있고, 나머지 노드(마지막 j 포함)는 비어 있어야 합니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>종류와 상관없이 모든 경로는 다음을 지켜야 합니다.</p>
+    <ul class="plain">
+      <li>노드가 둘 이상이고, 모든 노드 번호가 0 ~ N−1 안에 있습니다.</li>
+      <li>이웃한 두 노드 사이에 실제로 간선이 있습니다.</li>
+      <li>같은 노드를 두 번 지나지 않습니다(<strong>simple path</strong>).</li>
+    </ul>
+    <p>임시 하역 후 재적재는 따로 종류가 있는 것이 아니라, 하역 경로 하나와 선적 경로 하나를 각각 적는 것입니다.</p>
+  </section>
+
+  <section>
+    <h2>순서가 곧 해의 일부다</h2>
+    <p>해는 <strong>항구마다 (경로, 수요 번호) 쌍의 목록</strong>입니다. 채점기는 항구 0의 목록을 앞에서부터 하나씩 실행하고, 다음에 항구 1의 목록을 실행하는 식으로 진행합니다. 경로 하나를 실행할 때마다 배 안의 상태가 바뀌므로, 어떤 경로가 유효한지는 <strong>그 경로를 실행하는 순간의 배 상태</strong>에 달려 있습니다.</p>
+    <p>같은 경로 두 개라도 순서를 바꾸면 한쪽은 유효하고 한쪽은 무효가 됩니다. 예시의 배 (나)에 차 두 대를 노드 1과 노드 2에 싣는다고 합시다.</p>
+    <div class="obj">
+      <div><div class="f">[0,1,2] 먼저, [0,1] 나중</div><p>안쪽(노드 2)부터 채우므로 둘 다 유효합니다.</p></div>
+      <div><div class="f">[0,1] 먼저, [0,1,2] 나중</div><p>두 번째 경로가 노드 1을 지나야 하는데 이미 차가 있습니다. 무효입니다.</p></div>
+    </div>
+    <p>내릴 때는 반대로 바깥쪽(노드 1)부터 내려야 합니다. 한 항구 안에서 선적·하역·재배치 경로를 어떤 순서로 섞든 제약은 없습니다. 유효하기만 하면 됩니다. 임시로 내린 차를 한참 뒤에 다시 실어도 됩니다(단, 같은 항구 안에서).</p>
+    <p>채점기는 한 항구의 목록을 다 실행한 뒤 한 가지를 더 확인합니다. <strong>그 항구를 떠나는 시점에 배에 있어야 할 차가 정확히 있는가</strong>입니다. 항구 p를 떠날 때 배에는 o ≤ p &lt; d인 수요의 차가 수요별로 정확히 r대씩 있어야 합니다. 임시로 내린 차를 다시 싣지 않고 떠나면 여기서 걸립니다.</p>
+    <p>모든 경로가 유효하고 이 확인도 모든 항구에서 통과하면 <strong>유효해(feasible solution)</strong>입니다. 그렇지 않으면 무효해(infeasible)입니다. 대회 문서의 용어를 따른 것이고, 3장부터 나오는 최적화 분야의 용어로는 같은 것을 「가능해」, 「불능」이라고 부릅니다. 이 문서에서는 대회의 채점을 말할 때는 유효·무효, 수리 모형을 말할 때는 가능·불능을 쓰지만 뜻은 같습니다.</p>
+  </section>
+
+  <section>
+    <h2>채점 코드가 실제로 확인하는 것</h2>
+    <p>규칙의 최종 기준은 주최 측이 배포한 채점 코드입니다. 핵심은 40줄 남짓이고, 아래는 선적 경로와 하역 경로를 처리하는 부분을 줄여 옮긴 것입니다(<span class="mono">util.py</span>의 <code>check_feasibility</code>). <code>node_allocations[i]</code>는 칸 i에 있는 차의 수요 번호이고, 비어 있으면 −1입니다.</p>
+<pre>for p in range(P):                                  <span class="c"># 항구를 순서대로</span>
+    for route, k in solution[p]:                    <span class="c"># 그 항구의 (경로, 수요 번호)를 순서대로</span>
+        <span class="c"># 공통 검사: 노드 2개 이상, 번호 범위, 같은 노드를 두 번 지나지 않음</span>
+        if route[0] == 0:                           <span class="c"># ── 선적 경로</span>
+            loading_node = route[-1]
+            if node_allocations[loading_node] != -1:        → 무효 (도착 칸에 이미 차가 있음)
+            for i in route[:-1]:
+                if node_allocations[i] != -1:               → 무효 (가는 길이 막힘)
+            <span class="c"># 이웃한 두 노드 사이에 간선이 있는지 검사</span>
+            node_allocations[loading_node] = k              <span class="c"># 그 칸에 수요 k의 차를 놓는다</span>
+        elif route[-1] == 0:                        <span class="c"># ── 하역 경로</span>
+            unloading_node = route[0]
+            if node_allocations[unloading_node] == -1:      → 무효 (내릴 차가 없음)
+            for i in route[1:]:
+                if node_allocations[i] != -1:               → 무효 (나가는 길이 막힘)
+            <span class="c"># 간선 검사</span>
+            node_allocations[unloading_node] = -1           <span class="c"># 그 칸을 비운다</span>
+        else:                                       <span class="c"># ── 위치변경 경로 (0이 양 끝에 없음)</span>
+            ...
+        obj += F + len(route) - 1                   <span class="c"># 비용 누적: 고정비 + 간선 수</span>
+
+    <span class="c"># 항구 p의 경로를 다 실행한 뒤: 배에 있는 차를 수요 번호별로 세어</span>
+    <span class="c"># "o ≤ p &lt; d인 수요 k가 정확히 r대씩"과 같은지 비교. 다르면 무효</span></pre>
+    <p>코드에서 읽을 수 있는, 문제 설명에는 분명히 적혀 있지 않은 사실 세 가지를 적어 둡니다.</p>
+    <ul class="plain">
+      <li><strong>경로의 종류는 양 끝만 보고 정합니다.</strong> 첫 노드가 0이면 선적, 마지막 노드가 0이면 하역, 둘 다 아니면 위치변경입니다.</li>
+      <li><strong>수요 번호 k는 선적할 때 칸에 기록됩니다.</strong> 하역 경로에서는 "그 칸에 차가 있는가"만 보고, 적어 낸 수요 번호가 그 칸의 차와 같은지는 비교하지 않습니다. 대신 항구를 떠날 때 배에 있는 차의 수요별 대수를 셉니다. 이 사실은 7장에서 다시 나옵니다.</li>
+      <li><strong>임시로 내린 차를 다시 실을 때는 원래의 수요 번호로 싣습니다.</strong> 그래야 항구를 떠날 때의 대수 검사를 통과합니다.</li>
+    </ul>
+  </section>
+
+  <!-- ================= 4부 ================= -->
+  <div class="part">4부 · 비용과 목적함수</div>
+
+  <section>
+    <h2>경로 하나의 비용 = 고정비 + 간선 수</h2>
+    <div class="formula">경로 비용 = F + (경로가 지난 간선의 수)</div>
+    <p>경로 <code>[0, 1, 2, 3]</code>은 간선 3개를 지나므로 F = 10일 때 비용이 13입니다. 고정비 F는 경로 하나에 한 번 붙습니다. 그래서 임시 하역 후 재적재는 경로가 둘이라 고정비도 두 번 냅니다. 문제 설명에 실린 실제 문제 파일에서는 F = 100입니다. F가 이렇게 크면 <strong>경로의 개수를 줄이는 것</strong>이 길이를 줄이는 것보다 훨씬 중요합니다.</p>
+    <p>차 한 대는 아무리 잘해도 선적 한 번, 하역 한 번, 즉 경로 두 개가 필요합니다. 따라서 줄일 수 있는 것은 두 가지뿐입니다.</p>
+    <ul class="plain">
+      <li>재배치 경로의 개수와 길이.</li>
+      <li>선적·하역 경로의 길이. 출입구에서 가까운 칸을 쓸수록, 그리고 돌아가지 않을수록 짧습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>목적함수 = 총비용 − LB</h2>
+    <p>점수로 쓰는 값은 총비용 그 자체가 아니라 총비용에서 <strong>하한값 LB</strong>를 뺀 값입니다. LB는 "차들이 서로 길을 막지 않는다고 치면 최소 얼마가 드는가"입니다. 문제 설명의 정의는 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>LB = Σ<sub>p</sub> [ F × (Load<sub>p</sub> + Unload<sub>p</sub>) + (가까운 칸 Load<sub>p</sub>개의 거리 합) + (가까운 칸 Unload<sub>p</sub>개의 거리 합) ]</span></div>
+    </div>
+    <ul class="plain">
+      <li>Load<sub>p</sub>: 항구 p에서 실어야 하는 차의 수(출발 항구가 p인 수요의 합).</li>
+      <li>Unload<sub>p</sub>: 항구 p에서 내려야 하는 차의 수(도착 항구가 p인 수요의 합).</li>
+      <li>거리: 출입구에서 그 노드까지의 최단 거리(간선 수).</li>
+    </ul>
+    <p>항구마다 "실을 차는 출입구에서 가장 가까운 칸들에 싣고, 내릴 차도 가장 가까운 칸들에 있었다"고 낙관적으로 가정한 값입니다. 재배치는 0번이라고 가정합니다. 이 계산은 <strong>항구마다 배가 비어 있는 것처럼</strong> 셉니다. 가까운 칸에 이미 다른 차가 서 있는지, 같은 차가 싣는 칸과 내리는 칸이 같은지는 따지지 않습니다. 그래서 실제로는 이 값을 달성할 수 없는 경우가 대부분입니다.</p>
+    <p>예시에서 계산해 봅시다. 노드 1, 2, 3, 4의 거리는 1, 2, 3, 4입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>싣는 차</th><th>내리는 차</th><th>계산</th><th class="num">값</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>2대</td><td>0대</td><td>10×2 + (1+2) + 0</td><td class="num">23</td></tr>
+        <tr><td>1</td><td>2대</td><td>0대</td><td>10×2 + (1+2) + 0</td><td class="num">23</td></tr>
+        <tr><td>2</td><td>1대</td><td>2대</td><td>10×3 + (1) + (1+2)</td><td class="num">34</td></tr>
+        <tr><td>3</td><td>1대</td><td>2대</td><td>10×3 + (1) + (1+2)</td><td class="num">34</td></tr>
+        <tr><td>4</td><td>0대</td><td>2대</td><td>10×2 + 0 + (1+2)</td><td class="num">23</td></tr>
+        <tr><td colspan="4"><strong>LB</strong></td><td class="num"><strong>137</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="formula">목적함수 = (모든 경로 비용의 합) − LB</div>
+    <p>LB는 문제마다 정해진 상수이므로, 목적함수를 최소화하는 것과 총비용을 최소화하는 것은 같은 일입니다. LB를 빼는 이유는 "피할 수 없는 기본 비용"을 걷어 내고 <strong>막힘 때문에 추가로 든 비용</strong>만 비교하기 위해서입니다. 목적함수가 0이면 아무도 서로를 막지 않은 완벽한 해입니다.</p>
+  </section>
+
+  <section>
+    <h2>예시를 끝까지 풀어 보기</h2>
+    <p>문제 설명에 실린 예시 해를 그대로 옮기면 다음과 같습니다. 왼쪽 경로를 위에서 아래로 실행합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>경로</th><th>수요</th><th>무슨 일인가</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>[0,1,2,3,4]</code><br><code>[0,1,2,3]</code></td><td>0<br>0</td><td>수요 0의 두 대를 가장 안쪽(4, 3)에 싣는다</td><td class="num">14 + 13 = 27</td></tr>
+        <tr><td>1</td><td><code>[0,1,2]</code><br><code>[0,1]</code></td><td>1<br>3</td><td>수요 1을 노드 2에, 수요 3을 노드 1에 싣는다. 이제 4칸이 다 찼다</td><td class="num">12 + 11 = 23</td></tr>
+        <tr><td>2</td><td><code>[1,0]</code><br><code>[2,1,0]</code><br><code>[3,2,1,0]</code><br><code>[4,3,2,1,0]</code><br><code>[0,1,2,3]</code><br><code>[0,1,2]</code><br><code>[0,1]</code></td><td>3<br>1<br>0<br>0<br>1<br>2<br>3</td><td>수요 0을 내려야 하는데 바깥의 두 대가 막고 있다. <strong>두 대를 임시로 내리고</strong>(위 두 줄), 수요 0 두 대를 내린 뒤, 임시로 내린 두 대와 새 수요 2를 다시 싣는다</td><td class="num">11+12+13+14<br>+13+12+11 = 86</td></tr>
+        <tr><td>3</td><td><code>[1,0]</code><br><code>[2,1,0]</code><br><code>[0,1]</code></td><td>3<br>2<br>4</td><td>수요 3, 수요 2를 내리고 수요 4를 싣는다</td><td class="num">11 + 12 + 11 = 34</td></tr>
+        <tr><td>4</td><td><code>[1,0]</code><br><code>[3,2,1,0]</code></td><td>4<br>1</td><td>남은 두 대를 내린다</td><td class="num">11 + 13 = 24</td></tr>
+        <tr><td colspan="4"><strong>총비용</strong></td><td class="num"><strong>194</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>목적함수는 194 − 137 = <strong>57</strong>입니다. 경로는 16개인데, 6대를 싣고 내리는 데 꼭 필요한 경로는 12개입니다. 나머지 4개가 항구 2에서 두 대를 임시로 내렸다 다시 실은 재배치 경로입니다.</p>
+    <h3>더 싼 해가 있다</h3>
+    <p>이 예시 해는 최적이 아닙니다. 문제 설명도 "해 예시"라고만 부릅니다. 같은 문제에서 총비용 <strong>190</strong>, 목적함수 <strong>53</strong>인 해가 있습니다. 재배치를 항구 2가 아니라 항구 1에서 합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>경로</th><th>수요</th><th>무슨 일인가</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>[0,1,2]</code><br><code>[0,1]</code></td><td>0<br>0</td><td>수요 0의 두 대를 <strong>바깥쪽</strong>(칸 2, 1)에 싣는다</td><td class="num">12 + 11 = 23</td></tr>
+        <tr><td>1</td><td><code>[1,0]</code><br><code>[2,1,0]</code><br><code>[0,1,2,3,4]</code><br><code>[0,1,2,3]</code><br><code>[0,1,2]</code><br><code>[0,1]</code></td><td>0<br>0<br>1<br>3<br>0<br>0</td><td>수요 0의 두 대를 <strong>임시로 내린다</strong>(위 두 줄). 오래 탈 수요 1과 수요 3을 안쪽(칸 4, 3)에 넣는다. 수요 0의 두 대를 칸 2, 1에 다시 싣는다</td><td class="num">11+12+14<br>+13+12+11 = 73</td></tr>
+        <tr><td>2</td><td><code>[1,0]</code><br><code>[2,1,0]</code><br><code>[0,1]</code></td><td>0<br>0<br>2</td><td>바깥쪽에 있는 수요 0을 바로 내리고, 수요 2를 칸 1에 싣는다</td><td class="num">11 + 12 + 11 = 34</td></tr>
+        <tr><td>3</td><td><code>[1,0]</code><br><code>[3,2,1,0]</code><br><code>[0,1]</code></td><td>2<br>3<br>4</td><td>수요 2, 수요 3을 내리고 수요 4를 싣는다</td><td class="num">11 + 13 + 11 = 35</td></tr>
+        <tr><td>4</td><td><code>[1,0]</code><br><code>[4,3,2,1,0]</code></td><td>4<br>1</td><td>남은 두 대를 내린다</td><td class="num">11 + 14 = 25</td></tr>
+        <tr><td colspan="4"><strong>총비용</strong></td><td class="num"><strong>190</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 해도 경로 16개에 재배치 경로가 4개입니다. 재배치하는 차의 수는 두 대로 같은데, 가까운 칸 1을 더 자주 쓰고 먼 칸 3을 덜 써서 4만큼 쌉니다. 앞의 규칙들을 손으로 따라가며 각 경로가 유효한지 확인해 볼 수 있습니다. 예를 들어 항구 3의 <code>[3,2,1,0]</code>은 그 시점에 칸 2가 비어 있고(항구 2에서 내렸습니다) 칸 1도 바로 앞 줄에서 비워졌으므로 유효합니다.</p>
+    <div class="note">
+      <p>이 해는 사람이 찾은 것이 아니라 이 문서가 다루는 풀이(1등 팀의 수리 모형)가 찾아내는 해입니다. 6장에서 그 과정을 봅니다. 190이라는 값은 이 문서를 쓰면서 작은 프로그램으로 직접 계산했고, 위 표의 경로 목록을 채점 규칙을 옮긴 코드에 넣어 유효하다는 것을 확인했습니다. 그 프로그램은 이 문서와 함께 있는 <span class="mono">guide/examples/toy_bruteforce.py</span>인데, 없어도 이 문서를 읽는 데 지장은 없습니다. 190이 이 문제의 진짜 최적값인지(위치변경까지 허용했을 때 더 싼 해가 없는지)는 확인하지 않았습니다.</p>
+    </div>
+  </section>
+
+  <!-- ================= 5부 ================= -->
+  <div class="part">5부 · 출력과 채점</div>
+
+  <section>
+    <h2>출력 형식</h2>
+    <p>알고리즘은 <code>myalgorithm.py</code> 파일의 <code>algorithm(prob_info, timelimit)</code> 함수로 작성하고, 다음 모양의 dict를 돌려줍니다. 키는 항구 번호, 값은 그 항구에서 실행할 <code>[경로, 수요 번호]</code>의 목록입니다.</p>
+<pre>solution = {
+  0: [ [[0, 1, 2, 3, 4], 0], [[0, 1, 2, 3], 0] ],
+  1: [ [[0, 1, 2], 1], [[0, 1], 3] ],
+  2: [ [[1, 0], 3], [[2, 1, 0], 1], [[3, 2, 1, 0], 0], [[4, 3, 2, 1, 0], 0],
+       [[0, 1, 2, 3], 1], [[0, 1, 2], 2], [[0, 1], 3] ],
+  3: [ [[1, 0], 3], [[2, 1, 0], 2], [[0, 1], 4] ],
+  4: [ [[1, 0], 4], [[3, 2, 1, 0], 1] ]
+}</pre>
+    <p>경로의 종류(선적인지 하역인지)는 적지 않습니다. 채점기가 0의 위치를 보고 판단합니다. 주최 측의 <code>util.check_feasibility(prob_info, solution)</code>에 넣으면 유효 여부와 목적함수 값을 돌려줍니다.</p>
+  </section>
+
+  <section>
+    <h2>실행 환경과 시간 제한</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항목</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>서버</td><td>AWS c5.4xlarge(16코어, 메모리 32GB), Ubuntu 24.04</td></tr>
+        <tr><td>CPU 제한</td><td>알고리즘은 <strong>최대 4코어</strong>(CPU 사용률 400%)만 쓸 수 있습니다. firejail(프로그램을 격리된 환경에서 실행하는 Linux 도구)과 cpulimit(프로세스의 CPU 사용률을 제한하는 Linux 도구)으로 강제합니다.</td></tr>
+        <tr><td>네트워크</td><td>외부 인터넷 접근 불가.</td></tr>
+        <tr><td>언어</td><td>진입점은 Python 3.11의 <code>algorithm()</code> 함수. 다른 언어는 미리 Ubuntu에서 컴파일한 <code>.so</code>나 실행 파일을 함께 제출해 Python에서 부르면 됩니다. 서버에서 컴파일은 해 주지 않습니다.</td></tr>
+        <tr><td>쓸 수 있는 솔버</td><td>환경에 <code>gurobipy 12.0.1</code>, <code>ortools 9.11</code>, <code>xpress 9.5.4</code>가 설치되어 있습니다(Gurobi와 FICO가 대회 후원사).</td></tr>
+        <tr><td>시간 제한</td><td>문제마다 다릅니다. 예선은 모두 60초, 본선은 60~240초, 결선은 30~600초. <code>timelimit</code> 인자로 전달되며, 넘기면 그 문제는 벌점입니다.</td></tr>
+        <tr><td>문제 크기</td><td>결선 평가 문제는 노드 400개 이하라고 공지되었습니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>순위는 「나보다 잘한 팀 수」로 매긴다</h2>
+    <p>문제마다 점수를 매겨 합산합니다. R을 평가 대상 팀 수, nb를 그 문제에서 나보다 더 좋은(작은) 목적함수를 낸 팀 수라고 하면</p>
+    <div class="eq">
+      <div class="row"><span>점수 = max(0, R − nb)</span><span class="all">해가 유효할 때</span></div>
+      <div class="row"><span>점수 = −1</span><span class="all">무효해, 시간 초과, 실행 오류일 때</span></div>
+    </div>
+    <p>이 방식에는 두 가지 성질이 있습니다. 첫째, 목적함수 값의 <strong>차이의 크기</strong>는 상관없고 순서만 중요합니다. 1만큼 이기나 1000만큼 이기나 점수는 같습니다. 둘째, 무효해는 꼴찌보다 나쁩니다. 그래서 어떤 문제가 와도 유효해를 내는 <strong>안정성</strong>이 중요합니다.</p>
+    <p>결선은 본선에 마지막으로 제출한 알고리즘을 그대로 숨겨진 문제 14개에 돌려 평가했습니다. 최종 순위는 이 문제 풀이 점수(대회에서는 순위표를 리더보드라고 부릅니다)를 80점 만점으로, 발표 평가를 20점 만점으로 환산해 더한 값으로 정했습니다.</p>
+  </section>
+
+  <!-- ================= 6부 ================= -->
+  <div class="part">6부 · 문제의 성격</div>
+
+  <section>
+    <h2>왜 어려운가</h2>
+    <ul class="plain">
+      <li><strong>결정이 세 겹입니다.</strong> 어느 칸에 세울지(배치), 어떤 경로로 갈지(경로), 어떤 순서로 실행할지(순서)를 함께 정해야 하고 셋이 서로 얽혀 있습니다.</li>
+      <li><strong>항구 사이가 이어져 있습니다.</strong> 항구 0에서 차를 어디에 세웠느냐가 항구 3에서의 재배치 비용을 결정합니다. 항구별로 따로 풀 수 없습니다.</li>
+      <li><strong>빈칸이 넉넉하지 않습니다.</strong> 수요는 어느 시점에도 배의 칸 수를 넘지 않게, 그리고 미리 정한 비율만큼 배를 채우도록 무작위로 생성됩니다(대회 사이트 「문제 생성 방법」의 설명. 그 비율을 정하는 값의 이름이 <code>total_allocation_ratio</code>이고, 문제별 값은 공개된 설명에 없습니다). 예시처럼 어떤 구간에서 배가 꽉 차면 위치변경할 빈칸조차 없습니다.</li>
+      <li><strong>고정비가 큽니다.</strong> 재배치 한 번이 선적·하역 길이를 수십 칸 줄이는 것보다 비쌉니다. 재배치 횟수가 한 번만 달라져도 순위가 갈립니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CVRPTW와 견주어 보면</h2>
+    <p>차량 경로 문제(CVRPTW)에 익숙한 독자를 위해 닮은 점과 다른 점을 적어 둡니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>CVRPTW</th><th>이 문제</th></tr></thead>
+      <tbody>
+        <tr><td>정하는 것</td><td>고객을 어느 차량에, 어떤 순서로</td><td>차를 어느 칸에, 어느 항구에서 임시로 내릴지, 어떤 순서·경로로</td></tr>
+        <tr><td>「경로」의 뜻</td><td>차량 한 대의 하루 방문 순서</td><td>차 한 대가 배 안에서 한 번 움직이는 길(짧고, 수가 많음)</td></tr>
+        <tr><td>용량</td><td>차량 적재량</td><td>노드당 한 대</td></tr>
+        <tr><td>시간</td><td>시간창</td><td>없음. 대신 항구 순서와 「막힘」이 선후 관계를 만듭니다</td></tr>
+        <tr><td>가장 닮은 변형</td><td colspan="2">LIFO 적재 조건이 붙은 집화·배송 문제(PDP with LIFO loading). 나중에 실은 짐을 먼저 내려야 하는 제약입니다. 이 문제의 배 (나)는 정확히 스택이고, 일반 deck graph는 "그래프 모양의 스택"입니다.</td></tr>
+        <tr><td>흔한 풀이</td><td>구성 휴리스틱 + 지역 탐색 + 메타휴리스틱</td><td>1등 팀은 정수계획 모형 + 솔버(다른 팀의 풀이는 이 문서에서 다루지 않습니다)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>마지막 줄이 이 문서의 주제입니다. 다음 장에서 1등 팀이 문제를 어떻게 바라봤는지를 수식 없이 먼저 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>예시에서 수요 번호 3은 어떤 차인가요?</summary>
+      <p><code>K</code>의 네 번째 항목 <code>[[1, 3], 1]</code>입니다. 항구 1에서 실어 항구 3에서 내릴 차 1대입니다. 수요 번호는 K 목록의 순번(0부터)입니다.</p>
+    </details>
+    <details>
+      <summary>경로 <code>[0, 1, 2]</code>를 실행하려는데 노드 2에 이미 차가 있습니다. 유효한가요?</summary>
+      <p>무효입니다. 선적 경로는 마지막 노드를 포함해 경로 위의 모든 노드가 비어 있어야 합니다.</p>
+    </details>
+    <details>
+      <summary>임시 하역 후 재적재 한 번의 비용은 최소 얼마인가요?</summary>
+      <p>경로가 둘이므로 고정비 2F, 각 경로의 길이가 최소 1이므로 최소 2F + 2입니다. 위치변경은 경로 하나라 최소 F + 1입니다.</p>
+    </details>
+    <details>
+      <summary>목적함수가 음수가 될 수 있나요?</summary>
+      <p>없습니다. LB는 어떤 유효해의 총비용보다도 작거나 같게 정의되어 있습니다. 차마다 선적·하역 경로가 하나씩은 필요하고, 그 길이는 가장 가까운 칸들을 썼을 때보다 짧을 수 없기 때문입니다.</p>
+    </details>
+    <details>
+      <summary>어떤 팀이 한 문제에서 2등보다 목적함수가 절반인 해를 냈습니다. 점수를 더 받나요?</summary>
+      <p>아니요. 점수는 "나보다 잘한 팀 수"만으로 정해지므로 근소하게 이겨도 같은 점수입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#problem-description">OGC 2025 「문제 설명 및 순위 결정 방법」</a> — 이 장의 원문. 그림과 예시 해가 있습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#baseline-algorithm">OGC 2025 「개발 환경 및 베이스라인 알고리즘」</a> — 입출력 형식, 제출 방법, 사용 가능한 패키지.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#instance-generation">OGC 2025 「문제 생성 방법」</a> — 문제 그래프와 수요가 어떻게 만들어졌는지.</li>
+      <li><span class="tagc">실습</span><span class="mono">tryAgain_소스/util.py</span>의 <code>check_feasibility</code> — 규칙의 최종 기준이 되는 코드. 핵심은 이 장 3부에 옮겨 두었습니다.</li>
+    </ul>
+  </section>
+  <div class="pager"><span></span><a href="#ch2">다음: 2장 풀이 한눈에 보기 →</a></div>
+</article>

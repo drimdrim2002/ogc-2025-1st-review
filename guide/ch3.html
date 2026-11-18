@@ -1,0 +1,324 @@
+<article class="chapter" id="ch3">
+  <header>
+    <div class="kicker">3 / 10</div>
+    <h1>MIP 기초 ①: 문제를 수식으로 적는 법</h1>
+  </header>
+
+  <section>
+    <p class="lead">이 장의 목표는 하나입니다. Σ와 ∀가 섞인 식 한 줄을 보고 <strong>"아, 이건 이런 조건이구나"</strong> 하고 한국어 문장으로 읽을 수 있게 되는 것, 그리고 간단한 조건을 반대로 식으로 적을 수 있게 되는 것입니다.</p>
+    <p>솔버가 그 식을 <em>어떻게</em> 푸는지는 다음 장에서 다룹니다. 이 장에서는 솔버를 "식을 넣으면 답이 나오는 상자"로만 생각해도 됩니다. 이 문제(RORO)의 식은 6장에서 나오고, 여기서는 트럭, 배낭, 배정, 그리고 CVRPTW처럼 익숙한 소재만 씁니다.</p>
+  </section>
+
+  <div class="part">1부 · 모형의 세 요소</div>
+
+  <section>
+    <h2>결정변수, 제약식, 목적함수</h2>
+    <p>발표자료 2쪽은 최적화 모형으로 의사결정을 하는 과정을 네 단계로 적고 있습니다. 앞의 세 단계가 모형을 적는 일이고, 네 번째가 솔버의 일입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>단계</th><th>이름</th><th>하는 일</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>결정변수</strong></td><td>내가 정할 수 있는 것을 숫자 변수로 둡니다. "큰 트럭을 몇 대 부를까" → x.</td></tr>
+        <tr><td>2</td><td><strong>제약식</strong></td><td>변수들이 지켜야 하는 조건을 등식·부등식으로 적습니다. "실어야 할 짐은 다 실어야 한다".</td></tr>
+        <tr><td>3</td><td><strong>목적함수</strong></td><td>좋고 나쁨을 재는 식 하나를 적고, 최소화 또는 최대화한다고 선언합니다. "총비용".</td></tr>
+        <tr><td>4</td><td>풀이</td><td>솔버가 제약을 모두 지키는 변수 값 중에서 목적함수가 가장 좋은 것을 찾습니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>용어 몇 개를 먼저 정해 둡니다.</p>
+    <ul class="plain">
+      <li><strong>파라미터(데이터)</strong>: 문제에서 주어진 숫자. 트럭 용량, 고정비 F, 수요량처럼 내가 못 바꾸는 값입니다. 식에서 문자로 쓰여도 변수가 아닙니다.</li>
+      <li><strong>가능해(feasible solution)</strong>: 모든 제약을 지키는 변수 값 한 벌. 좋은지 나쁜지는 따지지 않습니다. 1장에서 대회 용어로 「유효해」라고 부른 것과 같은 개념입니다.</li>
+      <li><strong>최적해(optimal solution)</strong>: 가능해 중 목적함수 값이 가장 좋은 것.</li>
+      <li><strong>불능(infeasible)</strong>: 제약을 다 지키는 값이 아예 없는 경우. 변수 값 한 벌이 제약을 어길 때도 "그 값은 불능"이라고 합니다(1장의 「무효」).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>첫 예: 트럭 부르기</h2>
+    <p>짐 30톤을 보내야 합니다. 큰 트럭은 9톤을 싣고 한 대에 10만 원, 작은 트럭은 5톤을 싣고 7만 원입니다. 가장 싸게 보내려면 각각 몇 대를 불러야 할까요?</p>
+    <div class="eq">
+      <div class="row"><span>변수&nbsp;&nbsp; x = 큰 트럭 대수,&nbsp; y = 작은 트럭 대수</span></div>
+      <div class="row"><span>최소화&nbsp; 10x + 7y</span><span class="all">총비용(만 원)</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; 9x + 5y ≥ 30</span><span class="all">짐을 다 실을 수 있어야 한다</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x ≥ 0, y ≥ 0, x와 y는 정수</span><span class="all">트럭은 반 대를 부를 수 없다</span></div>
+    </div>
+    <p>이것이 모형의 전부입니다. "어떻게 찾을지"는 한 줄도 없고 "무엇이 좋은 답인지"만 적혀 있습니다. 답은 큰 트럭 3대와 작은 트럭 1대(37만 원)인데, 이 답이 어떻게 나오는지는 4장에서 이 예로 직접 따라가 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>LP, IP, MIP: 무엇이 허용되는가</h2>
+    <p>아무 식이나 적을 수 있는 것은 아닙니다. 범용 솔버가 받는 형식은 정해져 있습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>이름</th><th>변수</th><th>식의 모양</th><th>풀기</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LP</strong> 선형계획</td><td>모두 실수</td><td rowspan="3">목적함수와 제약식이 모두 <strong>1차식</strong>.<br>(상수 × 변수)들의 합과 상수의 비교(≤, ≥, =)만 허용</td><td>쉽다. 변수 수백만 개도 풉니다.</td></tr>
+        <tr><td><strong>IP</strong> 정수계획</td><td>모두 정수</td><td>어렵다(NP-hard).</td></tr>
+        <tr><td><strong>MIP</strong> 혼합정수계획</td><td>일부는 정수, 일부는 실수</td><td>어렵다. IP를 포함하는 일반형입니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>값이 0 아니면 1인 정수 변수를 <strong>이진변수(binary variable)</strong>라고 합니다. "한다/안 한다"를 나타내는 스위치이고, 조합최적화 모형의 주재료입니다. MILP, ILP처럼 Linear를 넣어 부르기도 하는데 같은 것입니다. 발표자료가 쓰는 「정수선형최적화」도 같은 말입니다.</p>
+    <p>1차식만 된다는 제한이 처음에는 답답합니다. 다음은 <strong>그대로는 적을 수 없는</strong> 것들입니다.</p>
+    <ul class="plain">
+      <li>변수끼리의 곱: x·y</li>
+      <li>조건문: "x가 1이면 이 제약을 적용"</li>
+      <li>max, min, 절댓값, 나눗셈</li>
+      <li>"같지 않다"(≠), 진부등호(&lt;, &gt;). 솔버는 경계를 포함하는 ≤, ≥만 받습니다. 정수 변수라면 x &lt; 5를 x ≤ 4로 바꿔 적으면 됩니다.</li>
+    </ul>
+    <p>이런 것들을 이진변수와 1차 부등식으로 우회해서 표현하는 정해진 요령들이 있습니다. 3부에서 다룹니다. MIP 모형을 읽고 쓰는 실력의 대부분은 이 요령들을 얼마나 알고 있느냐입니다.</p>
+  </section>
+
+  <div class="part">2부 · 기호 읽는 법</div>
+
+  <section>
+    <h2>첨자, Σ, ∀</h2>
+    <p>실제 모형은 변수가 수천, 수만 개라서 하나씩 이름을 붙일 수 없습니다. 그래서 첨자(인덱스)를 씁니다. 배낭 문제로 봅니다. 물건이 n개 있고 물건 j의 가치는 v<sub>j</sub>, 무게는 w<sub>j</sub>, 배낭 용량은 W입니다.</p>
+    <div class="eq">
+      <div class="row"><span>변수&nbsp;&nbsp; x<sub>j</sub> ∈ {0, 1}</span><span class="all">∀ j = 1, …, n&nbsp;&nbsp; (물건 j를 넣으면 1)</span></div>
+      <div class="row"><span>최대화&nbsp; Σ<sub>j=1..n</sub> v<sub>j</sub> x<sub>j</sub></span><span class="all">넣은 물건의 가치 합</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; Σ<sub>j=1..n</sub> w<sub>j</sub> x<sub>j</sub> ≤ W</span><span class="all">넣은 물건의 무게 합이 용량 이하</span></div>
+    </div>
+    <ul class="plain">
+      <li><strong>x<sub>j</sub></strong>는 변수 하나가 아니라 변수 n개(x<sub>1</sub>, …, x<sub>n</sub>)를 한꺼번에 부르는 이름입니다.</li>
+      <li><strong>x<sub>j</sub> ∈ {0, 1}</strong>은 "x<sub>j</sub>는 0 또는 1만 가질 수 있다", 곧 이진변수라는 선언입니다.</li>
+      <li><strong>Σ<sub>j=1..n</sub></strong>는 for 루프로 더하라는 뜻입니다. <code>sum(v[j]*x[j] for j in range(n))</code>. 범위가 뻔할 때는 Σ<sub>j</sub>처럼 줄여 씁니다. Σ가 둘 이어진 Σ<sub>i</sub> Σ<sub>k</sub>는 이중 for 루프, 곧 모든 (i, k) 조합에 대한 합입니다.</li>
+      <li><strong>∀</strong>("모든 ~에 대해")는 그 줄을 첨자 값마다 하나씩 <strong>복사해서 여러 줄로</strong> 만들라는 뜻입니다. 역시 for 루프입니다.</li>
+      <li>x<sub>j</sub>에 곱해진 v<sub>j</sub>와 w<sub>j</sub>는 파라미터입니다. 변수 × 파라미터이므로 1차식입니다.</li>
+    </ul>
+    <p>x<sub>j</sub>가 1이면 w<sub>j</sub>가 합에 들어가고 0이면 빠집니다. <strong>이진변수에 숫자를 곱해서 더하면 "고른 것들의 합"</strong>이 됩니다. 이 패턴은 어디에나 나옵니다.</p>
+  </section>
+
+  <section>
+    <h2>Σ와 ∀를 구별하는 연습: 배정 문제</h2>
+    <p>고객 i를 차량 k에 배정하는 문제를 봅니다(순서는 정하지 않고 누구 담당인지만). 고객 i의 물량은 q<sub>i</sub>, 차량 용량은 Q, 고객 i를 차량 k에 맡길 때의 비용은 c<sub>ik</sub>입니다.</p>
+    <div class="eq">
+      <div class="row"><span>변수&nbsp;&nbsp; x<sub>ik</sub> ∈ {0, 1}</span><span class="all">∀ 고객 i, ∀ 차량 k&nbsp;&nbsp; (i를 k에 맡기면 1)</span></div>
+      <div class="row"><span>최소화&nbsp; Σ<sub>i</sub> Σ<sub>k</sub> c<sub>ik</sub> x<sub>ik</sub></span></div>
+      <div class="row"><span>(1)&nbsp; Σ<sub>k</sub> x<sub>ik</sub> = 1</span><span class="all">∀ 고객 i</span></div>
+      <div class="row"><span>(2)&nbsp; Σ<sub>i</sub> q<sub>i</sub> x<sub>ik</sub> ≤ Q</span><span class="all">∀ 차량 k</span></div>
+    </div>
+    <p>식 (1)을 읽는 요령은 <strong>∀ 쪽 첨자를 하나로 고정하고 Σ 쪽을 풀어 쓰는 것</strong>입니다. 고객이 3번, 차량이 A·B·C라면</p>
+    <div class="formula">x<sub>3A</sub> + x<sub>3B</sub> + x<sub>3C</sub> = 1</div>
+    <p>셋 중 정확히 하나만 1입니다. "고객 3은 정확히 한 차량에 배정된다." 이 줄이 고객 수만큼 있습니다. 식 (2)는 반대로 차량을 고정하고 고객 쪽으로 더합니다. "차량 A에 배정된 고객들의 물량 합이 용량 이하." 이 줄이 차량 수만큼 있습니다.</p>
+    <p>같은 변수 x<sub>ik</sub>를 표로 그리면, (1)은 가로줄 합에 대한 조건이고 (2)는 세로줄 합에 대한 조건입니다. 어느 첨자를 더하고 어느 첨자를 남기느냐가 식의 뜻을 결정합니다.</p>
+    <div class="note">
+      <p><strong>식을 읽는 세 단계.</strong> ① 첨자가 무엇을 가리키고 범위가 어디까지인지 확인합니다. ② 변수 하나의 뜻을 한국어 문장으로 말해 봅니다("x<sub>ik</sub> = 1은 고객 i를 차량 k가 맡는다는 뜻"). ③ ∀ 쪽 첨자에 구체적인 값을 넣고 Σ를 풀어 써서 그 한 줄이 무슨 조건인지 봅니다. 6장에서 tryAgain의 식을 읽을 때도 이 순서로 읽습니다.</p>
+    </div>
+    <p>크기도 여기서 셉니다. 고객 100명, 차량 10대면 변수는 100 × 10 = 1,000개, 제약은 100 + 10 = 110개입니다. <strong>변수의 수는 첨자 범위의 곱, 제약의 수는 ∀ 범위의 곱</strong>입니다.</p>
+  </section>
+
+  <div class="part">3부 · 모델링 관용구</div>
+
+  <section>
+    <h2>이진변수로 논리를 적는 법</h2>
+    <p>이진변수 x, y가 있을 때 "x이면 y", "둘 다는 안 됨" 같은 논리를 1차 부등식으로 적는 방법입니다. 표의 식이 왜 그 뜻이 되는지는 x와 y에 0과 1을 넣어 보면 바로 확인됩니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>하고 싶은 말</th><th>식</th><th>확인</th></tr></thead>
+      <tbody>
+        <tr><td>x이면 y<br>(x를 하려면 y가 켜져 있어야)</td><td><code>x ≤ y</code></td><td>x=1이면 y ≥ 1이어야 하므로 y=1. x=0이면 y는 자유.</td></tr>
+        <tr><td>x와 y를 둘 다 할 수는 없다</td><td><code>x + y ≤ 1</code></td><td>둘 다 1이면 2 ≤ 1이 되어 위반.</td></tr>
+        <tr><td>y가 켜져 있으면 x는 못 한다</td><td><code>x ≤ 1 − y</code></td><td>위와 같은 식을 옮겨 적은 것. y=1이면 x ≤ 0.</td></tr>
+        <tr><td>여럿 중 많아야 하나</td><td><code>x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1</code></td><td>둘 이상이 1이면 위반.</td></tr>
+        <tr><td>여럿 중 정확히 하나</td><td><code>x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> = 1</code></td><td>배정 문제의 식 (1).</td></tr>
+        <tr><td>y이면 x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub> 중 적어도 하나</td><td><code>y ≤ x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub></code></td><td>y=1인데 오른쪽이 모두 0이면 1 ≤ 0으로 위반.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>두 개를 한 줄로 합치는 것도 자주 씁니다. 이 문서의 뒤에서 그대로 만나게 될 모양이라 미리 봐 둡니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>식</th><th>뜻 (두 가지를 동시에)</th></tr></thead>
+      <tbody>
+        <tr><td><code>x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ y</code></td><td>① x들 중 많아야 하나만 1이다(y가 최대 1이므로). ② 그 하나가 1이려면 y가 1이어야 한다.</td></tr>
+        <tr><td><code>x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1 − y</code></td><td>① x들 중 많아야 하나만 1이다. ② y가 1이면 x는 전부 0이다. 뒤집어 읽으면, x 중 하나라도 1이면 y는 0이다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>주의할 점이 하나 있습니다. <code>x ≤ y</code>는 "x이면 y"일 뿐 "y이면 x"가 아닙니다. y=1, x=0도 허용됩니다. 한쪽 방향만 강제하는 식인지 양쪽인지 구별해서 읽어야 합니다. 반대 방향은 대개 적을 필요가 없습니다. 예를 들어 y가 "창고를 연다"(여는 데 100만 원), x가 "그 창고에서 물건을 보낸다"라면, <code>x ≤ y</code>만 적어도 됩니다. 보내지도 않을 창고를 여는 해(y = 1, x = 0)는 식으로는 허용되지만 100만 원이 더 드니, 비용을 최소화하는 솔버가 고르지 않습니다. y에 비용이 없는 경우에는 y = 1, x = 0인 해가 답에 섞여 나올 수 있고, 그래도 해롭지 않으면 그대로 둡니다. 6장의 모형에 그런 변수가 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>big-M: 스위치로 제약을 켜고 끄기</h2>
+    <p>"이진변수 y가 1일 때만 이 제약을 적용하고 싶다"는 조건문은 그대로 적을 수 없습니다. 대신 <strong>아주 큰 상수 M</strong>을 써서, 스위치가 꺼졌을 때는 제약이 있으나 마나 하게 만듭니다. 이것을 big-M 기법이라고 합니다.</p>
+    <h3>고정비 (쓰려면 먼저 열어야 한다)</h3>
+    <p>창고에서 내보내는 양 x(실수)와 창고를 여는지 여부 y(이진)가 있습니다. 창고를 열어야만 내보낼 수 있습니다.</p>
+    <div class="formula">x ≤ M · y</div>
+    <p>y = 0이면 x ≤ 0이라 못 내보내고, y = 1이면 x ≤ M이라 사실상 제한이 없습니다. M은 x가 가질 수 있는 최댓값 이상이면 됩니다(창고 용량 같은 값).</p>
+    <h3>조건부 부등식 (CVRPTW의 시간창)</h3>
+    <p>CVRPTW를 MIP로 적을 때 꼭 나오는 식입니다. x<sub>ij</sub>는 "고객 i 다음에 바로 j를 방문하면 1"인 이진변수, t<sub>i</sub>는 고객 i의 서비스 시작 시각(실수 변수), s<sub>i</sub>는 서비스 시간, τ<sub>ij</sub>는 이동 시간입니다.</p>
+    <div class="eq">
+      <div class="row"><span>t<sub>j</sub> ≥ t<sub>i</sub> + s<sub>i</sub> + τ<sub>ij</sub> − M (1 − x<sub>ij</sub>)</span><span class="all">∀ i, j</span></div>
+    </div>
+    <ul class="plain">
+      <li>x<sub>ij</sub> = 1이면 마지막 항이 0이 되어 <code>t<sub>j</sub> ≥ t<sub>i</sub> + s<sub>i</sub> + τ<sub>ij</sub></code>. "j의 시작은 i를 마치고 이동한 뒤."</li>
+      <li>x<sub>ij</sub> = 0이면 오른쪽이 아주 큰 음수가 되어 항상 성립. 아무 조건도 아닙니다.</li>
+    </ul>
+    <div class="warn">
+      <p><strong>big-M은 편하지만 대가가 있습니다.</strong> M이 클수록 솔버가 풀기 어려워집니다. 이런 모형을 「약하다」고 말합니다. 약하다는 것은 틀렸다는 뜻이 아니라, 솔버가 탐색 중에 쓰는 어림 계산이 실제 답과 멀어져 헛걸음이 많아진다는 뜻입니다. 정확한 뜻은 4장 4부에서 설명합니다. 지금은 "big-M 없이 적을 수 있으면 그쪽이 좋다"만 기억해 두면 됩니다. M을 써야 한다면 식이 성립하는 한도에서 가장 작은 값을 고릅니다. tryAgain의 모형에는 big-M이 하나도 없습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>그 밖의 우회법: 같지 않다, 곱, 절댓값, 최댓값</h2>
+    <p>앞에서 "그대로는 적을 수 없다"고 한 것들의 대표적인 우회법입니다. 이 문서의 뒤에서는 쓰이지 않으니 한 번 훑어보고 넘어가도 됩니다. 요점은 <strong>보조 변수를 하나 더 두고 부등식 몇 줄로 묶는다</strong>는 것입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>하고 싶은 말</th><th>식</th><th>왜 되는가</th></tr></thead>
+      <tbody>
+        <tr><td>이진변수 x와 y가 달라야 한다</td><td><code>x + y = 1</code></td><td>하나는 0, 하나는 1일 때만 성립.</td></tr>
+        <tr><td>이진변수의 곱 w = x·y<br>("x와 y를 둘 다 하면 w")</td><td><code>w ≤ x</code>, <code>w ≤ y</code>,<br><code>w ≥ x + y − 1</code></td><td>앞의 두 줄은 "둘 중 하나라도 0이면 w = 0", 셋째 줄은 "둘 다 1이면 w ≥ 1".</td></tr>
+        <tr><td>절댓값 |a − b|를 최소화</td><td>새 변수 t를 두고<br><code>t ≥ a − b</code>, <code>t ≥ b − a</code>,<br>목적함수에 t</td><td>t는 두 값 중 큰 쪽 이상이어야 하고, 최소화하므로 딱 그 값까지 내려옵니다.</td></tr>
+        <tr><td>여러 값 중 최댓값을 최소화<br>(가장 늦게 끝나는 차량의 종료 시각 등)</td><td>새 변수 t를 두고<br>모든 k에 대해 <code>t ≥ T<sub>k</sub></code>,<br>목적함수에 t</td><td>절댓값과 같은 원리.</td></tr>
+        <tr><td>정수 변수 a, b가 달라야 한다</td><td>이진변수 s를 두고<br><code>a ≥ b + 1 − M·s</code>,<br><code>b ≥ a + 1 − M·(1 − s)</code></td><td>s = 0이면 a &gt; b, s = 1이면 b &gt; a. 둘 중 하나를 고르게 하는 big-M 택일 제약입니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>절댓값과 최댓값의 요령은 "최소화하는 방향"일 때만 통합니다. 반대로 절댓값을 <em>크게</em> 하고 싶을 때는 이진변수가 필요합니다. 이런 세부는 필요할 때 10장의 참고자료(관용구 모음집)에서 찾아보면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>수량 보존: 들어온 만큼 나간다</h2>
+    <p>네트워크나 재고처럼 "양"이 흐르는 문제에서는 지점마다 보존식을 적습니다.</p>
+    <div class="formula">(들어오는 양의 합) − (나가는 양의 합) = (그 지점에서 소비되는 양)</div>
+    <p>숫자로 보면 이렇습니다. 어떤 물류 거점에 두 곳에서 3톤과 2톤이 들어오고, 그 거점에서 1톤을 소비한다면, 나가는 양은 4톤이어야 합니다. (3 + 2) − 4 = 1. 들어오는 양과 나가는 양이 변수이면 이 등식이 제약식이 됩니다.</p>
+    <div class="eq">
+      <div class="row"><span>f<sub>A→거점</sub> + f<sub>B→거점</sub> − f<sub>거점→C</sub> = 1</span><span class="all">f는 구간별 운송량 변수</span></div>
+    </div>
+    <p>CVRP에서는 "고객 노드에 들어온 차량은 반드시 나간다"가 이 꼴입니다. 변수가 이진이든 정수든 실수든 모양은 같습니다. 식을 읽을 때는 더해지는 항(+)과 빼지는 항(−)을 각각 "들어오는 것", "나가는 것"으로 나눠 보면 됩니다. 6장의 수요 제약이 이 꼴입니다.</p>
+  </section>
+
+  <div class="part">4부 · 익숙한 문제에 대 보기</div>
+
+  <section>
+    <h2>CVRPTW를 MIP로 적으면</h2>
+    <p>관용구들이 한 모형 안에서 어떻게 모이는지를 익숙한 문제로 봅니다. 교과서에 나오는 「3첨자 정식화」를 간추린 것입니다(책마다 세부는 조금씩 다릅니다). 먼저 기호입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>기호</th><th>종류</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>i, j, h</td><td>첨자</td><td>노드. 0은 차고지, 나머지는 고객</td></tr>
+        <tr><td>k</td><td>첨자</td><td>차량</td></tr>
+        <tr><td>c<sub>ij</sub>, τ<sub>ij</sub></td><td>파라미터</td><td>i에서 j로 가는 비용, 이동 시간</td></tr>
+        <tr><td>q<sub>i</sub>, s<sub>i</sub></td><td>파라미터</td><td>고객 i의 물량, 서비스 시간</td></tr>
+        <tr><td>a<sub>i</sub>, b<sub>i</sub></td><td>파라미터</td><td>고객 i의 시간창. 서비스는 a<sub>i</sub> 이후, b<sub>i</sub> 이전에 시작해야 함</td></tr>
+        <tr><td>Q</td><td>파라미터</td><td>차량 용량</td></tr>
+        <tr><td>x<sub>ijk</sub></td><td>이진변수</td><td>차량 k가 i 다음에 바로 j로 가면 1</td></tr>
+        <tr><td>t<sub>ik</sub></td><td>실수 변수</td><td>차량 k가 i에서 서비스를 시작하는 시각</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; Σ<sub>k</sub> Σ<sub>i</sub> Σ<sub>j</sub> c<sub>ij</sub> x<sub>ijk</sub></span><span class="all">총 이동 비용</span></div>
+      <div class="row"><span>(1)&nbsp; Σ<sub>k</sub> Σ<sub>j</sub> x<sub>ijk</sub> = 1</span><span class="all">∀ 고객 i&nbsp;&nbsp; 정확히 한 번, 한 차량이 방문</span></div>
+      <div class="row"><span>(2)&nbsp; Σ<sub>i</sub> x<sub>ihk</sub> − Σ<sub>j</sub> x<sub>hjk</sub> = 0</span><span class="all">∀ 고객 h, ∀ k&nbsp;&nbsp; 들어오면 나간다</span></div>
+      <div class="row"><span>(3)&nbsp; Σ<sub>j</sub> x<sub>0jk</sub> ≤ 1</span><span class="all">∀ k&nbsp;&nbsp; 차고지에서 많아야 한 번 출발</span></div>
+      <div class="row"><span>(4)&nbsp; Σ<sub>i</sub> q<sub>i</sub> Σ<sub>j</sub> x<sub>ijk</sub> ≤ Q</span><span class="all">∀ k&nbsp;&nbsp; 용량</span></div>
+      <div class="row"><span>(5)&nbsp; t<sub>jk</sub> ≥ t<sub>ik</sub> + s<sub>i</sub> + τ<sub>ij</sub> − M<sub>ij</sub> (1 − x<sub>ijk</sub>)</span><span class="all">∀ 고객 i, j, ∀ k&nbsp;&nbsp; 시각의 선후</span></div>
+      <div class="row"><span>(6)&nbsp; a<sub>i</sub> ≤ t<sub>ik</sub> ≤ b<sub>i</sub></span><span class="all">∀ 고객 i, ∀ k&nbsp;&nbsp; 시간창</span></div>
+    </div>
+    <p>관용구로 분해하면 (1)은 "정확히 하나", (2)는 수량 보존, (3)은 "많아야 하나", (4)는 "고른 것들의 합", (5)는 big-M 조건부 부등식입니다. 새로운 것은 없습니다. (4)의 안쪽 합 Σ<sub>j</sub> x<sub>ijk</sub>는 "차량 k가 고객 i를 방문하면 1"이 되는 값입니다.</p>
+    <p>(5)의 M은 "x<sub>ijk</sub> = 0일 때 식이 항상 성립할 만큼"만 크면 됩니다. t<sub>ik</sub>는 많아야 b<sub>i</sub>이고 t<sub>jk</sub>는 적어도 a<sub>j</sub>이므로, M<sub>ij</sub> = b<sub>i</sub> + s<sub>i</sub> + τ<sub>ij</sub> − a<sub>j</sub>로 잡으면 충분합니다. 시간창이 넓을수록 M이 커집니다.</p>
+    <p>이 모형에서 두 가지를 눈여겨봐야 합니다.</p>
+    <ul class="plain">
+      <li><strong>변수의 수.</strong> 고객 100명, 차량 10대면 x가 약 100 × 100 × 10 = 10만 개입니다. "누가 누구 다음인가"라는 <strong>순서</strong>를 변수로 만들면 고객 수의 제곱으로 불어납니다.</li>
+      <li><strong>식 (5)의 big-M.</strong> 순서와 시각을 잇는 데 big-M이 들어갑니다. 이 때문에 이 모형은 솔버가 풀기 어려운 것으로 알려져 있고, 고객 수가 조금만 커져도 그대로는 잘 풀리지 않습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>순서를 적을 때 따라오는 골칫거리: 부분 순환</h2>
+    <p>식 (5)는 시간창만 지키는 것이 아니라 숨은 일을 하나 더 합니다. 그것을 보려고 시간창이 없는 가장 단순한 경로 문제, 외판원 문제(TSP)를 봅니다. 도시 n개를 한 번씩 들르고 돌아오는 가장 짧은 순환을 찾습니다. x<sub>ij</sub>가 "i 다음에 j"이면, 가장 먼저 떠오르는 식은 이렇습니다.</p>
+    <div class="eq">
+      <div class="row"><span>Σ<sub>j</sub> x<sub>ij</sub> = 1</span><span class="all">∀ i&nbsp;&nbsp; 모든 도시에서 정확히 한 번 나간다</span></div>
+      <div class="row"><span>Σ<sub>i</sub> x<sub>ij</sub> = 1</span><span class="all">∀ j&nbsp;&nbsp; 모든 도시로 정확히 한 번 들어온다</span></div>
+    </div>
+    <p>이것만으로는 틀립니다. 도시가 여섯 개일 때 1 → 2 → 3 → 1과 4 → 5 → 6 → 4, 이렇게 <strong>따로 노는 순환 두 개</strong>도 두 식을 모두 지킵니다. 이런 것을 부분 순환(subtour)이라고 합니다. 식은 "각 도시의 앞뒤"라는 이웃 관계만 보기 때문에, 전체가 하나로 이어져 있는지는 알지 못합니다.</p>
+    <p>가장 간단한 처방은 도시마다 "몇 번째로 방문하는가"를 나타내는 변수 u<sub>i</sub>를 추가하고, 이어진 도시끼리는 순번이 늘어나도록 강제하는 것입니다. 제안자들의 이름을 따서 MTZ(Miller–Tucker–Zemlin) 제약이라고 합니다.</p>
+    <div class="eq">
+      <div class="row"><span>u<sub>j</sub> ≥ u<sub>i</sub> + 1 − (n − 1)(1 − x<sub>ij</sub>)</span><span class="all">∀ 출발 도시가 아닌 i, j</span></div>
+      <div class="row"><span>1 ≤ u<sub>i</sub> ≤ n − 1</span><span class="all">∀ 출발 도시가 아닌 i</span></div>
+    </div>
+    <p>앞에서 본 big-M 조건부 부등식 그대로입니다(M = n − 1). x<sub>ij</sub> = 1이면 u<sub>j</sub> ≥ u<sub>i</sub> + 1. 출발 도시를 지나지 않는 순환 4 → 5 → 6 → 4가 있다면 u<sub>5</sub> &gt; u<sub>4</sub>, u<sub>6</sub> &gt; u<sub>5</sub>, u<sub>4</sub> &gt; u<sub>6</sub>이 되어 모순이므로, 그런 순환은 불능이 됩니다. CVRPTW의 식 (5)도 같은 일을 합니다. 경로를 따라 시각 t가 계속 늘어나야 하므로 차고지를 거치지 않는 순환은 생길 수 없습니다.</p>
+    <p>여기서 기억할 것은 두 가지입니다.</p>
+    <ul class="plain">
+      <li><strong>"전체가 하나로 이어져 있다"는 조건은 이웃만 보는 식으로는 적기 어렵습니다.</strong> 순번 변수 같은 장치가 추가로 필요하고, 거기에 대개 big-M이 따라옵니다.</li>
+      <li><strong>순서를 변수로 적으면 모형이 크고 약해집니다.</strong> 그래서 CVRPTW는 큰 문제에서 휴리스틱이 널리 쓰입니다.</li>
+    </ul>
+    <p>2장에서 본 tryAgain의 핵심 생각, "순서를 정하지 않아도 되게 문제를 좁힌다"가 왜 값진지가 여기서 나옵니다. 순서 변수를 없앨 수 있으면 MIP가 휴리스틱과 겨룰 만해집니다. 그리고 5장에서, RORO 문제에도 부분 순환과 똑같은 종류의 골칫거리가 있고 tryAgain이 그것을 순번 <em>변수</em> 없이 처리했다는 것을 보게 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>코드로 적어 보기</h2>
+    <p>트럭 예를 두 가지 도구로 적으면 다음과 같습니다. 모형의 세 요소가 코드 줄에 일대일로 대응합니다.</p>
+    <h3>gurobipy</h3>
+<pre>import gurobipy as gp
+from gurobipy import GRB
+
+m = gp.Model("trucks")
+x = m.addVar(vtype=GRB.INTEGER, lb=0, name="big")      <span class="c"># 결정변수</span>
+y = m.addVar(vtype=GRB.INTEGER, lb=0, name="small")
+m.setObjective(10 * x + 7 * y, GRB.MINIMIZE)           <span class="c"># 목적함수</span>
+m.addConstr(9 * x + 5 * y >= 30, name="load")          <span class="c"># 제약식</span>
+m.optimize()                                           <span class="c"># 풀이</span>
+print(x.X, y.X, m.ObjVal)                              <span class="c"># 변수 값은 .X, 목적함수 값은 .ObjVal</span></pre>
+    <h3>OR-Tools (무료 솔버 SCIP 사용)</h3>
+<pre>from ortools.linear_solver import pywraplp
+
+s = pywraplp.Solver.CreateSolver("SCIP")
+x = s.IntVar(0, s.infinity(), "big")
+y = s.IntVar(0, s.infinity(), "small")
+s.Minimize(10 * x + 7 * y)
+s.Add(9 * x + 5 * y >= 30)
+s.Solve()
+print(x.solution_value(), y.solution_value(), s.Objective().Value())</pre>
+    <p>첨자가 붙은 변수는 dict나 배열에 담고, Σ와 ∀는 for 루프로 씁니다. 배정 문제의 식 (1)은 gurobipy로 이렇게 됩니다. <code>customers</code>와 <code>vehicles</code>는 고객 번호와 차량 번호의 목록(예: <code>range(20)</code>, <code>range(3)</code>)이고, <code>gp.quicksum</code>은 변수가 든 식을 더하는 gurobipy의 합계 함수로 Σ에 해당합니다.</p>
+<pre>x = {(i, k): m.addVar(vtype=GRB.BINARY) for i in customers for k in vehicles}
+for i in customers:                                        <span class="c"># ∀ 고객 i</span>
+    m.addConstr(gp.quicksum(x[i, k] for k in vehicles) == 1)   <span class="c"># Σ_k x_ik = 1</span></pre>
+    <p>tryAgain의 C++ 코드도 정확히 이 구조입니다. 바깥 for 루프가 ∀, 안쪽 for 루프로 식을 쌓는 부분이 Σ입니다. 실제 코드는 6장에서 제약식마다 발췌해 보입니다.</p>
+    <div class="note">
+      <p>위 코드는 이 문서를 작성한 환경에 솔버가 설치되어 있지 않아 <strong>직접 실행해 확인하지는 못했습니다</strong>. 두 라이브러리의 기본 사용법 그대로이므로, <code>pip install gurobipy</code> 또는 <code>pip install ortools</code> 후 실행하면 x = 3, y = 1, 목적함수 37이 나와야 합니다. pip으로 설치한 gurobipy에는 변수 2,000개·제약 2,000개까지 풀 수 있는 제한 라이선스가 들어 있어서, 이 문서의 예제들은 별도 라이선스 없이 돌릴 수 있습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>이진변수 a, b, c가 있습니다. "a를 하면 b와 c 중 적어도 하나는 해야 한다"를 식으로 적어 보세요.</summary>
+      <p><code>a ≤ b + c</code>. a = 1인데 b = c = 0이면 1 ≤ 0이 되어 위반됩니다.</p>
+    </details>
+    <details>
+      <summary><code>x<sub>1</sub> + x<sub>2</sub> ≤ 1 − y</code>에서 y = 0이면 무슨 조건이 남나요?</summary>
+      <p><code>x<sub>1</sub> + x<sub>2</sub> ≤ 1</code>. 둘 중 많아야 하나입니다. y = 1이면 둘 다 0이어야 합니다.</p>
+    </details>
+    <details>
+      <summary>배정 문제에서 고객 50명, 차량 4대일 때 변수와 제약은 각각 몇 개인가요?</summary>
+      <p>변수 x<sub>ik</sub>는 50 × 4 = 200개. 제약은 식 (1)이 50개, 식 (2)가 4개로 54개입니다.</p>
+    </details>
+    <details>
+      <summary>"x와 y가 달라야 한다(x ≠ y)"는 왜 그대로 못 적나요?</summary>
+      <p>1차식의 ≤, ≥, =만 허용되기 때문입니다. 3부의 "그 밖의 우회법" 표에 있듯이, 이진변수라면 <code>x + y = 1</code>로 적을 수 있고(하나는 0, 하나는 1), 일반 정수라면 보조 이진변수와 big-M 택일 제약이 필요합니다.</p>
+    </details>
+    <details>
+      <summary>big-M 식 <code>t<sub>j</sub> ≥ t<sub>i</sub> + s<sub>i</sub> + τ<sub>ij</sub> − M(1 − x<sub>ij</sub>)</code>에서 M을 너무 작게 잡으면 어떤 일이 생기나요?</summary>
+      <p>x<sub>ij</sub> = 0일 때도 제약이 살아 있게 됩니다. i와 j가 이어져 있지 않은데도 t<sub>j</sub>가 t<sub>i</sub>보다 어느 정도 뒤여야 한다는 엉뚱한 조건이 생겨, 멀쩡한 해가 잘려 나갑니다. M은 "스위치가 꺼졌을 때 식이 항상 성립할 만큼"은 커야 합니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://github.com/Gurobi/modeling-examples">Gurobi modeling-examples (GitHub)</a> — <span class="mono">intro_to_gurobipy</span>, <span class="mono">milp_tutorial</span> 폴더의 노트북으로 이 장의 코드 부분을 넓힐 수 있습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://manual.aimms.com/_downloads/AIMMS_modeling.pdf">AIMMS, <em>Optimization Modeling</em> (PDF)</a> — 「Integer Linear Programming Tricks」 장이 이 장 3부의 확장판입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://jump.dev/JuMP.jl/stable/tutorials/linear/tips_and_tricks/">JuMP 문서 「Tips and tricks」</a> — 논리 제약과 big-M을 짧은 코드로.</li>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><span class="tagc">한국어</span><a href="https://unerue.github.io/operations-research/integer-programming/integer-programming.html">강경수, 「정수 계획법」 튜토리얼</a> — 배낭, TSP, 집합 덮개를 Python으로.</li>
+      <li><span class="tagc">교과서</span><span class="tagc">한국어</span><a href="https://product.kyobobook.co.kr/detail/S000001810425">우메타니 슌지, 『제대로 배우는 수학적 최적화』 (한빛미디어, 2021)</a></li>
+      <li><span class="tagc">교과서</span><a href="https://www.wiley.com/en-us/Model+Building+in+Mathematical+Programming%2C+5th+Edition-p-9781118443330">H. P. Williams, <em>Model Building in Mathematical Programming</em>, 5판</a> — 모델링만 다루는 고전.</li>
+      <li>단계별 안내는 10장의 1~2단계.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch2">← 이전: 2장 풀이 한눈에 보기</a><a href="#ch4">다음: 4장 MIP 기초 ② →</a></div>
+</article>

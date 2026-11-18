@@ -1,0 +1,258 @@
+<article class="chapter" id="ch2">
+  <header>
+    <div class="kicker">2 / 12</div>
+    <h1>수학 준비: 벡터·행렬·볼록성</h1>
+  </header>
+
+  <section>
+    <p class="lead">이 장은 뒤의 모든 장이 쓰는 도구를 모읍니다. 벡터와 행렬로 제약 여러 줄을 한 줄로 적는 법, 연립방정식을 푸는 법과 행렬식, 그리고 <strong>볼록성(convexity)</strong>입니다. 볼록성은 "LP는 쉽고 정수계획은 어렵다"는 말의 진짜 이유입니다.</p>
+    <p>고등학교에서 배운 1차식과 연립방정식만 알면 읽을 수 있게 썼습니다. 이미 아는 부분은 정의 상자와 예만 훑고 넘어가도 됩니다. 다만 4부의 바닥·천장 함수와 「k의 배수」 논증은 가이드 4장과 8장의 gap 이야기에서 직접 쓰이니 꼭 보세요.</p>
+  </section>
+
+  <section>
+    <h2>먼저 정해 둘 말</h2>
+    <p>집합과 합의 기호(∈, {x : 조건}, Σ, ∩ 등)는 가이드 3장 2부의 것을 그대로 쓰고, 이 장 끝의 「기호 정리」 표에 모아 두었습니다. 낯선 기호가 나오면 그 표를 먼저 보세요.</p>
+    <p>이 장의 예와 설명에 최적화 용어가 몇 개 나옵니다. 정식 정의는 4장(LP)과 8장(정수계획)에서 하고, 여기서는 읽는 데 필요한 만큼만 정해 둡니다.</p>
+    <ul class="plain">
+      <li><strong>최적화 문제</strong>: 내가 정할 수 있는 숫자들(<strong>결정변수</strong>)이 지켜야 할 조건(<strong>제약</strong>) 아래에서, 좋고 나쁨을 재는 식(<strong>목적함수</strong>)을 최소화 또는 최대화하는 문제.</li>
+      <li><strong>가능해</strong>: 제약을 모두 지키는 변수 값 한 벌. 가능해 전체의 집합이 <strong>가능 영역</strong>. 가능해 중 목적함수가 가장 좋은 것이 <strong>최적해</strong>.</li>
+      <li><strong>LP(선형계획)</strong>: 변수가 실수이고 목적함수와 제약이 모두 1차식인 문제. <strong>정수계획(IP)</strong>은 변수가 모두 정수여야 하는 문제, <strong>MIP(혼합정수계획)</strong>는 일부만 정수여야 하는 문제입니다.</li>
+    </ul>
+    <p>여러 장에서 되풀이해 쓸 <strong>트럭 예</strong>(가이드 3·4장)도 여기서 한 번 완전하게 적어 둡니다. 짐 30톤을 보내는데, 큰 트럭은 9톤을 싣고 한 대에 10(만 원), 작은 트럭은 5톤을 싣고 7입니다. 큰 트럭 x대, 작은 트럭 y대를 부릅니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화 10x + 7y,&nbsp; 제약 9x + 5y ≥ 30,&nbsp; x ≥ 0, y ≥ 0,&nbsp; x와 y는 정수</span><span class="all">정수계획. 정수 조건을 지우면 LP</span></div>
+    </div>
+    <p>정수 최적해는 큰 트럭 3대와 작은 트럭 1대(비용 37)이고, 정수 조건을 지운 LP의 최적해는 x = 10/3, y = 0(비용 100/3 ≈ 33.33)입니다. 이 두 숫자가 어떻게 나오는지는 4장과 9장에서 따라갑니다.</p>
+  </section>
+
+  <div class="part">1부 · 벡터와 행렬</div>
+
+  <section>
+    <h2>벡터: 숫자 여러 개를 한 덩어리로</h2>
+    <p>변수가 n개인 문제에서 변수 값 한 벌은 숫자 n개의 묶음입니다. 이것을 <strong>벡터</strong>라고 부르고 x = (x<sub>1</sub>, …, x<sub>n</sub>)으로 적습니다. CVRPTW의 해를 "경로 목록"이라는 자료구조로 다루던 것처럼, 최적화 이론에서는 해를 벡터 하나로 다룹니다.</p>
+    <div class="defn"><b>정의 2.1</b> <strong>n차원 벡터</strong>는 실수 n개의 순서 있는 묶음 x = (x<sub>1</sub>, …, x<sub>n</sub>)입니다. x<sub>j</sub>를 j번째 <strong>성분</strong>이라고 합니다. 이런 벡터 전체의 집합을 ℝ<sup>n</sup>, 성분이 모두 정수인 벡터의 집합을 ℤ<sup>n</sup>이라고 적습니다. 덧셈과 실수배는 성분마다 합니다. x + y = (x<sub>1</sub> + y<sub>1</sub>, …), λx = (λx<sub>1</sub>, …).</p></div>
+    <p>벡터끼리의 부등식도 성분마다 읽습니다. x ≥ 0은 "모든 성분이 0 이상", x ≤ y는 "모든 j에 대해 x<sub>j</sub> ≤ y<sub>j</sub>"입니다.</p>
+    <div class="defn"><b>정의 2.2</b> 두 벡터 a, x ∈ ℝ<sup>n</sup>의 <strong>내적</strong>은 a<sup>T</sup>x = a<sub>1</sub>x<sub>1</sub> + a<sub>2</sub>x<sub>2</sub> + … + a<sub>n</sub>x<sub>n</sub> = Σ<sub>j</sub> a<sub>j</sub>x<sub>j</sub>입니다. 결과는 숫자 하나입니다. (T는 아래에서 정의할 「전치」 기호이고, 지금은 "내적을 이렇게 적는다"로만 읽으면 됩니다.)</div>
+    <p>1차식은 모두 내적입니다. 가이드 3장의 트럭 예에서 비용 10x + 7y는 c = (10, 7)과 변수 벡터 (x, y)의 내적 c<sup>T</sup>(x, y)입니다. 짐 조건 9x + 5y ≥ 30의 왼쪽도 (9, 5)와 (x, y)의 내적입니다. 앞으로 "1차식"과 "a<sup>T</sup>x"는 같은 말로 씁니다.</p>
+  </section>
+
+  <section>
+    <h2>행렬: 제약 여러 줄을 한 줄로</h2>
+    <p>제약이 m줄이면 내적이 m개 있습니다. 계수 벡터 m개를 위아래로 쌓은 표가 <strong>행렬</strong>입니다.</p>
+    <div class="defn"><b>정의 2.3</b> <strong>m × n 행렬</strong> A는 m개의 행과 n개의 열에 숫자를 배열한 표입니다. i행 j열의 값을 a<sub>ij</sub>, i번째 행을 벡터로 볼 때 a<sub>i</sub>라고 적습니다. 행렬과 벡터의 곱 Ax는 길이 m인 벡터이고, 그 i번째 성분은 a<sub>i</sub><sup>T</sup>x = Σ<sub>j</sub> a<sub>ij</sub>x<sub>j</sub>입니다. 행렬 A의 행과 열을 바꾼 n × m 행렬을 <strong>전치</strong> A<sup>T</sup>라고 합니다(A<sup>T</sup>의 j행 i열 = a<sub>ij</sub>). 벡터를 열 하나짜리 행렬로 보면 a<sup>T</sup>x는 "행 하나 × 열 하나"의 곱이라서 내적과 같은 기호가 됩니다.</div>
+    <p>예를 들어 다음 제약 두 줄을 봅니다. 앞으로 여러 장에서 쓸 <strong>생산 예</strong>입니다(물건 두 가지 x<sub>1</sub>, x<sub>2</sub>를 만드는데 원료 1이 24단위, 원료 2가 6단위 있다).</p>
+    <div class="eq">
+      <div class="row"><span>6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24</span><span class="all">원료 1</span></div>
+      <div class="row"><span>&nbsp;x<sub>1</sub> + 2x<sub>2</sub> ≤ 6</span><span class="all">원료 2</span></div>
+    </div>
+    <p>이것을 A = [[6, 4], [1, 2]] (행을 차례로 적음), b = (24, 6)으로 두면 한 줄로 <strong>Ax ≤ b</strong>입니다. 제약이 수만 줄이어도 모양은 Ax ≤ b 하나입니다. 이론은 이 한 줄을 대상으로 합니다.</p>
+    <p>A의 <strong>열</strong>에도 뜻이 있습니다. j번째 열은 "변수 x<sub>j</sub>가 각 제약에 얼마씩 들어가는가"입니다. 위 예에서 x<sub>1</sub>의 열은 (6, 1), 곧 x<sub>1</sub> 하나를 만들면 원료 1을 6, 원료 2를 1 씁니다. A의 j번째 열을 A<sub>j</sub>라고 쓰면 Ax = x<sub>1</sub>A<sub>1</sub> + … + x<sub>n</sub>A<sub>n</sub>입니다. 곧 Ax는 A의 열들을 x의 성분만큼씩 섞은 벡터입니다(위 예에서 Ax = x<sub>1</sub>·(6, 1) + x<sub>2</sub>·(4, 2)이고, 성분별로 적으면 처음의 두 줄이 됩니다). 11장의 열 생성(column generation)은 이 "열 = 변수 하나"라는 관점에서 이름이 나왔습니다.</p>
+  </section>
+
+  <section>
+    <h2>연립 1차방정식과 가우스 소거</h2>
+    <p>LP의 답(꼭짓점)은 제약 몇 개를 등호로 놓고 연립방정식을 풀어서 나옵니다(4장). 생산 예의 두 줄을 등호로 놓아 봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>6x<sub>1</sub> + 4x<sub>2</sub> = 24</span><span class="all">(가)</span></div>
+      <div class="row"><span>&nbsp;x<sub>1</sub> + 2x<sub>2</sub> = 6</span><span class="all">(나)</span></div>
+    </div>
+    <p><strong>가우스 소거</strong>는 한 식의 배수를 다른 식에서 빼서 변수를 하나씩 없애는 방법입니다. (가) − 6 × (나)를 하면 x<sub>1</sub>이 사라져 4x<sub>2</sub> − 12x<sub>2</sub> = 24 − 36, 곧 −8x<sub>2</sub> = −12, x<sub>2</sub> = 3/2입니다. (나)에 넣으면 x<sub>1</sub> = 6 − 3 = 3. 답은 (3, 3/2)입니다. 5장의 심플렉스법이 하는 「피벗」은 이 소거를 표 위에서 체계적으로 하는 것입니다.</p>
+    <div class="defn"><b>정의 2.4</b> 벡터 v<sub>1</sub>, …, v<sub>k</sub>가 <strong>일차독립</strong>이라는 것은, λ<sub>1</sub>v<sub>1</sub> + … + λ<sub>k</sub>v<sub>k</sub> = 0을 만드는 계수가 λ<sub>1</sub> = … = λ<sub>k</sub> = 0뿐이라는 뜻입니다. 그렇지 않으면 <strong>일차종속</strong>이고, 그중 하나를 나머지의 조합으로 쓸 수 있습니다. 행렬 A의 일차독립인 행의 최대 개수를 A의 <strong>계수(rank)</strong>라고 합니다(열로 세어도 같은 수가 나옵니다). 이 교재에서 「계수」는 대부분 "변수 앞에 곱해진 수(coefficient)"를 뜻하므로, rank의 뜻일 때는 항상 「계수(rank)」라고 적습니다.</div>
+    <p>일차독립에 관한 사실 두 가지는 증명 없이 씁니다(선형대수 교과서의 기본 정리입니다). ① 성분이 m개인 벡터는 m개보다 많으면 반드시 일차종속입니다. ② 계수(rank)가 m인 행렬에서 일차독립인 열 몇 개를 골랐다면, 다른 열을 보태 일차독립인 열 m개로 늘릴 수 있습니다.</p>
+    <p>직관은 이렇습니다. 미지수가 n개이고 방정식이 n개일 때, 방정식들이 일차독립이면(어느 식도 다른 식들을 섞어 만들 수 없으면) 해가 정확히 하나입니다. 종속이면 사실상 식이 모자라 해가 없거나 무수히 많습니다. (가)와 (나)의 계수 벡터 (6, 4)와 (1, 2)는 한쪽이 다른 쪽의 배수가 아니므로 독립이고, 그래서 답이 하나였습니다.</p>
+  </section>
+
+  <section>
+    <h2>행렬식과 크라메르 공식</h2>
+    <p>정사각 행렬(행과 열의 수가 같은 행렬)에는 <strong>행렬식</strong>이라는 숫자가 하나 붙습니다. 행렬식이 0이 아니면 연립방정식의 해가 하나로 정해지고, 그 해를 분수 꼴로 바로 적을 수 있습니다. 10장에서 "어떤 정식화는 LP만 풀어도 정수해가 나온다"를 증명할 때 이 분수 꼴이 결정적으로 쓰입니다.</p>
+    <div class="defn"><b>정의 2.5</b> 2 × 2 행렬 [[a, b], [c, d]]의 <strong>행렬식</strong>은 det = ad − bc입니다. 3 × 3 이상은 첫 행을 따라 펼칩니다(<strong>여인수 전개</strong>). 첫 행의 각 원소 a<sub>1j</sub>에, 1행과 j열을 지운 작은 행렬의 행렬식을 곱하고, 부호를 +, −, +, … 번갈아 붙여 더합니다.</p>
+    <p>det [[a<sub>11</sub>, a<sub>12</sub>, a<sub>13</sub>], [a<sub>21</sub>, a<sub>22</sub>, a<sub>23</sub>], [a<sub>31</sub>, a<sub>32</sub>, a<sub>33</sub>]] = a<sub>11</sub>(a<sub>22</sub>a<sub>33</sub> − a<sub>23</sub>a<sub>32</sub>) − a<sub>12</sub>(a<sub>21</sub>a<sub>33</sub> − a<sub>23</sub>a<sub>31</sub>) + a<sub>13</sub>(a<sub>21</sub>a<sub>32</sub> − a<sub>22</sub>a<sub>31</sub>)</p></div>
+    <p>행렬식의 성질 네 가지는 증명 없이 씁니다(선형대수 교과서의 기본 성질이고, 10장의 증명에서 씁니다). ① 첫 행이 아니라 어느 행, 어느 열을 따라 펼쳐도 같은 값이 나옵니다(부호는 i행 j열의 원소에 (−1)<sup>i+j</sup>). 그래서 0이 아닌 원소가 하나뿐인 행이나 열이 있으면, 그 줄로 펼쳐서 "± 그 원소 × 더 작은 행렬의 행렬식"으로 줄일 수 있습니다. ② 행과 열을 맞바꾼 전치 행렬의 행렬식은 원래와 같습니다. ③ 한 행(또는 열)에 −1을 곱하거나 두 행(또는 열)의 자리를 맞바꾸면 부호만 바뀝니다. ④ 한 행에 다른 행의 배수를 더하거나 빼도 행렬식은 그대로입니다(가우스 소거가 해를 바꾸지 않는 것과 같은 이치).</p>
+    <div class="thm"><b>정리 2.6</b> 정사각 행렬 B에 대해 다음은 모두 같은 말입니다. ① det B ≠ 0. ② B의 열(또는 행)이 일차독립이다. ③ Bx = b의 해가 모든 b에 대해 정확히 하나다. ④ B의 <strong>역행렬</strong> B<sup>−1</sup>(B<sup>−1</sup>B = I가 되는 행렬, I는 대각선이 1이고 나머지가 0인 단위 행렬)이 있다. 이때 해는 x = B<sup>−1</sup>b입니다.</div>
+    <div class="thm"><b>정리 2.7 (크라메르 공식)</b> det B ≠ 0이면 Bx = b의 해는 x<sub>j</sub> = det(B<sub>j</sub>) / det(B)입니다. 여기서 B<sub>j</sub>는 B의 j번째 열을 b로 바꾼 행렬입니다.</div>
+    <p>증명은 선형대수 교과서에 맡기고, 생산 예로 확인합니다. B = [[6, 4], [1, 2]], b = (24, 6)입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>행렬</th><th>내용 (행을 차례로)</th><th class="num">행렬식</th><th>결과</th></tr></thead>
+      <tbody>
+        <tr><td>B</td><td>[[6, 4], [1, 2]]</td><td class="num">6·2 − 4·1 = 8</td><td>0이 아니므로 해가 하나</td></tr>
+        <tr><td>B<sub>1</sub> (1열을 b로)</td><td>[[24, 4], [6, 2]]</td><td class="num">48 − 24 = 24</td><td>x<sub>1</sub> = 24/8 = 3</td></tr>
+        <tr><td>B<sub>2</sub> (2열을 b로)</td><td>[[6, 24], [1, 6]]</td><td class="num">36 − 24 = 12</td><td>x<sub>2</sub> = 12/8 = 3/2</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>가우스 소거와 같은 답 (3, 3/2)입니다. 여기서 눈여겨볼 점이 하나 있습니다. B와 b의 성분이 모두 정수이면 det(B<sub>j</sub>)도 정수입니다(곱하고 더하고 빼기만 하므로). 그러니 해는 분모가 |det B|인 분수로 적힙니다(약분되면 더 작아집니다). <strong>det B가 ±1이면 해가 반드시 정수</strong>입니다. 이 한 줄이 10장의 완전 단모듈(TU) 행렬 이야기의 씨앗입니다.</p>
+  </section>
+
+  <div class="part">2부 · 기하: 초평면, 반공간, 다면체</div>
+
+  <section>
+    <h2>부등식 하나 = 공간의 절반</h2>
+    <div class="defn"><b>정의 2.8</b> 0이 아닌 벡터 a와 숫자 β에 대해, {x ∈ ℝ<sup>n</sup> : a<sup>T</sup>x = β}를 <strong>초평면(hyperplane)</strong>, {x : a<sup>T</sup>x ≤ β}를 <strong>반공간(half-space)</strong>이라고 합니다. (집합 기호 {x : 조건}은 "조건을 만족하는 x 전부"라는 뜻입니다.) 2차원에서 초평면은 직선, 3차원에서는 평면입니다.</div>
+    <p>a는 초평면에 수직인 방향입니다. x를 a 방향으로 조금 옮기면 a<sup>T</sup>x가 커지고, 반대로 옮기면 작아집니다. 그래서 반공간 a<sup>T</sup>x ≤ β는 "초평면에서 a의 반대쪽 절반"입니다. 이 사실은 4장에서 목적함수를 다룰 때 다시 씁니다. 목적함수 c<sup>T</sup>x가 같은 값인 점들은 초평면을 이루고, 최소화는 그 초평면을 −c 방향으로 밀어 가는 일입니다.</p>
+    <div class="defn"><b>정의 2.9</b> 유한 개 반공간의 교집합 P = {x : Ax ≤ b}를 <strong>다면체(polyhedron)</strong>라고 합니다. 등식 a<sup>T</sup>x = β는 a<sup>T</sup>x ≤ β와 −a<sup>T</sup>x ≤ −β 두 개로 쓸 수 있으므로 등식이 섞여도 다면체입니다. P가 어떤 큰 상자 안에 들어가면 <strong>유계(bounded)</strong>라고 하고, 유계인 다면체를 <strong>다포체(polytope)</strong>라고도 부릅니다.</div>
+    <p>LP의 가능 영역은 정의상 다면체입니다. 생산 예의 영역(두 제약에 x ≥ 0을 더한 것)은 유계이고, 트럭 예의 영역(9x + 5y ≥ 30, x, y ≥ 0)은 위쪽과 오른쪽으로 끝없이 뻗어 있어 유계가 아닙니다. 둘 다 다면체입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="생산 예의 가능 영역. 꼭짓점 (0,0), (4,0), (3,1.5), (0,3)을 잇는 사각형이고, 정수 격자점이 점으로 찍혀 있다">
+        <polygon class="f-steel" opacity=".6" points="70,262 310,262 250,187 70,112"/>
+        <g class="s-line" stroke-width="1.2"><line x1="70" y1="262" x2="420" y2="262"/><line x1="70" y1="262" x2="70" y2="50"/></g>
+        <g class="s-muted" stroke-width="1" stroke-dasharray="4 3"><line x1="150" y1="62" x2="330" y2="287"/><line x1="70" y1="112" x2="430" y2="262"/></g>
+        <g font-size="12" text-anchor="middle" class="t-muted"><text x="70" y="280">0</text><text x="130" y="280">1</text><text x="190" y="280">2</text><text x="250" y="280">3</text><text x="310" y="280">4</text><text x="370" y="280">5</text><text x="58" y="216">1</text><text x="58" y="166">2</text><text x="58" y="116">3</text><text x="58" y="66">4</text></g>
+        <g class="f-fg"><circle cx="70" cy="262" r="3"/><circle cx="130" cy="262" r="3"/><circle cx="190" cy="262" r="3"/><circle cx="250" cy="262" r="3"/><circle cx="310" cy="262" r="3"/><circle cx="70" cy="212" r="3"/><circle cx="130" cy="212" r="3"/><circle cx="190" cy="212" r="3"/><circle cx="250" cy="212" r="3"/><circle cx="70" cy="162" r="3"/><circle cx="130" cy="162" r="3"/><circle cx="190" cy="162" r="3"/><circle cx="70" cy="112" r="3"/></g>
+        <g class="f-crane"><circle cx="250" cy="187" r="5"/></g>
+        <g font-size="12.5"><text x="258" y="182">(3, 1.5)</text><text x="316" y="254">(4, 0)</text><text x="78" y="106">(0, 3)</text><text x="160" y="58">6x₁ + 4x₂ = 24</text><text x="380" y="232">x₁ + 2x₂ = 6</text><text x="430" y="275">x₁</text><text x="76" y="48">x₂</text></g>
+      </svg>
+      </div>
+      <figcaption>생산 예의 가능 영역(색칠한 사각형). 점선은 두 제약을 등호로 놓은 직선입니다. 네 모퉁이 (0, 0), (4, 0), (3, 1.5), (0, 3)이 꼭짓점이고, 그중 (3, 1.5)는 위에서 푼 연립방정식의 답입니다. 검은 점은 영역 안의 정수 격자점입니다.</figcaption>
+    </figure>
+    <p>그림의 검은 점들, 곧 <strong>다면체 안의 정수 격자점</strong> P ∩ ℤ<sup>n</sup>이 정수계획이 고를 수 있는 해입니다. LP는 색칠한 영역 전체에서, 정수계획은 점들 중에서만 고릅니다. 둘의 차이가 이 교재 후반부 전체의 주제입니다.</p>
+  </section>
+
+  <div class="part">3부 · 볼록성</div>
+
+  <section>
+    <h2>볼록 집합</h2>
+    <div class="defn"><b>정의 2.10</b> 집합 S가 <strong>볼록(convex)</strong>이라는 것은, S 안의 어떤 두 점 x, y를 골라도 둘을 잇는 선분 전체가 S 안에 있다는 뜻입니다. 식으로는 0 ≤ λ ≤ 1인 모든 λ에 대해 λx + (1 − λ)y ∈ S.</div>
+    <div class="thm"><b>정리 2.11</b> ① 반공간은 볼록이다. ② 볼록 집합들의 교집합은 볼록이다. 따라서 ③ 모든 다면체는 볼록이다.</div>
+    <div class="proof">
+      <p>① a<sup>T</sup>x ≤ β, a<sup>T</sup>y ≤ β이면 a<sup>T</sup>(λx + (1 − λ)y) = λa<sup>T</sup>x + (1 − λ)a<sup>T</sup>y ≤ λβ + (1 − λ)β = β. ② x, y가 교집합에 있으면 각 집합에 있고, 각 집합이 볼록이라 선분도 각 집합에 있으니 교집합에도 있습니다. ③은 ①과 ②에서 바로 나옵니다.</p>
+    </div>
+    <p>반대로 <strong>정수점 집합은 볼록이 아닙니다.</strong> 트럭 예에서 (3, 1)과 (4, 0)은 둘 다 정수 가능해인데, 가운데 점 (3.5, 0.5)는 정수가 아닙니다. 이 사실 하나가 LP와 정수계획의 난이도 차이를 거의 다 설명합니다. 아래 「볼록 함수」 절에서 이유를 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>볼록 조합과 볼록 껍질</h2>
+    <div class="defn"><b>정의 2.12</b> 점 v<sub>1</sub>, …, v<sub>k</sub>의 <strong>볼록 조합</strong>은 λ<sub>1</sub>v<sub>1</sub> + … + λ<sub>k</sub>v<sub>k</sub> 꼴의 점입니다. 단 λ<sub>i</sub> ≥ 0이고 λ<sub>1</sub> + … + λ<sub>k</sub> = 1. 점들에 가중치를 주어 평균 낸 것입니다. 집합 S의 <strong>볼록 껍질(convex hull)</strong> conv(S)는 S를 포함하는 가장 작은 볼록 집합이고, S의 점들의 볼록 조합 전체와 같습니다.</div>
+    <p>예로 S = {(0, 0), (2, 0), (0, 2), (1, 1)}을 봅니다. conv(S)는 세 점 (0, 0), (2, 0), (0, 2)를 꼭짓점으로 하는 삼각형입니다. (1, 1)은 (2, 0)과 (0, 2)의 가운데, 곧 ½·(2, 0) + ½·(0, 2)라서 껍질을 넓히지 못합니다. 고무줄을 점들 바깥에 걸고 놓았을 때 고무줄이 만드는 모양이 2차원의 볼록 껍질입니다.</p>
+    <p>정수계획에서 볼록 껍질이 중요한 이유를 미리 한 문장으로 말해 두면 이렇습니다. 정수 가능해들의 볼록 껍질을 부등식으로 적을 수 있다면, 그 위에서 LP를 풀어도 정수계획의 답이 나옵니다. 10장에서 이것을 정확히 다룹니다.</p>
+  </section>
+
+  <section>
+    <h2>극점(꼭짓점)</h2>
+    <div class="defn"><b>정의 2.13</b> 볼록 집합 P의 점 v가 <strong>극점(extreme point)</strong>이라는 것은, v를 P 안의 서로 다른 두 점의 가운데(더 일반적으로 0 &lt; λ &lt; 1인 볼록 조합)로 쓸 수 없다는 뜻입니다. 다면체의 극점을 <strong>꼭짓점(vertex)</strong>이라고도 부릅니다.</div>
+    <p>생산 예의 꼭짓점은 그림의 네 모퉁이입니다. 변 위의 점, 예를 들어 (2, 0)은 (0, 0)과 (4, 0)의 가운데라 극점이 아닙니다. 내부의 점은 말할 것도 없습니다.</p>
+    <p>꼭짓점을 계산으로 찾는 방법도 있습니다. 2차원에서 꼭짓점은 "변수 두 개에 대해 독립인 제약 두 개가 등호로 성립하는 가능한 점"입니다. (3, 3/2)는 원료 1과 원료 2의 제약 두 개가, (4, 0)은 원료 1 제약과 x<sub>2</sub> ≥ 0이 등호입니다. 일반적으로 n차원에서는 "일차독립인 제약 n개가 등호"가 됩니다. 4장에서 이것을 「기저해」로 정리하고 증명합니다.</p>
+    <p><strong>면(face)</strong>과 <strong>모서리(edge)</strong>라는 말도 직관으로만 정해 둡니다. 다면체를 어떤 초평면으로 "스치듯" 잘랐을 때 닿는 부분이 면이고, 꼭짓점은 0차원 면, 두 꼭짓점을 잇는 1차원 면이 모서리입니다. 생산 예에서 (4, 0)과 (3, 3/2)를 잇는 변이 모서리입니다. 이 교재에서 「모서리」는 항상 이 변(edge)을 뜻하고, 뾰족한 모퉁이는 「꼭짓점」이라고 부릅니다. 가이드는 "영역의 모서리, 곧 꼭짓점"처럼 모서리를 모퉁이의 뜻으로 쓰므로, 가이드를 인용한 문장에서만 그 뜻으로 읽으면 됩니다.</p>
+    <div class="thm"><b>정리 2.14 (다포체의 두 얼굴)</b> 유계인 다면체는 자기 꼭짓점들의 볼록 껍질과 같습니다. 반대로 유한 개 점의 볼록 껍질은 유계인 다면체입니다(곧 유한 개 부등식으로 적을 수 있습니다).</div>
+    <p>이 정리(민코프스키–바일 정리의 한 형태)는 증명하지 않고 씁니다. 앞 절반은 "다포체는 꼭짓점만 알면 다 안다"는 뜻이고, 뒤 절반은 "정수점 몇 개의 볼록 껍질도 결국 부등식 몇 줄로 적힌다"는 뜻입니다. 뒤 절반이 10장의 출발점입니다. 다만 그 부등식이 몇 줄인지는 말해 주지 않으며, 실제로는 엄청나게 많을 수 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>볼록 함수: 지역 최적 = 전역 최적</h2>
+    <p>CVRPTW를 지역 탐색(local search)으로 풀어 본 사람은 지역 최적(local optimum)에 갇히는 일을 압니다. 이웃 해 중에 더 좋은 것이 없는데 전체 최적은 아닌 상태입니다. 메타휴리스틱의 기법 대부분이 여기서 빠져나오려는 장치입니다. 볼록성은 그런 함정이 <em>없다</em>는 보장입니다.</p>
+    <div class="defn"><b>정의 2.15</b> 볼록 집합 S 위의 함수 f가 <strong>볼록 함수</strong>라는 것은, S의 모든 x, y와 0 ≤ λ ≤ 1에 대해 f(λx + (1 − λ)y) ≤ λf(x) + (1 − λ)f(y)라는 뜻입니다. 그래프 위의 두 점을 이은 현이 그래프보다 위에 있다는 말입니다. 부등호가 반대이면 <strong>오목 함수</strong>입니다. 1차식 c<sup>T</sup>x는 등호가 성립하므로 볼록이면서 오목입니다. 1변수의 x², −ln x(x &gt; 0)는 볼록입니다.</div>
+    <div class="defn"><b>정의 2.16</b> 점 x*가 f의 <strong>지역 최소</strong>라는 것은 x* 근처(충분히 가까운 점들)에서 f(x*)가 가장 작다는 뜻이고, <strong>전역 최소</strong>는 S 전체에서 가장 작다는 뜻입니다.</div>
+    <div class="thm"><b>정리 2.17</b> 볼록 집합 위의 볼록 함수에서 지역 최소는 전역 최소입니다.</div>
+    <div class="proof">
+      <p>x*가 지역 최소인데 f(y) &lt; f(x*)인 y가 S에 있다고 해 봅시다. 선분 위의 점 z = λy + (1 − λ)x*는 S가 볼록이라 S 안에 있고, λ를 아주 작게 잡으면 x*에 얼마든지 가깝습니다. 볼록성에서 f(z) ≤ λf(y) + (1 − λ)f(x*) &lt; λf(x*) + (1 − λ)f(x*) = f(x*). x* 바로 옆에 더 좋은 점이 있으니 지역 최소라는 가정과 모순입니다.</p>
+    </div>
+    <p>LP는 볼록 집합(다면체) 위에서 1차식(볼록 함수)을 최소화하는 문제이므로 이 정리가 적용됩니다. 5장의 심플렉스법은 꼭짓점에서 이웃 꼭짓점으로 옮겨 다니는 <strong>지역 탐색</strong>인데, 이 정리 덕분에 "더 좋은 이웃이 없으면 그것이 전역 최적"이라고 선언할 수 있습니다. (정확히는 "이웃 꼭짓점 중 더 좋은 것이 없다"에서 "근처의 모든 점보다 좋다"로 넘어가는 단계가 하나 더 필요하고, 5장의 감소 비용이 그 단계를 채웁니다.) 반면 정수계획의 가능해 집합은 볼록이 아니어서 이 논증이 깨집니다. 정수해 하나에서 이웃 정수해를 다 봐도 더 좋은 게 없는데 멀리 더 좋은 해가 있을 수 있습니다. 정수계획 솔버가 지역 탐색 대신 하한을 이용한 분지한계법(9장)을 쓰는 이유입니다.</p>
+    <div class="thm"><b>정리 2.18</b> 유계인 다면체 P 위에서 1차식 c<sup>T</sup>x의 최솟값은 어떤 꼭짓점에서 얻어집니다.</div>
+    <div class="proof">
+      <p>정리 2.14에 의해 P의 아무 점 x는 꼭짓점 v<sub>1</sub>, …, v<sub>k</sub>의 볼록 조합 x = Σλ<sub>i</sub>v<sub>i</sub>입니다. 그러면 c<sup>T</sup>x = Σλ<sub>i</sub>c<sup>T</sup>v<sub>i</sub> ≥ Σλ<sub>i</sub> · (min<sub>k</sub> c<sup>T</sup>v<sub>k</sub>) = min<sub>k</sub> c<sup>T</sup>v<sub>k</sub>(λ<sub>i</sub> ≥ 0이고 합이 1이므로). 어떤 점도 가장 좋은 꼭짓점보다 좋을 수 없습니다.</p>
+    </div>
+    <p>4장에서 이 정리를 유계가 아닌 경우까지 넓히고, 꼭짓점을 계산으로 다루는 법(기저해)을 정리합니다.</p>
+  </section>
+
+  <div class="part">4부 · 바닥, 천장, 그리고 「<span style="text-transform:none">k</span>의 배수」</div>
+
+  <section>
+    <h2>정수 쪽으로 반올림하기</h2>
+    <div class="defn"><b>정의 2.19</b> 실수 a에 대해 <strong>바닥</strong> ⌊a⌋는 a 이하의 가장 큰 정수, <strong>천장</strong> ⌈a⌉는 a 이상의 가장 작은 정수입니다. <strong>분수 부분</strong>은 frac(a) = a − ⌊a⌋이고 항상 0 ≤ frac(a) &lt; 1입니다.</div>
+    <p>음수에서 실수하기 쉽습니다. ⌊3.33⌋ = 3, ⌈3.33⌉ = 4이고, ⌊−1/9⌋ = −1이므로 frac(−1/9) = −1/9 − (−1) = 8/9입니다(1/9가 아닙니다). 10장의 Gomory 절단에서 바로 이 계산이 나옵니다.</p>
+    <div class="thm"><b>정리 2.20</b> ① z가 정수이고 z ≥ L이면 z ≥ ⌈L⌉입니다. ② z가 k의 배수(k는 양의 정수)이고 z ≥ L이면 z ≥ k⌈L/k⌉입니다. ③ 따라서 정수 z, z′가 둘 다 k의 배수이고 z′ &lt; z이면 z′ ≤ z − k입니다.</div>
+    <div class="proof">
+      <p>① ⌈L⌉은 L 이상인 가장 작은 정수이므로 L 이상인 정수 z는 그보다 작을 수 없습니다. ② z = km이라 쓰면 m ≥ L/k인 정수이므로 ①에 의해 m ≥ ⌈L/k⌉. ③ z − z′는 0보다 큰 k의 배수이므로 k 이상입니다.</p>
+    </div>
+    <p>짧지만 가이드에서 두 번 결정적으로 쓰이는 논증입니다. 숫자로 봅니다.</p>
+    <ul class="plain">
+      <li>트럭 예의 비용은 정수입니다. 분지한계법(9장)이 문제를 쪼갠 조각 하나(가이드의 말로 「가지」)에서 "비용은 36.8 이상"임을 알면 ①에 의해 37 이상입니다(가이드 4장의 ⑦).</li>
+      <li>목적함수 값이 항상 짝수(k = 2)인 모형에서 "값은 99,990.5 이상"임을 알면 ②에 의해 99,992 이상입니다. 또 지금 가진 해가 1,000이면 그보다 좋은 해는 ③에 의해 998 이하입니다(가이드 8장의 MIPGapAbs).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>기호 정리: Σ, ∀, 집합</h2>
+    <p>가이드 3장 2부가 설명한 기호를 이 교재에서도 그대로 씁니다. 한 번 더 모아 둡니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>기호</th><th>읽는 법</th><th>프로그래머의 눈으로</th></tr></thead>
+      <tbody>
+        <tr><td>Σ<sub>j∈J</sub> a<sub>j</sub></td><td>J의 모든 j에 대해 a<sub>j</sub>를 더한 것</td><td>for 루프로 합계</td></tr>
+        <tr><td>∀ i ∈ I</td><td>I의 모든 i에 대해 (이 줄을 i마다 하나씩)</td><td>for 루프로 제약을 여러 줄 생성</td></tr>
+        <tr><td>x ∈ S, S ⊆ T</td><td>x는 S의 원소, S는 T의 부분집합</td><td>contains, 포함 관계</td></tr>
+        <tr><td>{x : 조건}</td><td>조건을 만족하는 x 전체</td><td>filter</td></tr>
+        <tr><td>S ∩ T, S ∪ T, ∅</td><td>둘 다에 든 원소(교집합), 어느 한쪽에라도 든 원소(합집합), 빈 집합</td><td>intersection, union, 빈 컬렉션</td></tr>
+        <tr><td>|S|</td><td>S의 원소 개수(숫자에 쓰면 절댓값)</td><td>len</td></tr>
+        <tr><td>ℝ<sup>n</sup>, ℤ<sup>n</sup>, {0, 1}<sup>n</sup></td><td>실수, 정수, 0·1 벡터 전체</td><td>double[n], int[n], bool[n]</td></tr>
+        <tr><td>min / max, arg min</td><td>가장 작은 값 / 그 값을 주는 점</td><td>min(), 그 인덱스</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref">
+      <p><strong>가이드 3장 2부 「첨자, Σ, ∀」</strong>의 식은 모두 Ax ≤ b(또는 =, ≥) 꼴로 모을 수 있습니다. 가이드 6장의 tryAgain 모형도 변수 x, y, z를 한 벡터로 이으면 제약 여섯 종류가 행렬 하나의 행들이 됩니다. 가이드가 "모든 계수가 0, 1, −1"이라고 한 것은 이 행렬의 성분 이야기입니다(10장에서 이것이 왜 반가운 성질인지 봅니다).</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 1부의 그림</strong>(트럭 예의 색칠한 영역과 굵은 점)은 이 장 2부의 다면체(정의 2.9)와 그 안의 정수 격자점입니다. 가이드가 "최적점은 영역의 모서리, 곧 꼭짓점"이라고 한 것은 정리 2.18이고, 4장에서 유계가 아닌 트럭 영역까지 포함해 증명합니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 2부 「트럭 예를 끝까지 따라가기」의 ⑦</strong>과 <strong>가이드 8장 「MIPGapAbs = 2 − TOL」</strong>은 정리 2.20을 쓴 논증입니다. 가이드 6장이 지적한 "모든 계수가 짝수라 목적함수 값은 언제나 짝수"는 정리 2.20의 k = 2인 경우의 전제입니다. 짝수 계수에 정수 변수를 곱해 더하면 짝수라는 것이 그 근거입니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 4부 「강한 정식화와 약한 정식화」</strong>가 말하는 "LP 완화(정수 조건을 지운 LP)의 가능 영역이 정수해들에 바짝 붙어 있다"는, 이 장의 말로는 "다면체가 정수점들의 볼록 껍질에 가깝다"입니다. 10장에서 이 비교를 정의로 만듭니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>a = (2, −1, 3), x = (1, 4, 2)일 때 a<sup>T</sup>x를 구하세요.</summary>
+      <p>2·1 + (−1)·4 + 3·2 = 2 − 4 + 6 = 4.</p>
+    </details>
+    <details>
+      <summary>가이드 3장의 배정 문제에서 고객 2명(1, 2), 차량 2대(A, B)일 때 변수 벡터를 x = (x<sub>1A</sub>, x<sub>1B</sub>, x<sub>2A</sub>, x<sub>2B</sub>)로 두고, "고객마다 정확히 한 차량" 제약 두 줄을 Ax = b 꼴로 적으세요.</summary>
+      <p>A = [[1, 1, 0, 0], [0, 0, 1, 1]], b = (1, 1). 첫 행은 x<sub>1A</sub> + x<sub>1B</sub> = 1, 둘째 행은 x<sub>2A</sub> + x<sub>2B</sub> = 1입니다. 열을 보면 x<sub>1A</sub>의 열은 (1, 0), 곧 "고객 1의 식에 한 번 들어간다"입니다.</p>
+    </details>
+    <details>
+      <summary>크라메르 공식으로 2x + y = 7, x + 3y = 11을 푸세요.</summary>
+      <p>det [[2, 1], [1, 3]] = 6 − 1 = 5. x = det [[7, 1], [11, 3]] / 5 = (21 − 11)/5 = 2. y = det [[2, 7], [1, 11]] / 5 = (22 − 7)/5 = 3. 답 (2, 3). 넣어 보면 4 + 3 = 7, 2 + 9 = 11.</p>
+    </details>
+    <details>
+      <summary>행렬 [[1, 1, 0], [0, 1, 1], [1, 0, 1]]의 행렬식을 첫 행 전개로 구하세요. (이 행렬은 3장에서 삼각형 그래프의 근접 행렬로 다시 나옵니다.)</summary>
+      <p>1·(1·1 − 1·0) − 1·(0·1 − 1·1) + 0·(…) = 1 − (−1) + 0 = 2. 행렬식이 2이므로, 이 행렬로 된 연립방정식은 성분이 정수여도 해에 분모 2가 생길 수 있습니다. 예를 들어 오른쪽이 (1, 1, 1)이면 해는 (1/2, 1/2, 1/2)입니다.</p>
+    </details>
+    <details>
+      <summary>다음 집합 중 볼록인 것은? (가) {(x, y) : x + y ≤ 4, x ≥ 0, y ≥ 0} (나) {(x, y) : x, y ∈ {0, 1}} (다) {(x, y) : x² + y² ≤ 1} (라) {(x, y) : xy ≥ 1}</summary>
+      <p>(가) 볼록(반공간 셋의 교집합). (나) 볼록 아님: (0, 0)과 (1, 1)의 가운데 (0.5, 0.5)가 빠집니다. (다) 볼록(원판). (라) 볼록 아님: (1, 1)과 (−1, −1)은 둘 다 xy = 1이라 들어 있지만 가운데 (0, 0)은 xy = 0입니다. (x &gt; 0인 부분만 보면 볼록입니다.)</p>
+    </details>
+    <details>
+      <summary>삼각형 conv{(0, 0), (2, 0), (0, 2)} 안의 점 (1/2, 1)을 세 꼭짓점의 볼록 조합으로 적으세요.</summary>
+      <p>λ<sub>1</sub>(0, 0) + λ<sub>2</sub>(2, 0) + λ<sub>3</sub>(0, 2) = (2λ<sub>2</sub>, 2λ<sub>3</sub>) = (1/2, 1)에서 λ<sub>2</sub> = 1/4, λ<sub>3</sub> = 1/2, λ<sub>1</sub> = 1 − 1/4 − 1/2 = 1/4. 모두 0 이상이고 합이 1입니다.</p>
+    </details>
+    <details>
+      <summary>frac(10/3), frac(−5/9), ⌈34.2⌉, 그리고 "짝수 z ≥ 1,000.3"일 때 z의 최솟값을 구하세요.</summary>
+      <p>frac(10/3) = 10/3 − 3 = 1/3. ⌊−5/9⌋ = −1이므로 frac(−5/9) = −5/9 + 1 = 4/9. ⌈34.2⌉ = 35. 짝수 z ≥ 1,000.3이면 정리 2.20 ②에서 z ≥ 2⌈500.15⌉ = 2 · 501 = 1,002.</p>
+    </details>
+    <details>
+      <summary>지역 탐색으로 CVRPTW를 풀다가 지역 최적에 갇히는 이유를 정리 2.17의 말로 설명하세요.</summary>
+      <p>CVRPTW의 해 집합(경로들의 조합)은 볼록 집합이 아니고(애초에 "선분 위의 중간 해"가 정의되지 않습니다), 목적함수도 그 위에서 볼록이라는 보장이 없습니다. 정리 2.17의 전제가 성립하지 않으므로 "이웃 중 더 좋은 것이 없다"가 전역 최적을 뜻하지 않습니다. LP는 전제가 성립하므로 심플렉스의 지역 탐색이 전역 최적에서 멈춥니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/~boyd/cvxbook/">S. Boyd, L. Vandenberghe, <em>Convex Optimization</em> (Cambridge University Press, 2004)</a> — 저자 페이지에 전체 PDF가 공개되어 있습니다. 2장 Convex sets(초평면, 반공간, 다면체, 볼록 껍질), 3장 Convex functions. 이 장보다 훨씬 깊으니 2.1~2.2절, 3.1절 정도만 봐도 충분합니다.</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — 1장 Introduction(LP의 여러 모양과 표준형), 2장 The geometry of linear programming(다면체, 극점, 기저해). 이 장과 4장의 표준 참고서. (장 번호는 출판사 목차 페이지의 순서로 센 것)</li>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판, Reex Press)</a> — CC BY 라이선스의 무료 교재. 3판 기준 3장 Algebra versus Geometry가 이 장 2~3부와 4장의 기저해를 다룹니다. 저자의 GitHub 저장소에는 더 새 판(4판)이 있다고 안내되어 있는데, 그 판의 장 구성은 확인하지 못했습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/볼록_집합">위키백과 「볼록 집합」</a>, <a href="https://ko.wikipedia.org/wiki/볼록_폐포">「볼록 폐포」</a> — 볼록 껍질을 한국어 위키백과는 「볼록 폐포」라고 부릅니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch1">← 이전: 1장 들어가며</a><a href="#ch3">다음: 3장 그래프 기초 →</a></div>
+</article>

@@ -1,0 +1,333 @@
+<article class="chapter" id="ch5">
+  <header>
+    <div class="kicker">5 / 10</div>
+    <h1>정식화의 아이디어: 규칙 두 개와 「높이」</h1>
+  </header>
+
+  <section>
+    <p class="lead">3장에서 "순서를 변수로 적으면 모형이 크고 약해진다"는 것을 봤습니다. RORO 문제는 순서가 본질인 문제입니다. 어느 차를 먼저 내리느냐에 따라 유효와 무효가 갈립니다. tryAgain은 그런 문제를 <strong>순서 변수 없이</strong> 적었습니다. 이 장은 그것이 왜 가능한지를 수식 없이 설명합니다.</p>
+    <p>이 장에서 얻어 갈 것은 세 가지입니다. 스스로 건 규칙 두 개, 「높이」라는 장치, 그리고 「접근 가능」이라는 개념입니다. 다음 장의 수식은 이 세 가지를 기호로 옮긴 것에 지나지 않습니다.</p>
+  </section>
+
+  <div class="part">1부 · 스스로 건 규칙</div>
+
+  <section>
+    <h2>있는 그대로 적으면 왜 안 되는가</h2>
+    <p>문제를 있는 그대로 MIP로 적는다고 해 봅시다. 해는 항구마다 경로의 순서 있는 목록이므로 "항구 p에서 t번째로 실행하는 경로가 노드 i에서 j로 가는 간선을 지나는가" 같은 변수가 필요합니다. 항구 수 × 순번 수 × 간선 수만큼의 이진변수가 생기고, 각 순번에서의 배 상태(어느 칸이 비었는가)를 따라가는 변수와 그것들을 잇는 조건부 제약이 추가로 붙습니다. 순번의 수는 움직이는 차의 수만큼 필요하므로, 노드와 차가 수백 단위인 문제에서는 변수의 수가 감당하기 어렵게 불어납니다. (이런 모형을 실제로 만들어 재 본 것은 아니고, 3장의 CVRPTW 모형에서 본 것과 같은 이유로 그렇게 예상된다는 뜻입니다.)</p>
+    <p>발표자료 2쪽은 이 상황을 한 문장으로 적고 있습니다. "계산 효율성과 해 집합의 정확한 묘사 간의 trade-off를 잘 조절하는 것이 중요함." tryAgain은 정확한 묘사를 조금 포기하는 쪽을 골랐습니다. 원래 문제가 허용하는 해 가운데 <strong>적기 쉬운 해만</strong> 다루기로 한 것입니다.</p>
+  </section>
+
+  <section>
+    <h2>규칙 ①: 모든 경로는 출입구에서 시작하거나 출입구에서 끝난다</h2>
+    <p>경로는 선적 경로(0에서 시작)와 하역 경로(0에서 끝)만 씁니다. 배 안에서 칸에서 칸으로 옮기는 위치변경은 쓰지 않습니다. 길을 막는 차를 치워야 하면 항상 <strong>항구로 내렸다가 다시 싣습니다</strong>.</p>
+    <p>이 규칙 덕분에 차 한 대의 일생을 깔끔하게 토막 낼 수 있습니다. 항구 1에서 실어 항구 4에서 내릴 차가 항구 2에서 한 번 임시로 내려졌다 다시 실렸다면, 이 차는</p>
+    <ul class="plain">
+      <li>항구 1에서 실려 어떤 칸에 있다가 항구 2에서 내려지고,</li>
+      <li>항구 2에서 (같은 칸 또는 다른 칸에) 다시 실려 항구 4에서 내려집니다.</li>
+    </ul>
+    <p>이 문서에서는 이렇게 "한 번 실려서 한 번 내려질 때까지"를 <strong>구간(leg)</strong>이라고 부르겠습니다. 구간은 (실은 항구, 내린 항구, 머문 칸) 세 가지로 완전히 적힙니다. 한 구간 동안 차는 한 칸에 가만히 있습니다. 위치변경이 없으니까요. 그리고 수식의 눈으로 보면 "항구 1에서 4까지 가는 차 한 대"와 "1에서 2까지 가는 차 한 대 + 2에서 4까지 가는 차 한 대"는 구별할 필요가 없습니다. 임시 하역은 <strong>긴 구간 하나를 짧은 구간 둘로 쪼개는 것</strong>입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 190" role="img" aria-label="항구 1에서 4까지 가는 차가 임시 하역 없이 한 구간으로 가는 경우와, 항구 2에서 임시 하역되어 두 구간으로 쪼개지는 경우">
+        <g font-size="13">
+          <g class="s-muted" stroke-width="1" stroke-dasharray="3 4">
+            <line x1="250" y1="30" x2="250" y2="165"/><line x1="380" y1="30" x2="380" y2="165"/><line x1="510" y1="30" x2="510" y2="165"/><line x1="640" y1="30" x2="640" y2="165"/>
+          </g>
+          <g text-anchor="middle" class="t-muted"><text x="250" y="22">항구 1</text><text x="380" y="22">항구 2</text><text x="510" y="22">항구 3</text><text x="640" y="22">항구 4</text></g>
+          <text x="235" y="62" text-anchor="end">임시 하역 없이</text>
+          <rect x="252" y="44" width="386" height="26" rx="3" class="f-steel"/><text x="445" y="62" text-anchor="middle">구간 (1 → 4), 칸 3</text>
+          <text x="235" y="112" text-anchor="end">항구 2에서 임시 하역</text>
+          <rect x="252" y="94" width="126" height="26" rx="3" class="f-crane"/><text x="315" y="112" text-anchor="middle">구간 (1 → 2), 칸 2</text>
+          <rect x="382" y="124" width="256" height="26" rx="3" class="f-crane"/><text x="510" y="142" text-anchor="middle">구간 (2 → 4), 칸 5</text>
+          <text x="235" y="142" text-anchor="end" class="t-muted" font-size="12">(다시 실을 때 칸이 바뀌어도 됨)</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>같은 차 한 대의 두 가지 일생입니다. 막대 하나가 구간 하나이고, 막대의 양 끝에서 경로가 하나씩 생깁니다(왼쪽 끝에서 선적, 오른쪽 끝에서 하역). 위는 경로 2개, 아래는 경로 4개입니다. 칸 번호는 예로 붙인 것입니다.</figcaption>
+    </figure>
+    <p>발표자료 3쪽에는 이 규칙을 어기는 경로의 예로, 배 안의 한 칸에서 출발해 출입구가 아닌 다른 칸에서 멈추는 경로에 ✗ 표시를 한 그림이 실려 있습니다. 1장의 「위치변경 경로」가 바로 그것입니다.</p>
+  </section>
+
+  <section>
+    <h2>규칙 ②: 높이를 따라 한 방향으로만 움직인다</h2>
+    <p>모든 노드에 서로 다른 정수 <strong>높이</strong>를 매깁니다. 출입구가 0이고, 출입구에서 너비 우선 탐색(BFS)을 할 때 방문하는 순서대로 1, 2, 3, …을 붙입니다. 그리고 다음과 같이 정합니다.</p>
+    <ul class="plain">
+      <li>내릴 때는 높이가 <strong>작아지는</strong> 이웃으로만 이동합니다.</li>
+      <li>실을 때는 높이가 <strong>커지는</strong> 이웃으로만 이동합니다.</li>
+    </ul>
+    <p>물이 높은 곳에서 낮은 곳으로 흐르듯, 내리는 차는 출입구라는 가장 낮은 곳으로 흘러 내려갑니다. 코드에서는 높이를 <code>_position</code>, 발표자료 부록에서는 pos(i)라고 부릅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="3 곱하기 3 격자 그래프에 BFS 방문 순서로 높이 0부터 8까지를 매긴 그림. 각 간선에는 높이가 낮은 쪽을 가리키는 화살표가 있다">
+        <defs>
+          <marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="f-fg"/></marker>
+        </defs>
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.4" marker-end="url(#ah5)">
+            <line x1="120" y1="188" x2="120" y2="234"/><line x1="182" y1="250" x2="138" y2="250"/>
+            <line x1="120" y1="108" x2="120" y2="154"/><line x1="182" y1="170" x2="138" y2="170"/><line x1="200" y1="188" x2="200" y2="234"/>
+            <line x1="262" y1="250" x2="218" y2="250"/>
+            <line x1="182" y1="90" x2="138" y2="90"/><line x1="200" y1="108" x2="200" y2="154"/>
+            <line x1="262" y1="170" x2="218" y2="170"/><line x1="280" y1="188" x2="280" y2="234"/>
+            <line x1="262" y1="90" x2="218" y2="90"/><line x1="280" y1="108" x2="280" y2="154"/>
+          </g>
+          <circle cx="120" cy="250" r="17" class="f-crane"/><text x="120" y="255">0</text>
+          <circle cx="200" cy="250" r="17" class="f-bay"/><text x="200" y="255">2</text>
+          <circle cx="280" cy="250" r="17" class="f-bay"/><text x="280" y="255">5</text>
+          <circle cx="120" cy="170" r="17" class="f-bay"/><text x="120" y="175">1</text>
+          <circle cx="200" cy="170" r="17" class="f-bay"/><text x="200" y="175">4</text>
+          <circle cx="280" cy="170" r="17" class="f-bay"/><text x="280" y="175">7</text>
+          <circle cx="120" cy="90" r="17" class="f-bay"/><text x="120" y="95">3</text>
+          <circle cx="200" cy="90" r="17" class="f-bay"/><text x="200" y="95">6</text>
+          <circle cx="280" cy="90" r="17" class="f-bay"/><text x="280" y="95">8</text>
+          <text x="120" y="288" class="t-crane" font-size="12.5">출입구</text>
+          <text x="200" y="40" class="t-muted" font-size="13">숫자 = 높이 (BFS 방문 순번)</text>
+          <g font-size="13" text-anchor="start">
+            <text x="380" y="62" class="t-muted">노드 i의 「아래 이웃」 pred(i)</text>
+            <text x="380" y="90">1 → {0}</text><text x="520" y="90">2 → {0}</text>
+            <text x="380" y="116">3 → {1}</text><text x="520" y="116">4 → {1, 2}</text>
+            <text x="380" y="142">5 → {2}</text><text x="520" y="142">6 → {3, 4}</text>
+            <text x="380" y="168">7 → {4, 5}</text><text x="520" y="168">8 → {6, 7}</text>
+            <text x="380" y="206" class="t-muted" font-size="12.5">화살표는 내릴 때 갈 수 있는 방향입니다.</text>
+            <text x="380" y="226" class="t-muted" font-size="12.5">실을 때는 화살표를 거꾸로 따라갑니다.</text>
+            <text x="380" y="254" class="t-crane" font-size="12.5">8 → 7 → 4 → 6 → 3 → 1 → 0 은 금지:</text>
+            <text x="380" y="272" class="t-crane" font-size="12.5">4에서 6으로 갈 때 높이가 커집니다.</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>발표자료 3쪽의 두 번째 그림을 다시 그린 것입니다. 3 × 3 격자 모양의 배이고, 출입구에서 한 칸 거리인 두 노드에 1과 2, 두 칸 거리인 세 노드에 3, 4, 5, 세 칸 거리에 6과 7, 가장 먼 노드에 8이 붙었습니다. 높이가 정해지면 간선마다 방향이 하나씩 정해집니다. 그래프에 순환(예: 1-3-6-4-1)이 있어도, 화살표를 따라가면 높이가 계속 줄어들기 때문에 <strong>화살표만 따라서는 제자리로 돌아올 수 없습니다</strong>. 이 성질이 뒤에서 결정적으로 쓰입니다.</figcaption>
+    </figure>
+    <p>앞으로 자주 쓸 기호를 하나 정합니다. 노드 i와 간선으로 이어져 있으면서 높이가 i보다 낮은 노드들의 집합을 <strong>pred(i)</strong>라고 적고, 「아래 이웃」이라고 부르겠습니다(pred는 predecessor, 앞선 것이라는 뜻). 위 그림에서 노드 4의 이웃은 1, 2, 6, 7이고 그중 높이가 4보다 낮은 것은 1과 2이므로 pred(4) = {1, 2}입니다. 내리는 차는 한 걸음마다 지금 있는 노드의 아래 이웃 중 하나로 옮겨 갑니다.</p>
+    <p>BFS 순번을 높이로 쓰면 좋은 점이 있습니다. BFS는 가까운 노드부터 방문하므로, 높이가 낮을수록 출입구에 가깝습니다. 그리고 출입구가 아닌 모든 노드는 자기를 처음 발견해 준 노드(BFS의 부모)를 아래 이웃으로 가지므로 pred(i)가 비는 일이 없습니다. 차가 하나도 없는 배에서는 어느 칸에서든 화살표만 따라 출입구까지 갈 수 있고, 그중 BFS의 부모만 따라가는 길은 최단 경로입니다.</p>
+    <p>높이로 출입구까지의 거리를 그대로 쓰지 않고 굳이 <strong>서로 다른 번호</strong>를 붙이는 데에는 이유가 있습니다. 거리를 높이로 쓰면 거리가 같은 노드가 여럿 생깁니다. 거리가 같은 두 노드가 이웃일 때(뒤에서 볼 다섯 노드 고리에 그런 쌍이 있습니다) "높이가 같거나 낮은 이웃으로 갈 수 있다"고 하면 두 노드를 오가며 제자리를 맴돌 수 있게 되고, "높이가 더 낮은 이웃으로만 갈 수 있다"고 하면 그 간선은 어느 방향으로도 쓸 수 없게 됩니다. 번호를 모두 다르게 붙이면 그런 간선도 한쪽 방향으로는 쓸 수 있으면서, 맴도는 일은 여전히 없습니다.</p>
+    <p>한 가지 미리 밝혀 둡니다. 높이는 <strong>수식 안에서 "길이 있는가"를 판정하기 위한 장치</strong>입니다. 솔버가 답을 낸 뒤 실제로 출력하는 경로는, 그 항구에서 막히지 않은 칸들만으로 다시 계산한 최단 경로입니다(7장). 그 경로는 여기서 말하는 높이를 따르는 경로보다 길지 않으며, 순서의 논리("가까운 차부터 내린다")는 똑같이 적용됩니다.</p>
+  </section>
+
+  <div class="part">2부 · 규칙이 가져다주는 것</div>
+
+  <section>
+    <h2>한 항구에서 차는 세 종류다</h2>
+    <p>배가 어떤 항구에 닿았을 때, 그 항구의 작업과 관련해서 차와 칸을 다음과 같이 나눌 수 있습니다.</p>
+    <div class="obj">
+      <div><div class="f">머무는 차</div><p>이전 항구에서 실렸고 이후 항구에서 내릴 차. 이 항구에서는 <strong>움직이지 않습니다</strong>. 처음부터 끝까지 그 칸을 차지하고 있으므로 길을 막는 것은 이 차들뿐입니다.</p></div>
+      <div><div class="f">내리는 차</div><p>이 항구에서 구간이 끝나는 차. 도착 항구라서 내리는 차와 임시로 내리는 차를 구별하지 않습니다.</p></div>
+      <div><div class="f">싣는 차</div><p>이 항구에서 구간이 시작되는 차. 새로 싣는 차와 임시로 내렸다 다시 싣는 차를 구별하지 않습니다.</p></div>
+    </div>
+    <p>여기에 작업 순서를 하나 정합니다. <strong>내릴 차를 전부 내린 다음에, 실을 차를 싣는다.</strong> 그러면 하역이 끝난 시점의 배에는 머무는 차만 남아 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>순서가 저절로 정해진다</h2>
+    <p>머무는 차가 차지한 칸을 뺀 나머지 칸들만 놓고 보면, 순서는 고민할 것이 없습니다.</p>
+    <ul class="plain">
+      <li><strong>하역은 높이가 낮은 차부터.</strong> 어떤 차가 내려갈 길은 자기보다 낮은 칸들로만 이루어집니다. 그 칸들에 있던 내릴 차는 이미 먼저 내렸습니다. 머무는 차가 그 길에 없기만 하면 길은 비어 있습니다.</li>
+      <li><strong>선적은 높이가 높은 칸부터.</strong> 어떤 칸으로 들어가는 길은 그보다 낮은 칸들로만 이루어집니다. 그 칸들에 실을 차는 아직 싣지 않았습니다. 역시 머무는 차만 없으면 길은 비어 있습니다.</li>
+    </ul>
+    <p>1장의 일렬 배에서 "안쪽부터 싣고 바깥쪽부터 내린다"가 당연했던 것과 같은 논리입니다. 일렬 배는 높이가 곧 깊이인 특수한 경우이고, 높이는 그 "깊이"라는 개념을 임의의 그래프로 넓힌 것입니다.</p>
+    <p>따라서 어떤 배치가 실행 가능한지를 따질 때 물어야 할 것은 하나로 줄어듭니다.</p>
+    <div class="formula">이 항구에서 쓰려는 칸마다, 머무는 차를 피해서 출입구까지 내려가는 길이 있는가?</div>
+  </section>
+
+  <section>
+    <h2>「접근 가능」: 이웃만 보고 판정하기</h2>
+    <p>위 질문에 "예"인 칸을 그 항구에서 <strong>접근 가능(accessible)</strong>하다고 부릅니다. 길이 있는지를 따지려면 보통은 그래프 탐색을 해야 합니다. 그런데 MIP에는 탐색을 적을 수 없고 1차 부등식만 적을 수 있습니다. 높이가 여기서 일을 합니다. 접근 가능 여부를 <strong>바로 아래 이웃만 보는 규칙</strong>으로 바꿔 적을 수 있습니다.</p>
+    <div class="note">
+      <p><strong>접근 가능의 규칙.</strong> 어떤 항구에서,</p>
+      <p>(가) 출입구는 항상 접근 가능하다.</p>
+      <p>(나) 머무는 차가 있는 칸은 접근 가능하지 않다.</p>
+      <p>(다) 그 밖의 칸은, 아래 이웃 pred(i) 중에 접근 가능한 칸이 <strong>하나라도 있어야만</strong> 접근 가능할 수 있다.</p>
+    </div>
+    <p>이 규칙을 만족하도록 칸마다 "접근 가능" 딱지를 붙였다면, 딱지가 붙은 칸에서는 정말로 출입구까지 길이 있습니다. 딱지가 붙은 칸 i에서 출발해 봅시다. (다)에 의해 딱지가 붙은 아래 이웃이 있습니다. 그리로 갑니다. 거기서도 딱지 붙은 아래 이웃이 있습니다. 한 걸음마다 높이가 줄어들고 높이는 0 아래로 내려갈 수 없으니, 유한한 걸음 안에 높이 0인 출입구에 닿습니다. 지나온 칸은 모두 딱지가 붙어 있으므로 (나)에 의해 머무는 차가 없습니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="가지가 있는 배에서 노드 4, 5, 6에 머무는 차가 있을 때 노드 1, 2, 3은 접근 가능하고 노드 7은 비어 있지만 접근 가능하지 않다">
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <line x1="170" y1="262" x2="170" y2="212"/><line x1="170" y1="212" x2="170" y2="162"/>
+            <line x1="170" y1="162" x2="240" y2="162"/><line x1="170" y1="162" x2="170" y2="112"/>
+            <line x1="170" y1="112" x2="170" y2="62"/><line x1="170" y1="62" x2="100" y2="62"/><line x1="170" y1="62" x2="240" y2="62"/>
+          </g>
+          <circle cx="170" cy="262" r="17" class="f-ok"/><text x="170" y="267">0</text>
+          <circle cx="170" cy="212" r="17" class="f-ok"/><text x="170" y="217">1</text>
+          <circle cx="170" cy="162" r="17" class="f-ok"/><text x="170" y="167">2</text>
+          <circle cx="240" cy="162" r="17" class="f-ok"/><text x="240" y="167">3</text>
+          <circle cx="170" cy="112" r="17" class="f-crane"/><text x="170" y="117">4</text>
+          <circle cx="170" cy="62" r="17" class="f-crane"/><text x="170" y="67">5</text>
+          <circle cx="100" cy="62" r="17" class="f-crane"/><text x="100" y="67">6</text>
+          <circle cx="240" cy="62" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="240" y="67">7</text>
+          <g font-size="13" text-anchor="start">
+            <rect x="330" y="50" width="16" height="16" rx="3" class="f-crane"/><text x="356" y="63">머무는 차가 있는 칸 (4, 5, 6) — 접근 불가</text>
+            <rect x="330" y="82" width="16" height="16" rx="3" class="f-ok"/><text x="356" y="95">접근 가능한 칸 (0, 1, 2, 3)</text>
+            <rect x="330" y="114" width="16" height="16" rx="3" class="f-bay" stroke-dasharray="4 3"/><text x="356" y="127">비어 있지만 접근 불가인 칸 (7)</text>
+            <text x="330" y="168" class="t-muted" font-size="12.5">이 배는 번호가 곧 높이입니다.</text>
+            <text x="330" y="188" class="t-muted" font-size="12.5">pred(7) = {5}인데 5가 막혀 있으므로</text>
+            <text x="330" y="208" class="t-muted" font-size="12.5">7은 비어 있어도 이 항구에서는 쓸 수 없습니다.</text>
+            <text x="330" y="236" class="t-muted" font-size="12.5">이 항구에서 내리거나 실을 수 있는 칸은</text>
+            <text x="330" y="256" class="t-muted" font-size="12.5">1, 2, 3뿐입니다.</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>1장 그림 (가)의 배에서, 어떤 항구에 닿았을 때 노드 4, 5, 6에 다음 항구까지 가는 차가 서 있는 상황입니다. 노드 1, 2, 3에 있던 차는 여기서 내릴 수 있고, 비워진 1, 2, 3에 새 차를 실을 수 있습니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>높이가 없으면 왜 안 되는가: 서로 받쳐 주는 섬</h2>
+    <p>규칙 (다)에서 "아래 이웃" 대신 그냥 "이웃"이라고 하면 어떻게 될까요? 간단해 보이지만 틀린 규칙이 됩니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 290" role="img" aria-label="고리 모양 배 두 개. 왼쪽은 출입구 양옆 칸이 모두 막혀 안쪽 세 칸이 고립된 경우, 오른쪽은 한쪽만 막혀 돌아가는 길이 있는 경우">
+        <g font-size="14" text-anchor="middle">
+          <!-- 왼쪽 -->
+          <g class="s-line" stroke-width="1.5">
+            <polygon points="180,236 111,196 111,116 180,76 249,116 249,196"/>
+          </g>
+          <circle cx="180" cy="236" r="17" class="f-ok"/><text x="180" y="241">0</text>
+          <circle cx="111" cy="196" r="17" class="f-crane"/><text x="111" y="201">1</text>
+          <circle cx="111" cy="116" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="111" y="121">2</text>
+          <circle cx="180" cy="76" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="180" y="81">3</text>
+          <circle cx="249" cy="116" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="249" y="121">4</text>
+          <circle cx="249" cy="196" r="17" class="f-crane"/><text x="249" y="201">5</text>
+          <text x="180" y="30" font-size="13" class="t-muted">(가) 1과 5에 머무는 차</text>
+          <text x="180" y="276" font-size="12.5" class="t-muted">2, 3, 4는 실제로 고립되어 있다</text>
+          <!-- 오른쪽 -->
+          <g class="s-line" stroke-width="1.5">
+            <polygon points="540,236 471,196 471,116 540,76 609,116 609,196"/>
+          </g>
+          <circle cx="540" cy="236" r="17" class="f-ok"/><text x="540" y="241">0</text>
+          <circle cx="471" cy="196" r="17" class="f-crane"/><text x="471" y="201">1</text>
+          <circle cx="471" cy="116" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="471" y="121">2</text>
+          <circle cx="540" cy="76" r="17" class="f-ok"/><text x="540" y="81">3</text>
+          <circle cx="609" cy="116" r="17" class="f-ok"/><text x="609" y="121">4</text>
+          <circle cx="609" cy="196" r="17" class="f-ok"/><text x="609" y="201">5</text>
+          <text x="540" y="30" font-size="13" class="t-muted">(나) 1에만 머무는 차</text>
+          <text x="540" y="276" font-size="12.5" class="t-muted">2는 3-4-5로 돌아 나갈 수 있지만 모형은 불가로 본다</text>
+          <g font-size="12" class="t-muted">
+            <text x="360" y="100">높이</text>
+            <text x="360" y="120">노드 1 → 1</text><text x="360" y="138">노드 5 → 2</text><text x="360" y="156">노드 2 → 3</text><text x="360" y="174">노드 4 → 4</text><text x="360" y="192">노드 3 → 5</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>노드 여섯 개(출입구와 칸 다섯 개)가 고리로 이어진 배입니다. 원 안의 숫자는 노드 번호이고, 높이는 가운데에 따로 적었습니다. BFS는 출입구의 두 이웃(노드 1, 5)을 먼저, 그다음 노드 2와 4를, 마지막에 노드 3을 방문합니다. 아래 이웃은 pred(2) = {1}, pred(4) = {5}, pred(3) = {2, 4}입니다. 주황색은 머무는 차가 있는 칸, 녹색은 접근 가능한 노드, 점선은 비어 있지만 모형이 접근 불가로 보는 칸입니다.</figcaption>
+    </figure>
+    <p>(가)에서 2, 3, 4는 비어 있지만 출입구로 가는 길이 양쪽 다 막혀 있습니다. 그런데 "이웃 중 하나가 접근 가능하면 된다"는 규칙이라면, 2, 3, 4에 모두 딱지를 붙여도 규칙 위반이 아닙니다. 2는 3을 근거로, 3은 4를 근거로, 4는 3을 근거로 삼으면 됩니다. <strong>서로가 서로의 근거가 되는 순환 논리</strong>입니다. 솔버는 비용이 줄어든다면 이런 허점을 반드시 찾아내서, 고립된 섬에 차를 싣는 엉터리 해를 내놓습니다.</p>
+    <p>높이가 있으면 근거는 항상 더 낮은 칸에서만 올 수 있습니다. 2의 근거는 1뿐인데 1은 막혔고, 4의 근거는 5뿐인데 5도 막혔고, 3의 근거인 2와 4가 모두 불가이니 3도 불가입니다. 근거의 사슬이 반드시 출입구에서 끝나야 하므로 순환 논리가 끼어들 틈이 없습니다.</p>
+    <div class="note">
+      <p><strong>3장에서 본 부분 순환과 같은 종류의 문제입니다.</strong> TSP에서 "출발 도시와 떨어진 채 자기들끼리 도는 순환"이 이웃만 보는 식을 모두 통과했던 것과 같은 현상입니다. 전체가 하나로 이어져 있다는 조건은 이웃만 보는 식으로는 적기 어렵습니다. 3장에서 본 처방은 방문 순번을 나타내는 변수 u<sub>i</sub>를 추가하는 것(MTZ 제약)이었고, 변수가 늘고 big-M이 들어갔습니다. tryAgain은 <strong>순번을 변수로 두지 않고 BFS로 미리 고정</strong>했습니다. 그래서 추가 변수도 big-M도 없이 연결성을 적을 수 있었습니다. 대가는 다음 절입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>규칙 때문에 잃는 것</h2>
+    <p>규칙은 공짜가 아닙니다. 원래 문제에서는 유효한데 이 모형에서는 쓸 수 없는 해가 생깁니다.</p>
+    <ul class="plain">
+      <li><strong>위치변경을 쓰는 해 (규칙 ①).</strong> 1장의 배 (가)에서 노드 2의 차를 옆 칸 3으로 잠깐 비키는 것은 경로 하나(비용 F + 1)로 끝납니다. 이 모형은 같은 일을 임시 하역(F + 2)과 재적재(F + 1 이상), 경로 둘로만 할 수 있습니다. 빈칸이 있는 문제에서는 이 차이가 손해로 쌓입니다.</li>
+      <li><strong>높이를 거슬러 돌아가는 길 (규칙 ②).</strong> 위 그림 (나)에서 노드 2의 차는 노드 3, 4, 5를 거쳐 출입구로 돌아 나갈 수 있습니다. 하지만 노드 2에서 노드 3으로 가는 첫걸음이 높이 3에서 높이 5로 올라가는 이동이라 금지입니다. 2장의 그림 (나)와 같은 상황입니다. 모형은 2를 접근 불가로 판정하고, 그 항구에서 2를 쓰는 해를 버립니다.</li>
+    </ul>
+    <p>발표자료는 이 손해를 이렇게 평가합니다. "추가 제약으로 인한 해 품질 저하는 크지 않은데, 해 탐색 성능은 크게 증가한다. 특히 내부 이동이 필요 없는 인스턴스의 경우, 원 문제의 최적 목적함수 값에 매우 근접한 해를 빠르게 얻을 수 있다." 실제 성적이 이 판단을 뒷받침하는지는 9장에서 봅니다.</p>
+    <p>발표자료 6쪽에는 아직 쓰지 않은 여지도 적혀 있습니다. "항구별로 노드의 높이를 설정할 수 있다." 높이를 모든 항구에서 같게 둘 필요가 없다는 뜻입니다. 제출된 코드의 모형은 높이 한 벌을 모든 항구에 씁니다.</p>
+  </section>
+
+  <section>
+    <h2>항상 가능해가 있다</h2>
+    <p>규칙을 더했는데 혹시 가능해가 하나도 없는 문제가 생기지는 않을까요? 그렇지 않습니다. 다음 해는 언제나 규칙 두 개를 지킵니다.</p>
+    <div class="formula">항구마다, 배에 있는 차를 전부 내리고, 계속 갈 차와 새 차를 전부 다시 싣는다.</div>
+    <p>모든 항구에서 머무는 차가 하나도 없으니 모든 칸이 접근 가능합니다. 구간으로 말하면, 모든 차의 여정을 중간 항구마다 전부 쪼개서 구간이 항상 "이번 항구에서 다음 항구까지"가 되게 하는 것입니다. 필요한 전제는 어느 시점에도 배에 타야 할 차의 수가 칸 수를 넘지 않는다는 것뿐이고, 문제는 그렇게 생성됩니다(1장). 비용은 끔찍하지만 유효합니다. 발표자료 6쪽은 이 점을 모형의 "강건성"으로 꼽습니다. 1장에서 봤듯이 무효해는 벌점이므로, 모형이 어떤 입력에도 불능이 되지 않는다는 보장은 대회에서 의미가 큽니다. (모형에 가능해가 <em>있다</em>는 것과 솔버가 제한 시간 안에 그것을 <em>찾는다</em>는 것은 다른 이야기입니다. 8장에서 다시 봅니다.)</p>
+  </section>
+
+  <div class="part">3부 · 코드</div>
+
+  <section>
+    <h2>노드 하나가 들고 있는 것</h2>
+    <p><span class="mono">Graph.hpp</span>의 <code>Node</code> 클래스가 노드 하나의 정보입니다.</p>
+<pre>class Node
+{
+public:
+    bool _accessible;            <span class="c">// BFS가 이 노드를 지나가도 되는가 (처음에는 모두 true)</span>
+    NodeId _position;            <span class="c">// 높이 = BFS 방문 순번</span>
+    NodeId _pred;                <span class="c">// BFS에서 이 노드를 처음 발견한 노드 (부모)</span>
+    Distance _dist;              <span class="c">// 출입구에서의 거리 (간선 수)</span>
+    vector&lt;NodeId&gt; _neighborVec; <span class="c">// 이웃 노드 목록</span>
+};</pre>
+    <p><code>NodeId</code>와 <code>Distance</code>는 <code>int</code>에 붙인 다른 이름이고, 처음에 넣어 두는 값 <code>INF</code>는 <code>int</code>의 최댓값(약 21억)으로 "아직 정해지지 않음"을 뜻합니다(<span class="mono">Base.hpp</span>). <code>_pred</code>는 노드 하나(BFS 트리의 부모)이고, 위에서 말한 집합 pred(i)와는 다릅니다. 집합 pred(i)는 모형을 적을 때 이웃 목록에서 높이를 비교해 그때그때 만듭니다.</p>
+  </section>
+
+  <section>
+    <h2>getBFSOrientation: 높이 매기기</h2>
+    <p><span class="mono">function.cpp</span> 7~41줄입니다. 이름의 orientation은 "간선에 방향을 준다"는 뜻입니다.</p>
+<pre>void getBFSOrientation(vector&lt;Node&gt;&amp; nodeVec, vector&lt;NodeId&gt;&amp; positionVec)
+{
+    positionVec.clear();
+    for (Node&amp; node : nodeVec) { node._pred = INF; node._position = INF; node._dist = INF; }
+
+    vector&lt;NodeId&gt; search(1, 0);          <span class="c">// 현재 층. 출입구 하나로 시작</span>
+    NodeId position = 0;
+    nodeVec[0]._dist = 0;
+    nodeVec[0]._pred = -1;
+    while (!search.empty())
+    {
+        vector&lt;NodeId&gt; nextSearch;        <span class="c">// 다음 층</span>
+        for (NodeId id : search)
+        {
+            positionVec.push_back(id);            <span class="c">// 방문 순서대로 노드 번호를 기록</span>
+            nodeVec[id]._position = position++;   <span class="c">// 높이 부여</span>
+            for (NodeId nbr : nodeVec[id]._neighborVec)
+            {
+                <span class="c">// 지나가도 되고, 아직 발견 안 된 이웃이면</span>
+                if (nodeVec[nbr]._accessible &amp;&amp; nodeVec[nbr]._pred == INF)
+                {
+                    nodeVec[nbr]._pred = id;
+                    nodeVec[nbr]._dist = nodeVec[id]._dist + 1;
+                    nextSearch.push_back(nbr);
+                }
+            }
+        }
+        search.swap(nextSearch);
+    }
+}</pre>
+    <ul class="plain">
+      <li>큐 대신 "현재 층"과 "다음 층" 두 벡터를 번갈아 쓰는 층별 BFS입니다. 결과는 보통의 BFS와 같습니다.</li>
+      <li><code>positionVec</code>은 높이 → 노드 번호의 표입니다(<code>positionVec[3]</code>은 높이가 3인 노드). <code>_position</code>은 그 반대 방향입니다.</li>
+      <li>같은 층 안에서의 순서는 이웃 목록의 순서, 곧 입력 <code>E</code>에 간선이 적힌 순서로 정해집니다. 다른 순서여도 모형은 성립하지만 높이가 달라지므로 결과 해는 달라질 수 있습니다.</li>
+      <li><code>_accessible</code>이 false인 노드는 건너뜁니다. 모형을 만들 때는 모든 노드가 true라서 그래프 전체를 훑습니다. 이 함수는 7장의 해 복원에서 "머무는 차가 있는 칸을 false로 두고" 다시 불립니다. 같은 함수가 두 가지 용도로 쓰입니다.</li>
+    </ul>
+    <p>대회 문제의 노드 번호는 출입구에서 가까운 순으로 미리 정렬되어 있다고 합니다(대회 사이트 「문제 생성 방법」: "gate 기준 최단거리로 정렬해 노드 ID를 부여"). 그렇다고 높이가 노드 번호와 같지는 않습니다. 거리가 같은 노드끼리의 순서가 다르기 때문입니다. 공개된 연습 문제 20개(6장에 목록이 있습니다)에 이 BFS를 직접 돌려 보니, 높이와 노드 번호가 일치하는 노드는 문제에 따라 전체의 15%에서 72%였습니다. 코드는 노드 번호의 순서에 기대지 않고 BFS를 직접 돕니다.</p>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>위 3×3 격자에서 노드 6에 있는 차를 내릴 때 허용되는 경로를 모두 적어 보세요.</summary>
+      <p>pred(6) = {3, 4}, pred(3) = {1}, pred(4) = {1, 2}이므로 6→3→1→0, 6→4→1→0, 6→4→2→0 세 가지입니다. 모두 길이 3으로 최단 경로입니다.</p>
+    </details>
+    <details>
+      <summary>같은 격자에서 어떤 항구에 노드 1과 노드 4에 머무는 차가 있습니다. 접근 가능한 칸은 어디인가요?</summary>
+      <p>출입구 0과 칸 2, 5, 7, 8입니다. 2는 0을 근거로, 5는 2를, 7은 5를, 8은 7을 근거로 삼습니다. 3은 pred(3) = {1}이 막혀서 불가, 6은 pred(6) = {3, 4}가 모두 불가라서 불가입니다. 실제로는 6에서 8→7→5→2→0으로 돌아 나갈 수 있지만, 6에서 8로 가는 것은 높이를 거스르므로 모형은 허용하지 않습니다.</p>
+    </details>
+    <details>
+      <summary>임시 하역 한 번은 구간으로 보면 무엇인가요?</summary>
+      <p>긴 구간 하나(p에서 r까지)를 짧은 구간 둘(p에서 q까지, q에서 r까지)로 쪼개는 것입니다. 쪼개진 두 구간은 서로 다른 칸을 쓸 수 있습니다.</p>
+    </details>
+    <details>
+      <summary>"머무는 차"만 길을 막는다고 했습니다. 그 항구에서 내릴 차가 다른 내릴 차의 길 위에 있으면 어떻게 되나요?</summary>
+      <p>문제없습니다. 높이가 낮은 차부터 내리기 때문에, 뒤차가 움직일 때 그 길 위의 내릴 차는 이미 내려가고 없습니다.</p>
+    </details>
+    <details>
+      <summary>규칙 (다)는 "아래 이웃 중 하나가 접근 가능하면 반드시 접근 가능하다"는 뜻인가요?</summary>
+      <p>아닙니다. "접근 가능하려면 아래 이웃 중 하나는 접근 가능해야 한다"는 한 방향 조건입니다. 쓰지 않을 칸에는 딱지를 안 붙여도 됩니다. 3장에서 본 <code>y ≤ x<sub>1</sub> + x<sub>2</sub></code> 꼴의 한 방향 함의입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">한국어</span><span class="mono">tryAgain_발표자료.pdf</span> 3쪽(추가 제약 그림), 6쪽(모형의 장점), 12쪽(pos, pred의 정의).</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://www.youtube.com/watch?v=j6qsY3gzDLY">tryAgain 발표 동영상 (유튜브)</a> — 대회 사이트 「최종 순위 및 발표자료」에 걸린 영상.</li>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://scipbook.readthedocs.io/en/latest/">Kubo 외, <em>Mathematical Optimization: Solving Problems using SCIP and Python</em></a> — 경로 문제 장에서 부분 순환 제거를 여러 방식(MTZ, 흐름, 절단)으로 적어 비교합니다. 이 장의 "서로 받쳐 주는 섬" 문제를 TSP 쪽에서 보는 자료입니다.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch4">← 이전: 4장 MIP 기초 ②</a><a href="#ch6">다음: 6장 정식화 한 줄씩 →</a></div>
+</article>

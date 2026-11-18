@@ -1,0 +1,339 @@
+<article class="chapter" id="ch10">
+  <header>
+    <div class="kicker">10 / 12</div>
+    <h1>정식화의 강도와 절단평면: 정수해는 그대로 두고 LP 영역을 좁힌다</h1>
+  </header>
+
+  <section>
+    <p class="lead">9장에서 분지한계법의 가지치기가 잘 듣느냐는 두 가지에 달려 있다고 했습니다. 좋은 가능해를 빨리 찾는 것(상한), 그리고 LP 완화가 빡빡한 것(하한)입니다. 이 장은 뒤쪽, 곧 "LP 완화가 빡빡하다"는 말을 정확한 수학으로 바꿉니다.</p>
+    <p>핵심 그림은 하나입니다. 같은 정수해들을 감싸는 다면체는 여러 가지가 있고, 그중 정수해에 가장 바짝 붙은 것이 <strong>볼록 껍질</strong>입니다(2장). 정식화가 볼록 껍질에 가까울수록 LP 완화의 값이 정수 최적값에 가깝습니다. 정식화를 처음부터 잘 적어서 가까이 가는 길(1부, 2부)과, 풀면서 부등식을 덧붙여 깎아 들어가는 길(3부)이 있습니다.</p>
+    <p>CVRPTW로 말하면, 같은 해 집합을 "3첨자 정식화"로 적느냐 "경로 하나가 변수 하나"인 정식화(11장)로 적느냐에 따라 LP 하한이 크게 다른 이유가 이 장의 내용입니다.</p>
+  </section>
+
+  <div class="part">1부 · 강도를 재는 말</div>
+
+  <section>
+    <h2>같은 정수해, 다른 LP 영역</h2>
+    <p>8장에서 본 것처럼 같은 조건을 식으로 적는 방법은 여러 가지입니다. 정수 조건까지 붙이면 어느 식이든 허용하는 해는 같습니다. 그런데 정수 조건을 지운 LP 완화는 식마다 다릅니다. 메타휴리스틱에 비유하면, 해 공간은 같은데 "해가 아닌 점"을 얼마나 많이 끼워 주느냐가 다른 것입니다. LP 완화는 그 끼워 준 점들 중에서 가장 싼 것을 찾으므로, 끼워 준 점이 많을수록 하한이 실제 값보다 낮게 나옵니다.</p>
+
+    <div class="defn"><b>정의 10.1</b> (정식화) 정수해의 집합 X ⊆ ℤ<sup>n</sup>이 있을 때, 다면체 P ⊆ ℝ<sup>n</sup>가 <strong>X의 정식화(formulation)</strong>라는 것은 X = P ∩ ℤ<sup>n</sup>, 곧 P 안의 정수점이 정확히 X라는 뜻입니다. MIP에서는 정수여야 하는 변수에 대해서만 이 조건을 봅니다.</div>
+    <p>P는 제약식 Ax ≥ b(와 x ≥ 0)를 모두 만족하는 점의 집합이고, 그 위에서 목적함수를 최소화한 것이 LP 완화입니다. 그 최솟값을 z<sub>LP</sub>(P)로, 정수계획 자체의 최적값(X 위의 최솟값)을 z<sub>IP</sub>로 적겠습니다.</p>
+
+    <div class="defn"><b>정의 10.2</b> (더 강한 정식화) 같은 X의 두 정식화 P<sub>1</sub>, P<sub>2</sub>가 P<sub>1</sub> ⊆ P<sub>2</sub>를 만족하면 P<sub>1</sub>이 P<sub>2</sub>보다 <strong>강하다(tighter, stronger)</strong>고 합니다. P<sub>1</sub> ⊊ P<sub>2</sub>이면 "진짜로 더 강하다"고 합니다.</div>
+
+    <div class="thm"><b>정리 10.3</b> P<sub>1</sub> ⊆ P<sub>2</sub>이면 어떤 목적함수에 대해서도 z<sub>LP</sub>(P<sub>2</sub>) ≤ z<sub>LP</sub>(P<sub>1</sub>) ≤ z<sub>IP</sub>입니다. 곧 강한 정식화의 LP 하한이 더 좋거나 같습니다.</div>
+    <div class="proof"><p>P<sub>1</sub>의 점은 모두 P<sub>2</sub>의 점이므로, P<sub>2</sub>에서 찾은 최솟값은 P<sub>1</sub>에서 찾은 최솟값보다 클 수 없습니다. 또 X ⊆ P<sub>1</sub>이므로 같은 이유로 z<sub>LP</sub>(P<sub>1</sub>) ≤ z<sub>IP</sub>입니다. 9장의 "완화는 하한을 준다"를 두 번 쓴 것입니다.</p></div>
+
+    <p>두 정식화가 서로 포함 관계가 아니면 목적함수에 따라 어느 쪽 하한이 좋은지가 바뀝니다. 그래서 "강하다"는 말은 포함 관계로 정의합니다.</p>
+    <p>변수가 서로 다른 두 정식화(예: 8장의 CVRPTW 3첨자 정식화와 11장의 경로 변수 정식화)는 포함 관계를 바로 따질 수 없습니다. 이때는 한쪽의 영역을 다른 쪽 변수로 옮겨 놓은 그림자(투영, projection)끼리 비교하거나, 실용적으로는 같은 문제에서 두 LP 완화의 하한 z<sub>LP</sub>를 비교합니다. 이 교재에서 변수 공간이 다른 정식화를 "더 강하다"고 할 때는 이 뜻입니다.</p>
+  </section>
+
+  <section>
+    <h2>가장 강한 정식화: 볼록 껍질</h2>
+    <p>X의 정식화는 모두 X를 품은 볼록 집합이므로, 2장에서 정의한 볼록 껍질 conv(X)(X를 품는 가장 작은 볼록 집합)를 반드시 품습니다. 그리고 conv(X) 자신도 X의 정식화입니다. X ⊆ conv(X) ⊆ P이므로 conv(X) 안의 정수점은 P 안의 정수점, 곧 X의 점뿐이기 때문입니다. 그러니 conv(X)보다 강한 정식화는 없습니다.</p>
+    <div class="defn"><b>정의 10.4</b> (이상적 정식화) P = conv(X)인 정식화를 <strong>이상적(ideal) 정식화</strong> 또는 완전한(perfect) 정식화라고 합니다.</div>
+    <div class="thm"><b>정리 10.5</b> X가 유한하거나, X가 "유한개의 정수점에, 정해진 몇 가지 방향으로 얼마든지 더 간 점들"의 꼴이어서 conv(X)가 다면체일 때(트럭 예가 그렇습니다. 정수해는 (0, 6), (3, 1), (4, 0) 같은 점들에서 오른쪽이나 위로 얼마든지 더 간 점들입니다), 이상적 정식화의 꼭짓점은 모두 X에 속합니다. 따라서 LP 완화의 최적 꼭짓점이 곧 정수 최적해이고, z<sub>LP</sub> = z<sub>IP</sub>입니다.</div>
+    <div class="proof"><p>conv(X)의 점은 모두 X의 점들의 볼록 조합입니다(X가 유한하지 않은 경우에는 거기에 위의 방향으로 더 간 것). 꼭짓점은 다른 점들의 볼록 조합으로 쓸 수 없는 점이므로(2장의 극점의 정의), 볼록 조합의 재료인 X의 점 자신이어야 합니다. 방향 d ≠ 0으로 더 간 점 v + d는 v와 v + 2d의 가운데이므로 꼭짓점이 될 수 없습니다. LP 완화에 최적해가 있고(최소화가 아래로 막혀 있고) 영역에 꼭짓점이 있으면(x ≥ 0이 있으면 그렇습니다) 4장의 정리 4.8대로 최적값은 꼭짓점에서 얻어지므로, 그 꼭짓점이 정수해입니다. (정리 4.8은 표준형에 대한 것이지만, 여유 변수를 붙여 표준형으로 바꿔도 꼭짓점끼리 일대일로 대응하므로 그대로 쓸 수 있습니다.)</p></div>
+    <p>이상적 정식화가 있으면 정수계획이 LP 한 번으로 끝납니다. 하지만 일반적으로 conv(X)를 적으려면 부등식이 엄청나게 많이 필요하고, 그것을 찾는 일 자체가 원래 문제만큼 어렵습니다. 그래서 실전의 목표는 "conv(X)에 가능한 한 가까이"입니다.</p>
+  </section>
+
+  <section>
+    <h2>손계산: 트럭 예의 볼록 껍질</h2>
+    <p>트럭 예(최소화 10x + 7y, 9x + 5y ≥ 30, x, y ≥ 0 정수)로 확인합니다. 정수 가능해는 (0, 6), (1, 5), (2, 3), (3, 1), (4, 0)과 그보다 오른쪽 위에 있는 점들입니다. 이 점들의 볼록 껍질은 "아래쪽 가장자리"만 보면 됩니다(위나 오른쪽으로는 끝없이 열려 있습니다).</p>
+    <p>왼쪽에서 오른쪽으로 가장자리 후보를 이어 보면, (1, 5)는 (0, 6)과 (3, 1)을 잇는 선분 y = 6 − (5/3)x보다 위에 있습니다(x = 1에서 선분은 4.33). (2, 3)도 마찬가지입니다(x = 2에서 선분은 2.67). 그래서 꼭짓점은 (0, 6), (3, 1), (4, 0) 세 개뿐이고, 볼록 껍질은 다음 네 부등식으로 적힙니다.</p>
+    <div class="eq">
+      <div class="row"><span>5x + 3y ≥ 18</span><span class="all">(0, 6)과 (3, 1)을 지나는 변</span></div>
+      <div class="row"><span>x + y ≥ 4</span><span class="all">(3, 1)과 (4, 0)을 지나는 변</span></div>
+      <div class="row"><span>x ≥ 0,&nbsp; y ≥ 0</span><span class="all"></span></div>
+    </div>
+    <p>원래의 9x + 5y ≥ 30은 이 목록에 없습니다. 볼록 껍질 위에서 10x + 7y를 최소화하면 꼭짓점 세 개의 값 42, 37, 40 중 가장 작은 37, 곧 정수 최적값이 LP 한 번으로 나옵니다. 원래 정식화의 LP 하한 33.33과 비교하면 차이 3.67이 "정식화가 볼록 껍질에서 떨어져 있는 정도"입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 560 320" role="img" aria-label="트럭 예. 연한 영역은 LP 완화의 가능 영역 9x+5y≥30, 진한 영역은 정수해의 볼록 껍질. 볼록 껍질의 꼭짓점은 (0,6), (3,1), (4,0). LP 최적점은 (3.33, 0), 정수 최적점은 (3,1)">
+        <polygon class="f-steel" stroke="none" opacity=".35" points="60,86 293.3,290 522,290 522,32 60,32"/>
+        <polygon class="f-hull" stroke="none" opacity=".75" points="60,86 270,256 340,290 522,290 522,32 60,32"/>
+        <g class="s-line" stroke-width="1.2"><line x1="60" y1="290" x2="525" y2="290"/><line x1="60" y1="290" x2="60" y2="28"/></g>
+        <line class="s-steel" stroke-width="1.6" x1="60" y1="86" x2="293.3" y2="290"/>
+        <polyline class="s-ok" stroke-width="2.2" points="60,86 270,256 340,290"/>
+        <line class="s-crane" stroke-width="1.3" stroke-dasharray="5 4" x1="60" y1="154" x2="340" y2="290"/>
+        <g class="f-fg"><circle cx="60" cy="86" r="3.2"/> <circle cx="60" cy="52" r="3.2"/> <circle cx="130" cy="120" r="3.2"/> <circle cx="130" cy="86" r="3.2"/> <circle cx="130" cy="52" r="3.2"/> <circle cx="200" cy="188" r="3.2"/> <circle cx="200" cy="154" r="3.2"/> <circle cx="200" cy="120" r="3.2"/> <circle cx="200" cy="86" r="3.2"/> <circle cx="200" cy="52" r="3.2"/> <circle cx="270" cy="256" r="3.2"/> <circle cx="270" cy="222" r="3.2"/> <circle cx="270" cy="188" r="3.2"/> <circle cx="270" cy="154" r="3.2"/> <circle cx="270" cy="120" r="3.2"/> <circle cx="270" cy="86" r="3.2"/> <circle cx="270" cy="52" r="3.2"/> <circle cx="340" cy="290" r="3.2"/> <circle cx="340" cy="256" r="3.2"/> <circle cx="340" cy="222" r="3.2"/> <circle cx="340" cy="188" r="3.2"/> <circle cx="340" cy="154" r="3.2"/> <circle cx="340" cy="120" r="3.2"/> <circle cx="340" cy="86" r="3.2"/> <circle cx="340" cy="52" r="3.2"/> <circle cx="410" cy="290" r="3.2"/> <circle cx="410" cy="256" r="3.2"/> <circle cx="410" cy="222" r="3.2"/> <circle cx="410" cy="188" r="3.2"/> <circle cx="410" cy="154" r="3.2"/> <circle cx="410" cy="120" r="3.2"/> <circle cx="410" cy="86" r="3.2"/> <circle cx="410" cy="52" r="3.2"/> <circle cx="480" cy="290" r="3.2"/> <circle cx="480" cy="256" r="3.2"/> <circle cx="480" cy="222" r="3.2"/> <circle cx="480" cy="188" r="3.2"/> <circle cx="480" cy="154" r="3.2"/> <circle cx="480" cy="120" r="3.2"/> <circle cx="480" cy="86" r="3.2"/> <circle cx="480" cy="52" r="3.2"/></g>
+        <circle cx="293.3" cy="290" r="6" class="f-crane"/>
+        <circle cx="270" cy="256" r="7" fill="none" class="s-ok" stroke-width="2"/>
+        <g font-size="12" text-anchor="middle" class="t-muted"><text x="60" y="308">0</text><text x="130" y="308">1</text><text x="200" y="308">2</text><text x="270" y="308">3</text><text x="340" y="308">4</text><text x="410" y="308">5</text><text x="480" y="308">6</text><text x="46" y="260">1</text><text x="46" y="226">2</text><text x="46" y="192">3</text><text x="46" y="158">4</text><text x="46" y="124">5</text><text x="46" y="90">6</text><text x="46" y="56">7</text></g>
+        <g font-size="12.5"><text x="262" y="284" text-anchor="end">LP 최적 (3.33, 0)</text><text x="284" y="247">정수 최적 (3, 1)</text><text x="142" y="140">9x + 5y = 30</text><text x="72" y="206" class="t-crane">x + y = 4</text></g>
+        <text x="535" y="294" font-size="12">x</text><text x="56" y="22" font-size="12">y</text>
+      </svg>
+      </div>
+      <figcaption>연한 파란 영역(진한 영역 포함)이 원래 정식화의 LP 영역, 진한 녹색 영역이 정수해의 볼록 껍질입니다. 녹색 꺾은선이 볼록 껍질의 아래 가장자리이고, 주황 점선 x + y = 4는 3부에서 손으로 유도할 절단평면입니다. 이 선은 볼록 껍질의 한 변을 그대로 따라갑니다. 두 영역의 차이(연한 쐐기 모양)에 LP 최적점 (3.33, 0)이 들어 있습니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>창고 예를 이 말로 다시 보기</h2>
+    <p>가이드 4장의 창고 예입니다. 창고를 여는 이진변수 y(고정비 100), 고객 j를 이 창고에서 받는 이진변수 x<sub>j</sub>(j = 1, …, 10)가 있고, "창고를 열어야 받을 수 있다"를 두 가지로 적었습니다.</p>
+    <div class="eq">
+      <div class="row"><span>P<sub>강</sub>:&nbsp; x<sub>j</sub> ≤ y</span><span class="all">∀ j (10줄), 0 ≤ x, y ≤ 1</span></div>
+      <div class="row"><span>P<sub>약</sub>:&nbsp; x<sub>1</sub> + … + x<sub>10</sub> ≤ 10y</span><span class="all">(1줄), 0 ≤ x, y ≤ 1</span></div>
+    </div>
+    <p>P<sub>강</sub>의 열 줄을 모두 더하면 P<sub>약</sub>의 한 줄이 나오므로 P<sub>강</sub> ⊆ P<sub>약</sub>입니다. 점 (x<sub>1</sub> = 1, 나머지 x = 0, y = 0.1)은 P<sub>약</sub>에는 있지만 P<sub>강</sub>에는 없으므로(1 ≤ 0.1이 거짓) 진짜로 더 강합니다. "고객 1은 반드시 받아야 한다"(x<sub>1</sub> = 1)를 붙이고 창고 비용 100y를 최소화하면 LP 값은 P<sub>강</sub>에서 100, P<sub>약</sub>에서 10입니다. 정수 최적값은 100이므로 P<sub>강</sub>은 이 경우 gap이 없습니다.</p>
+    <p>사실 P<sub>강</sub>은 이 작은 집합의 이상적 정식화입니다. 각 줄 x<sub>j</sub> − y ≤ 0의 계수가 +1 하나와 −1 하나뿐이라서, 2부에서 볼 "완전 단모듈" 조건을 만족하기 때문입니다.</p>
+  </section>
+
+  <section>
+    <h2>다시 적는 tryAgain 모형</h2>
+    <p>이 장은 tryAgain 모형을 예로 여러 번 씁니다. 변수와 제약의 뜻은 8장 6부 「tryAgain 모형 적어 두기」에서 설명했고, 여기서는 찾아보기 쉽게 식만 다시 옮깁니다. 배는 노드 0(출입구)과 칸 1, …, N−1로 된 그래프이고, 배는 항구 0, 1, …, P−1을 차례로 들릅니다(이 장에서는 다면체도 P라고 쓰므로, 헷갈릴 만한 곳에서는 항구 수를 "항구 5개"처럼 풀어 씁니다). p &lt; q &lt; r은 항구, i, j는 노드, d<sub>pq</sub>는 p에서 실어 q에서 내릴 차의 수, F는 경로 하나의 고정비, dist(i)는 출입구에서 칸 i까지의 최단 거리, pred(i)는 칸 i의 아래 이웃(3장 정의 3.9)입니다.</p>
+    <ul class="plain">
+      <li>x<sub>pqi</sub> ∈ {0, 1}: 항구 p에서 칸 i에 실려 항구 q에서 내려지는 구간이 있으면 1. (이 장에서는 첨자 사이에 쉼표를 넣어 x<sub>02,1</sub>처럼 쓰기도 합니다: p = 0, q = 2, 칸 1.)</li>
+      <li>y<sub>pi</sub> ∈ {0, 1}: 중간 항구 p(1, …, P−2)에서 노드 i가 접근 가능(출입구까지 높이를 따라 내려가는 빈 길이 있음)하면 1.</li>
+      <li>z<sub>pqr</sub> ≥ 0 정수: p에서 r까지 가는 구간 중 중간 항구 q에서 임시로 내렸다 다시 실어 둘로 쪼갠 대수.</li>
+    </ul>
+    <div class="eq">
+      <div class="row"><span>최소화 Σ<sub>p&lt;q</sub> Σ<sub>i</sub> 2(F + dist(i)) x<sub>pqi</sub></span><span class="tag">목적</span></div>
+      <div class="row"><span>Σ<sub>i</sub> x<sub>pqi</sub> = d<sub>pq</sub> − Σ<sub>p&lt;r&lt;q</sub> z<sub>prq</sub> + Σ<sub>r&gt;q</sub> z<sub>pqr</sub> + Σ<sub>r&lt;p</sub> z<sub>rpq</sub></span><span class="tag">① 수요</span></div>
+      <div class="row"><span>Σ<sub>p&lt;q</sub> Σ<sub>r&gt;q</sub> x<sub>pri</sub> ≤ 1 − y<sub>qi</sub></span><span class="tag">② 머무는 차 있으면 접근 불가</span></div>
+      <div class="row"><span>Σ<sub>p&lt;q</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub></span><span class="tag">③ 내리려면 접근 가능</span></div>
+      <div class="row"><span>Σ<sub>q&gt;p</sub> x<sub>pqi</sub> ≤ y<sub>pi</sub></span><span class="tag">④ 실으려면 접근 가능</span></div>
+      <div class="row"><span>y<sub>pi</sub> ≤ Σ<sub>j∈pred(i)</sub> y<sub>pj</sub>,&nbsp;&nbsp; y<sub>p0</sub> = 1</span><span class="tag">⑤⑥ 접근 가능성의 전파</span></div>
+    </div>
+    <p>②~⑤는 중간 항구(1, …, P−2)와 칸마다 한 줄씩 있습니다(첫 항구에서는 배가 비어 있고 마지막 항구에서는 모두 내리므로 머무는 차가 없어, 두 끝 항구에는 이 제약이 필요 없습니다). "머무는 차"는 항구 q보다 전에 실려 q보다 뒤에 내리는 차로, ②의 왼쪽이 칸 i에서 그 수를 셉니다.</p>
+  </section>
+
+  <section>
+    <h2>모은 식은 약한가, 강한가: 가이드 4장과 6장의 겉보기 모순</h2>
+    <p>가이드를 읽으면서 막혔을 수 있는 곳입니다. 가이드 4장은 여러 x를 한 줄에 모은 Σx<sub>j</sub> ≤ 10y가 약하다고 했는데, 가이드 6장은 tryAgain의 제약 ③ Σ<sub>p</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub>처럼 모은 식이 "x 각각 ≤ y로 풀어 적는 것보다 오히려 강하다"고 합니다. 둘 다 맞습니다. 차이는 <strong>모은 x들이 동시에 1이 될 수 있느냐</strong>입니다.</p>
+    <ul class="plain">
+      <li>창고: 고객 열 명을 동시에 받을 수 있습니다. 그래서 모은 식의 y 앞 계수가 10(= 동시에 1이 될 수 있는 x의 최대 개수)이어야 하고, 이것이 big-M입니다. y가 0.1만 되어도 x 하나를 1로 만들 수 있습니다.</li>
+      <li>tryAgain의 ③: 한 항구에서 한 칸으로부터 내리는 차는 많아야 한 대입니다. 모은 x들은 서로 배타적이고, y 앞 계수는 1입니다. big-M이 없습니다. 배타적인 이유는 이렇습니다. 같은 항구 q에서 내리는 두 구간 (p<sub>1</sub>, q), (p<sub>2</sub>, q)(p<sub>1</sub> &lt; p<sub>2</sub>)가 한 칸 i에 함께 있다고 합시다. 항구 p<sub>2</sub>에서 앞 구간의 차는 머무는 차이므로 ②가 y<sub>p<sub>2</sub>i</sub> = 0을 강제하는데, 뒤 구간의 차를 그 항구에서 실으려면 ④가 y<sub>p<sub>2</sub>i</sub> = 1을 요구합니다. 모순이므로 둘이 동시에 1일 수 없습니다.</li>
+    </ul>
+    <p>두 정식화를 정확히 비교해 봅니다. 서로 배타적인 이진변수 x<sub>1</sub>, x<sub>2</sub>와 y에 대해 정수해 집합 X = {(x<sub>1</sub>, x<sub>2</sub>, y) 이진 : x<sub>1</sub> + x<sub>2</sub> ≤ y}의 원소는 (0,0,0), (0,0,1), (1,0,1), (0,1,1) 넷입니다.</p>
+    <div class="eq">
+      <div class="row"><span>A (모은 식):&nbsp; x<sub>1</sub> + x<sub>2</sub> ≤ y,&nbsp; y ≤ 1,&nbsp; x ≥ 0</span><span class="all"></span></div>
+      <div class="row"><span>B (풀어 쓴 식):&nbsp; x<sub>1</sub> ≤ y,&nbsp; x<sub>2</sub> ≤ y,&nbsp; x<sub>1</sub> + x<sub>2</sub> ≤ 1,&nbsp; 0 ≤ x, y ≤ 1</span><span class="all"></span></div>
+    </div>
+    <p>B는 "x 각각 ≤ y"에 "둘 중 많아야 하나"를 따로 붙인 것으로, 정수점은 A와 같습니다. A의 식에서 x<sub>1</sub> ≤ x<sub>1</sub> + x<sub>2</sub> ≤ y와 x<sub>1</sub> + x<sub>2</sub> ≤ y ≤ 1이 나오므로 A ⊆ B입니다. 가이드 6장이 든 점 (x<sub>1</sub>, x<sub>2</sub>, y) = (0.5, 0.5, 0.5)는 B의 세 줄을 모두 지키지만(0.5 ≤ 0.5, 0.5 ≤ 0.5, 1 ≤ 1) A는 어깁니다(1 ≤ 0.5가 거짓). 꼭짓점을 모두 구해 보면(변수가 셋이므로 독립인 제약 셋을 등식으로 놓고 풀어 가능한 것만 남기는 2장 극점 절의 방법. 표준형으로 바꿔 4장처럼 기저를 모두 열거해도 같은 결과입니다) A의 꼭짓점은 정확히 X의 네 점이고, B에는 이 넷에 더해 (0.5, 0.5, 0.5)라는 소수 꼭짓점이 하나 더 있습니다. 곧 A는 이상적 정식화이고 B는 아닙니다.</p>
+    <div class="thm"><b>요령 10.6</b> 이진변수 여러 개를 "≤ (계수) · y" 한 줄로 모을 때, 계수는 그 x들이 동시에 1이 될 수 있는 최대 개수여야 합니다. 그 개수가 1이면(서로 배타적이면) 모은 식이 풀어 쓴 식보다 강하고, 개수가 크면 모은 식은 big-M 식이 되어 약해집니다.</div>
+    <p>"서로 배타적"이라는 관계를 그래프로 그린 것을 <strong>충돌 그래프(conflict graph)</strong>라고 합니다. 이진변수 하나가 노드이고, 동시에 1이 될 수 없는 두 변수를 간선으로 잇습니다. 노드들이 서로 모두 이어진 묶음(클릭, clique) C가 있으면 Σ<sub>j∈C</sub> x<sub>j</sub> ≤ 1이 유효합니다. 이것을 <strong>클릭 부등식(clique inequality)</strong>이라고 하고, 같은 내용을 쌍마다 적은 x<sub>a</sub> + x<sub>b</sub> ≤ 1들보다 강합니다. 예를 들어 세 변수 x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>가 서로 배타적이면, 쌍마다 적은 세 줄은 (½, ½, ½)를 허용하지만(½ + ½ ≤ 1) 클릭 부등식 x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1은 허용하지 않습니다(3/2 ≤ 1이 거짓). 2부의 삼각형 매칭이 바로 이 구조입니다. 위의 A와 B도 이렇게 볼 수 있습니다. x<sub>1</sub>, x<sub>2</sub>, 그리고 y의 보수 ȳ = 1 − y 셋은 서로 배타적입니다(x<sub>1</sub> = 1이면 y = 1이라 ȳ = 0). B의 세 줄 x<sub>1</sub> ≤ y, x<sub>2</sub> ≤ y, x<sub>1</sub> + x<sub>2</sub> ≤ 1은 이 셋의 쌍별 부등식(x<sub>1</sub> + ȳ ≤ 1 등)이고, A의 x<sub>1</sub> + x<sub>2</sub> ≤ y는 클릭 부등식 x<sub>1</sub> + x<sub>2</sub> + ȳ ≤ 1입니다. 솔버의 전처리와 절단평면 단계가 충돌 그래프를 만들어 이런 부등식을 자동으로 찾기도 합니다.</p>
+  </section>
+
+  <div class="gref">
+    <p>가이드 4장 「강한 정식화와 약한 정식화」의 표(강한 식은 y ≥ 1, 약한 식은 y ≥ 0.1)는 정리 10.3의 한 예입니다. 발표자료 2쪽의 "제약식의 강한 정도"는 이 장의 포함 관계 P<sub>1</sub> ⊆ P<sub>2</sub>를 가리킵니다.</p>
+    <p>가이드 6장 「강도: big-M이 없다」의 첫 항목(②③④는 여러 x를 계수 1로 모은 꼴이라 오히려 강하다)은 요령 10.6과 클릭 부등식입니다. 4장의 경고와 모순이 아닙니다.</p>
+  </div>
+
+  <div class="part">2부 · LP가 저절로 정수해를 내는 경우: 완전 단모듈</div>
+
+  <section>
+    <h2>왜 배정 문제는 LP로 풀어도 정수가 나오는가</h2>
+    <p>CVRPTW 쪽에서 배정 문제(고객과 차량, 작업과 기계를 짝짓기)의 LP 완화를 풀면 소수 없이 0과 1만 나온다는 이야기를 들어 봤을 것입니다. 네트워크 흐름도 공급량과 용량이 정수이면 LP 최적해가 정수 흐름입니다. 이것은 우연이 아니라 제약 행렬의 성질 때문입니다.</p>
+    <div class="defn"><b>정의 10.7</b> (완전 단모듈) 행렬 A의 모든 정사각 부분행렬(행 몇 개와 열 같은 수만큼을 골라 만든 행렬)의 행렬식이 0, +1, −1 중 하나이면 A를 <strong>완전 단모듈(totally unimodular, TU)</strong>이라고 합니다. 1×1 부분행렬도 포함하므로 TU 행렬의 원소는 0, ±1뿐입니다.</div>
+    <div class="thm"><b>정리 10.8</b> A가 TU이고 b가 정수 벡터이면, 다면체 P = {x : Ax ≤ b, x ≥ 0}의 꼭짓점은 모두 정수입니다. ≥, = 제약이 섞여 있거나 변수에 정수 상한이 있어도 같습니다.</div>
+    <div class="proof">
+      <p>행렬식의 성질은 2장 정의 2.5 아래에 적어 둔 ①~④를 씁니다. Ax ≤ b에 여유 변수 s ≥ 0을 붙여 표준형 Ax + s = b, (x, s) ≥ 0으로 바꿉니다. 제약 행렬은 [A I](A 옆에 단위 행렬을 붙인 것)이고, 이것도 TU입니다. [A I]의 정사각 부분행렬에 I에서 온 열이 들어 있으면 그 열은 0이 아닌 원소가 많아야 하나입니다. 하나도 없으면 행렬식이 0이고, 하나 있으면 그 열로 펼쳐서(성질 ①) ± (한 줄씩 작은 부분행렬의 행렬식)이 됩니다. 이것을 I에서 온 열이 없어질 때까지 되풀이하면 A의 부분행렬의 행렬식만 남으므로 값은 0, ±1입니다. 점 x와 (x, b − Ax)는 일대일로 대응하고 볼록 조합도 그대로 옮겨 가므로, P의 꼭짓점은 표준형 영역의 꼭짓점과 대응합니다. 4장의 정리 4.5에 의해 표준형의 꼭짓점은 기저가능해이고, 기저 행렬 B는 [A I]의 가역인 정사각 부분행렬이므로 det B ≠ 0, TU이므로 det B = ±1입니다. 크라메르 공식(2장)으로 기저 변수 값은 det B<sub>k</sub> / det B인데, B<sub>k</sub>(B의 k번째 열을 b로 바꾼 행렬)는 정수 행렬이라 행렬식이 정수이고 분모가 ±1이므로 정수입니다. 비기저 변수는 0이므로 꼭짓점 전체가 정수입니다.</p>
+      <p>≥ 제약은 양변에 −1을 곱해 ≤로 바꾸면 되고(행에 −1을 곱해도 부분행렬의 행렬식은 부호만 바뀝니다. 성질 ③), 등식 a<sup>T</sup>x = β는 a<sup>T</sup>x ≤ β와 −a<sup>T</sup>x ≤ −β 두 줄로 쓰면 됩니다. 이렇게 같은 행과 부호만 반대인 행을 함께 고른 부분행렬은 두 행이 종속이라 행렬식이 0이므로 TU가 유지됩니다. 변수의 상한 x<sub>j</sub> ≤ u<sub>j</sub>는 단위 행 하나를 더하는 것이라 같은 여인수 전개로 TU가 유지됩니다.</p>
+    </div>
+    <p>결론: TU 행렬과 정수 우변으로 된 정식화는 이상적 정식화입니다. LP를 꼭짓점 해(심플렉스가 내는 해)로 풀면 정수해가 나옵니다. 7장의 배리어처럼 꼭짓점이 아닌 해를 낼 수 있는 방법이라면, 최적해가 여럿일 때 소수 해가 나올 수 있으므로 크로스오버로 꼭짓점을 얻어야 정수가 보장됩니다.</p>
+  </section>
+
+  <section>
+    <h2>TU인지 알아보는 쉬운 조건</h2>
+    <p>정의대로 모든 부분행렬을 검사하는 것은 비현실적입니다. 다음 충분조건이 실전에서 가장 자주 쓰입니다.</p>
+    <div class="thm"><b>정리 10.9</b> 행렬 A가 다음을 만족하면 TU입니다. (1) 원소는 0, ±1뿐이다. (2) 각 열에 0이 아닌 원소가 많아야 두 개다. (3) 행들을 두 묶음 R<sub>1</sub>, R<sub>2</sub>로 나눌 수 있어서, 0이 아닌 원소가 두 개인 열마다, 두 원소의 부호가 같으면 서로 다른 묶음에, 부호가 다르면 같은 묶음에 있다.</div>
+    <div class="proof">
+      <p>정사각 부분행렬의 크기 k에 대한 귀납법입니다. k = 1이면 (1)에 의해 성립합니다. k×k 부분행렬 S를 봅니다. 모든 원소가 0인 열이 있으면 det S = 0. 0이 아닌 원소가 하나뿐인 열이 있으면 그 열로 여인수 전개해서(2장의 성질 ①) det S = ±det(더 작은 부분행렬) ∈ {0, ±1}(귀납 가정). 남은 경우는 모든 열에 0이 아닌 원소가 정확히 두 개인 경우인데, 그러면 (3)에 의해 "R<sub>1</sub>에 속한 행들의 합 − R<sub>2</sub>에 속한 행들의 합"이 모든 열에서 0입니다. 행들이 일차종속이므로 det S = 0입니다.</p>
+    </div>
+    <p>세 가지 대표 예를 이 조건으로 확인합니다. 근접 행렬(incidence matrix)은 3장에서 정의한 대로 행이 노드, 열이 간선입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>행렬</th><th>열 하나의 모양</th><th>묶음 나누기</th><th>결과</th></tr></thead>
+      <tbody>
+        <tr><td>이분 그래프의 근접 행렬</td><td>간선의 두 끝 노드에 +1, +1</td><td>R<sub>1</sub> = 한쪽 편, R<sub>2</sub> = 다른 쪽 편. 모든 간선이 두 편 사이를 잇습니다</td><td>TU. 배정 문제(2장 연습문제)처럼 두 편 사이를 짝짓는 문제의 LP는 정수해</td></tr>
+        <tr><td>유향 그래프의 근접 행렬</td><td>꼬리 노드에 +1, 머리 노드에 −1</td><td>모든 행을 R<sub>1</sub>에. 부호가 다르니 같은 묶음이면 됩니다</td><td>TU. 흐름 보존식으로 된 네트워크 흐름의 LP는 정수 흐름</td></tr>
+        <tr><td>창고 예의 P<sub>강</sub></td><td>x<sub>j</sub>의 열은 +1 하나, y의 열은 −1이 열 개</td><td>이 행렬은 행 x<sub>j</sub> − y ≤ 0마다 원소가 둘이므로 전치행렬에 조건을 적용합니다(정사각 행렬과 그 전치의 행렬식은 같으므로(2장의 성질 ②), TU는 전치해도 TU)</td><td>TU. 1부의 주장</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>홀수 순환은 TU를 깬다</h2>
+    <p>무향 그래프에 홀수 길이의 순환이 있으면 이야기가 달라집니다. 삼각형(노드 1, 2, 3, 간선 12, 23, 13)의 근접 행렬은</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>노드 \ 간선</th><th>12</th><th>23</th><th>13</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+        <tr><td>2</td><td>1</td><td>1</td><td>0</td></tr>
+        <tr><td>3</td><td>0</td><td>1</td><td>1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이고, 첫 행으로 여인수 전개하면 행렬식은 1·(1·1 − 0·1) − 0 + 1·(1·1 − 1·0) = 2입니다. TU가 아닙니다. 그 결과가 LP에 그대로 나타납니다. "각 노드에 붙은 간선은 많아야 하나"(매칭) 조건 아래 고른 간선 수를 최대화하는 LP</p>
+    <div class="formula">최대화 x<sub>12</sub> + x<sub>23</sub> + x<sub>13</sub>,&nbsp; x<sub>12</sub> + x<sub>13</sub> ≤ 1,&nbsp; x<sub>12</sub> + x<sub>23</sub> ≤ 1,&nbsp; x<sub>23</sub> + x<sub>13</sub> ≤ 1,&nbsp; x ≥ 0</div>
+    <p>의 최적해는 (½, ½, ½), 값 3/2입니다. 정수해로는 간선 하나밖에 고를 수 없어 1입니다. 세 제약을 등식으로 놓은 연립방정식의 해가 바로 이 점이고, 크라메르 공식의 분모가 det = 2라서 ½이 나온 것입니다. 길이 5인 순환의 근접 행렬도 행렬식이 2입니다. 일반적으로 길이 n인 순환의 근접 행렬은, 노드와 간선을 순환 순서대로 놓고 첫 행으로 펼치면 행렬식이 1 + (−1)<sup>n+1</sup>이 되어 n이 홀수이면 2, 짝수이면 0입니다(순서를 다르게 놓으면 성질 ③에 의해 부호만 바뀌어 ±2).</p>
+    <div class="thm"><b>정리 10.10</b> 무향 그래프의 근접 행렬이 TU ⇔ 그 그래프가 이분 그래프입니다.</div>
+    <div class="proof"><p>⇐는 정리 10.9 뒤 표의 첫 행(이분 그래프의 근접 행렬)입니다. ⇒: 이분 그래프가 아니면 3장 정리 3.12에 의해(그래프가 여러 조각이면 조각마다 적용해서) 홀수 순환이 있습니다. 그 순환의 노드와 간선만 골라 만든 정사각 부분행렬은 홀수 순환의 근접 행렬이고 행렬식이 ±2이므로 TU가 아닙니다.</p></div>
+    <div class="note"><p>3장에서 증명한 "홀수 순환이 없다 ⇔ 이분 그래프"가 여기서는 LP의 정수성과 이어집니다. 가이드 6장에도 이분 그래프가 나오지만 쓰임이 다릅니다. 가이드에서는 배의 그래프(칸과 통로)가 이분 그래프이면 모형의 경로 비용 dist(i)가 실제 비용과 같아진다는 이야기였습니다. tryAgain 모형의 제약 행렬은 배 그래프의 근접 행렬이 아니므로, 배가 이분 그래프라고 해서 모형이 TU가 되지는 않습니다. 같은 그래프 성질이 두 군데에서 다른 역할을 한다는 점을 구별해 두세요.</p></div>
+  </section>
+
+  <section>
+    <h2>연속된 1: 구간 행렬</h2>
+    <p>또 하나의 유명한 TU 행렬이 있습니다. 행에 순서가 있고, 모든 열에서 1이 "연속된 행들"에만 있으며 나머지는 0인 행렬을 <strong>구간 행렬(interval matrix)</strong>, 그 성질을 연속 1 성질(consecutive-ones property)이라고 합니다. 시간 축 위의 구간들을 열로, 시각을 행으로 놓은 행렬이 전형적입니다.</p>
+    <div class="thm"><b>정리 10.11</b> 구간 행렬은 TU입니다.</div>
+    <div class="proof"><p>구간 행렬의 정사각 부분행렬을 고르면(행 몇 개와 열 몇 개), 고른 행들을 원래 순서대로 두었을 때 각 열의 1은 여전히 연속된 행에 모여 있으므로 부분행렬도 구간 행렬입니다. 따라서 "모든 정사각 구간 행렬의 행렬식이 0, ±1"만 보이면 됩니다. 정사각 구간 행렬 S에서, 아래 행부터 차례로 "각 행에서 바로 위 행을 뺀다"는 변환을 하면(맨 위 행은 그대로), 행 s부터 t까지 1이던 열은 행 s에 +1, 행 t+1에 −1(t가 마지막 행이면 −1 없음)만 남습니다. 한 행에서 다른 행을 빼는 변환이므로 행렬식이 바뀌지 않습니다(2장의 성질 ④). 변환된 행렬은 열마다 +1 하나와 −1 하나(또는 +1 하나)뿐이므로 정리 10.9의 조건(모든 행을 한 묶음에)을 만족해 TU이고, 따라서 det S ∈ {0, ±1}입니다.</p></div>
+    <p>tryAgain 모형에서 이것이 보이는 곳이 있습니다. 칸 i 하나를 고정하고 제약 ②의 x 부분만 봅니다. 행은 항구 q = 1, …, P−2이고, 열은 구간 (p, r)마다 하나입니다. 구간 (p, r)의 x는 p &lt; q &lt; r인 항구 q의 행에만 1로 나타나는데, 그 q들은 p+1, p+2, …, r−1로 연속입니다. 그래서 이 블록은 구간 행렬이고 TU입니다. 뜻으로 읽으면, "칸 하나에 대해, 각 항구에서 머무는 차가 많아야 한 대"라는 조건만 놓고 보면 LP가 소수 배치를 만들 여지가 없다는 것입니다. 구간 스케줄링(한 기계에 겹치지 않게 작업 구간을 고르는 문제)이 LP로 풀리는 것과 같은 이유입니다.</p>
+    <p>이 문서를 쓰면서 항구가 5개일 때 칸 하나의 ②③④ 세 제약(그 칸의 x와 y만 포함)을 합친 블록도 모든 정사각 부분행렬의 행렬식을 직접 계산해 보았고, TU였습니다. 하지만 이것은 항구 5개, 칸 하나에 대한 계산일 뿐이고 일반적인 증명이 아닙니다. 그리고 <strong>모형 전체는 TU가 아닙니다</strong>. 제약 ①은 z를 통해 여러 칸과 항구 쌍을 묶고, 제약 ⑤는 여러 칸의 y를 묶습니다. 실제로 모형 전체의 LP 완화가 소수 해를 낸다는 것을 바로 다음 절에서 숫자로 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>tryAgain 모형의 LP 완화는 얼마나 빡빡한가</h2>
+    <p>가이드 6장은 "격자처럼 순환이 많은 배에서 LP 완화가 얼마나 느슨해지는지는 … 확인하지 못했습니다"라고 적었습니다. 이 교재를 쓰면서 가이드의 두 작은 예제에 대해, 가이드 6장의 모형 그대로(제약 ①~⑥, x와 y는 0~1, z ≥ 0)의 LP 완화를 분수 정밀도의 심플렉스로 풀어 보았습니다. 솔버의 전처리나 절단평면이 들어가기 전의 "맨 처음 LP" 값입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>예제 (가이드 6장)</th><th class="num">LP 완화 값</th><th class="num">모형의 최적값</th><th class="num">대회 LB</th><th>판정</th></tr></thead>
+      <tbody>
+        <tr><td>공식 예시 (일렬 배, N = 5, P = 5)</td><td class="num">145</td><td class="num">190</td><td class="num">137</td><td>gap 45. LP 하한이 대회 LB보다 겨우 8 높습니다. (대회 LB는 항구마다 싣는 차와 내리는 차를 따로 "가장 가까운 칸들"에 둔다고 치고 더한 값이라, 모형의 목적함수 값과 달리 홀수일 수 있습니다)</td></tr>
+        <tr><td>가지가 있는 배 (N = 8, P = 4)</td><td class="num">202</td><td class="num">202</td><td class="num">194</td><td>gap 0. LP가 바로 정수해</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>공식 예시의 LP 해를 들여다보면 약점이 보입니다. 0도 1도 아닌 값은 모두 ½입니다. 항구 0에서 2로 가는 차 두 대가 칸 1~4에 ½씩 나눠 실리고, y는 항구 1, 2의 모든 칸에서 ½입니다. 항구 1의 칸 1에서 제약 ②를 보면 머무는 차가 x<sub>02,1</sub> = ½이고 ½ ≤ 1 − y<sub>1,1</sub> = ½이 성립합니다. 칸마다 "반쯤 차 있고, 반쯤 접근 가능"한 상태입니다. 그 "반쯤 접근 가능"한 몫으로 다른 차를 ½씩 싣고 내릴 수 있으니, 실제로는 피할 수 없던 재배치(z)가 하나도 필요 없어지고 비용은 서로 막지 않는다고 칠 때와 비슷한 145로 내려갑니다. 정수해에서는 칸이 차 있거나 비어 있거나 둘 중 하나이므로 이런 일이 불가능합니다.</p>
+    <p>이 "반반"을 어디 탓으로 돌려야 하는지는 조심해야 합니다. 앞 절에서 본 대로 칸 하나의 ②③④ 블록은 (항구 5개에서) TU라서, 칸 하나만 떼어 보면 "반쯤 차 있고 반쯤 접근 가능"한 상태는 그 칸의 정수 배치 두 개(예: "0에서 2로 가는 차만 있음"과 "1에서 3으로 가는 차만 있음")의 평균, 곧 그 칸 혼자서는 정당한 섞음입니다. 문제는 칸들이 서로 묶일 때 생깁니다. 제약 ①은 수요와 쪼개기(z)를 통해 여러 칸의 x를 한 식에 모으고, 제약 ⑤는 여러 칸의 y를 잇습니다. 칸마다 따로 보면 정당한 섞음들이, 이 묶는 제약 아래에서 이어 붙이면 어떤 정수해들의 평균도 아닌 소수 꼭짓점이 됩니다. 반반 쪼개짐은 그 섞음이 겉으로 보이는 모습입니다. 가지가 있는 배의 예에서는 막힘을 피하는 배치가 존재해서 이 약점이 드러나지 않았습니다. 대회 크기의 문제에서 이 gap이 얼마였는지는 확인하지 못했습니다. 솔버는 이 위에 절단평면과 분지를 더하므로, 맨 처음 LP 값만으로 풀이 성능을 단정할 수는 없습니다.</p>
+    <p>가이드 6장이 약한 고리로 지목한 제약 ⑤(y<sub>pi</sub> ≤ Σ<sub>j∈pred(i)</sub> y<sub>pj</sub>)는 따로 볼 필요가 있습니다. 3×3 격자 배(가이드 5장 그림, pred(4) = {1, 2})에서 칸 1과 칸 2에 머무는 차가 각각 ½씩 있으면 ②에 의해 y<sub>1</sub>, y<sub>2</sub> ≤ ½이고, ⑤는 y<sub>4</sub> ≤ ½ + ½ = 1을 허용합니다. 칸 4가 완전히 접근 가능하다고 치는 것입니다. 그런데 이 점 하나만 놓고 보면 "칸 1에 차가 있고 칸 2가 빈 정수해"와 "칸 2에 차가 있고 칸 1이 빈 정수해"(둘 다 칸 4는 칸 2 또는 칸 1을 통해 접근 가능)의 평균이라서, 볼록 껍질 안에 있는 정당한 점입니다. ⑤ 한 줄만 보아서는 약하다고 할 수 없습니다. 약점은 위의 공식 예시처럼, 칸마다 "반쯤 차 있고 반쯤 접근 가능"한 상태(②가 허용하는 반반)가 칸들을 묶는 ①과 ⑤를 거쳐 여러 칸에 한꺼번에 퍼질 때 드러납니다. 격자 배에서 그 크기를 잰 결과는 이 교재에도 없습니다.</p>
+  </section>
+
+  <div class="gref">
+    <p>가이드 6장 「강도: big-M이 없다」의 세 번째 항목(제약 ⑤가 약한 고리일 수 있다)과 그 끝의 "확인하지 못했습니다"에 대한 보충이 위 절입니다. 가이드의 두 작은 예제에서 맨 처음 LP 값은 145(최적 190)와 202(최적 202)였습니다.</p>
+    <p>가이드 6장 4부 「모형과 실제 문제의 차이 세 가지」의 이분 그래프는 경로 비용의 정확성에 관한 것이고, 이 장의 정리 10.10(근접 행렬의 TU)과는 다른 이야기입니다.</p>
+  </div>
+
+  <div class="part">3부 · 풀면서 깎아 들어가기: 절단평면</div>
+
+  <section>
+    <h2>유효 부등식, 절단평면, 분리 문제</h2>
+    <p>처음부터 볼록 껍질을 적을 수 없다면, LP를 푼 뒤 그 답이 소수이면 그 답만 잘라 내는 부등식을 덧붙이고 다시 푸는 방법이 있습니다. 9장의 분지가 영역을 둘로 "나누는" 것이라면, 절단은 영역을 "깎는" 것입니다.</p>
+    <div class="defn"><b>정의 10.12</b> (유효 부등식) 부등식 π<sup>T</sup>x ≥ π<sub>0</sub>이 모든 정수해 x ∈ X에서 성립하면 X에 대한 <strong>유효 부등식(valid inequality)</strong>이라고 합니다. 유효 부등식을 정식화에 더해도 정수해는 하나도 사라지지 않습니다.</div>
+    <div class="defn"><b>정의 10.13</b> (절단평면과 분리 문제) LP 완화의 현재 최적해 x*가 X에 속하지 않을 때, x*가 어기는(π<sup>T</sup>x* &lt; π<sub>0</sub>) 유효 부등식을 <strong>절단평면(cutting plane, cut)</strong>이라고 합니다. "주어진 x*에 대해 그것을 자르는 부등식을 (정해진 부등식 가족 안에서) 찾거나, 없다고 답하라"는 문제를 <strong>분리 문제(separation problem)</strong>라고 합니다.</div>
+    <p>절단평면법의 뼈대는 다음 반복입니다. ① LP 완화를 푼다. ② 답이 정수면 끝. ③ 분리 문제를 풀어 절단평면을 찾으면 더하고 ①로. 못 찾으면 멈추고 분지로 넘긴다. 제약을 하나 더한 LP는 6장의 쌍대 심플렉스로 이전 기저에서 이어 풀 수 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>Chvátal–Gomory 반올림</h2>
+    <p>어떤 문제에나 쓸 수 있는 유효 부등식 만드는 법이 있습니다. 제약 Ax ≥ b, x ≥ 0, x 정수가 있을 때 음이 아닌 승수 u로 제약들을 섞은 뒤 반올림합니다.</p>
+    <div class="thm"><b>정리 10.14</b> (Chvátal–Gomory 절단) 승수 u ≥ 0에 대해, A의 j번째 열을 A<sub>j</sub>라 하면 다음은 유효 부등식입니다.</div>
+    <div class="formula">Σ<sub>j</sub> ⌈u<sup>T</sup>A<sub>j</sub>⌉ x<sub>j</sub> ≥ ⌈u<sup>T</sup>b⌉</div>
+    <div class="proof"><p>u ≥ 0이므로 섞은 식 Σ<sub>j</sub> (u<sup>T</sup>A<sub>j</sub>) x<sub>j</sub> ≥ u<sup>T</sup>b는 모든 가능해에서 성립합니다(6장에서 하한을 만들 때 쓴 것과 같은 섞기). x ≥ 0이므로 계수를 올림해도 왼쪽은 커지기만 하니 Σ ⌈u<sup>T</sup>A<sub>j</sub>⌉ x<sub>j</sub> ≥ u<sup>T</sup>b. 이제 x가 정수이면 왼쪽은 정수입니다. 정수가 u<sup>T</sup>b 이상이면 ⌈u<sup>T</sup>b⌉ 이상입니다.</p></div>
+    <p>트럭 예에 u = 1/9을 쓰면 (1/9)(9x + 5y) ≥ 30/9, 곧 x + (5/9)y ≥ 3.33입니다. 계수를 올림하면 x + y ≥ 3.33, 오른쪽까지 올림하면</p>
+    <div class="formula">x + y ≥ 4</div>
+    <p>입니다. 말로 하면 "큰 트럭도 9톤밖에 못 실으니 30톤에는 트럭이 적어도 네 대 필요하다"입니다. LP 최적해 (3.33, 0)에서 왼쪽은 3.33이라 이 점은 잘려 나갑니다. 이 부등식을 더한 LP를 풀면 최적해는 (5/2, 3/2), 값 35.5입니다. 하한이 33.33에서 35.5로 올랐고, 비용이 정수이므로 실제로는 36 이상이라는 것까지 알 수 있습니다. 그림에서 본 대로 x + y ≥ 4는 볼록 껍질의 한 변(면)입니다. 볼록 껍질의 다른 변 5x + 3y ≥ 18까지 더하면 LP 값은 37로 정수 최적값과 같아집니다.</p>
+    <p>승수를 바꿔 가며 이런 반올림을 반복하면(이미 얻은 절단평면도 다음 섞기의 재료로 쓰면서) 유한 번 만에 볼록 껍질에 도달한다는 것이 알려져 있습니다(Chvátal, 1973. 유계인 순수 정수 문제에 대해. 이 교재에서는 증명하지 않습니다). 몇 번 만에 도달하는지는 문제에 따라 매우 클 수 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>Gomory 분수 절단: 단체표에서 바로 읽기</h2>
+    <p>승수를 어떻게 고를지 고민할 필요 없이, LP를 푼 심플렉스의 마지막 단체표(5장)에서 곧바로 절단평면을 읽어 내는 방법이 Gomory의 분수 절단입니다. 모든 변수(여유·잉여 변수 포함)가 정수여야 하는 순수 정수 문제에 씁니다. 데이터가 정수이면 여유·잉여 변수도 정수입니다.</p>
+    <div class="thm"><b>정리 10.15</b> (Gomory 분수 절단) 최적 단체표의 한 행이 x<sub>B</sub> + Σ<sub>j∈N</sub> α<sub>j</sub> x<sub>j</sub> = β (N은 비기저 변수들)이고 β가 정수가 아니면, 다음은 유효 부등식이며 현재 LP 해를 잘라 냅니다. frac(a) = a − ⌊a⌋는 2장의 분수 부분입니다.</div>
+    <div class="formula">Σ<sub>j∈N</sub> frac(α<sub>j</sub>) x<sub>j</sub> ≥ frac(β)</div>
+    <div class="proof">
+      <p>α<sub>j</sub> = ⌊α<sub>j</sub>⌋ + frac(α<sub>j</sub>), β = ⌊β⌋ + frac(β)로 나눠 행을 다시 쓰면 x<sub>B</sub> + Σ ⌊α<sub>j</sub>⌋ x<sub>j</sub> − ⌊β⌋ = frac(β) − Σ frac(α<sub>j</sub>) x<sub>j</sub>입니다. 정수해에서는 왼쪽이 정수이므로 오른쪽도 정수입니다. 오른쪽은 frac(β) &lt; 1에서 음이 아닌 양을 뺀 것이라 1보다 작고, 1보다 작은 정수는 0 이하입니다. 그래서 Σ frac(α<sub>j</sub>) x<sub>j</sub> ≥ frac(β).</p>
+      <p>현재 LP 해에서는 비기저 변수가 모두 0이라 왼쪽이 0이고, frac(β) &gt; 0이므로 어깁니다.</p>
+    </div>
+    <p>5장에서 구한 트럭 예의 최적 사전 x = 10/3 − (5/9)y + (1/9)s(s = 9x + 5y − 30은 잉여 변수)를 비기저 변수가 왼쪽에 오도록 이항하면, 정리 10.15의 꼴인 다음 행이 됩니다. 이항하면서 계수의 부호가 바뀌는 데 주의하세요(분수 부분은 부호에 민감합니다).</p>
+    <div class="formula">x + (5/9)y − (1/9)s = 10/3</div>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항</th><th class="num">계수</th><th class="num">내림</th><th class="num">분수 부분</th></tr></thead>
+      <tbody>
+        <tr><td>y</td><td class="num">5/9</td><td class="num">0</td><td class="num">5/9</td></tr>
+        <tr><td>s</td><td class="num">−1/9</td><td class="num">−1</td><td class="num">8/9</td></tr>
+        <tr><td>오른쪽</td><td class="num">10/3</td><td class="num">3</td><td class="num">1/3</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>−1/9의 내림은 −1이라서 분수 부분은 −1/9 − (−1) = 8/9입니다(음수의 분수 부분을 1/9로 착각하기 쉽습니다). 절단평면은 (5/9)y + (8/9)s ≥ 1/3, 9를 곱하면 5y + 8s ≥ 3입니다. s = 9x + 5y − 30을 대입하면 72x + 45y ≥ 243, 9로 나누면</p>
+    <div class="formula">8x + 5y ≥ 27</div>
+    <p>입니다. 정수 가능해 중 8x + 5y의 최솟값은 29(점 (3, 1))이므로 유효하고, LP 해 (10/3, 0)에서는 26.67이라 잘립니다. 이것을 더한 LP의 최적해는 (27/8, 0), 값 33.75입니다. 하한이 33.33에서 33.75로 조금 올랐습니다. CG 절단 x + y ≥ 4보다 훨씬 약합니다. Gomory 절단은 기계적으로 얻을 수 있지만 한 번에 깎는 양이 작은 경우가 많고, 반복하면 수치 오차도 쌓입니다. 1960년대 이후 오랫동안 실용성이 낮다고 여겨지다가 분지한계법과 결합하면서 다시 쓰이게 된 역사가 있습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>트럭 예의 정식화</th><th class="num">LP 하한</th></tr></thead>
+      <tbody>
+        <tr><td>원래 (9x + 5y ≥ 30)</td><td class="num">33.33</td></tr>
+        <tr><td>+ Gomory 절단 8x + 5y ≥ 27</td><td class="num">33.75</td></tr>
+        <tr><td>+ CG 절단 x + y ≥ 4</td><td class="num">35.5</td></tr>
+        <tr><td>+ x + y ≥ 4, 5x + 3y ≥ 18 (볼록 껍질)</td><td class="num">37 = 정수 최적값</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>구조를 이용한 절단: 덮개 부등식</h2>
+    <p>문제의 구조를 알면 더 강한 절단평면을 만들 수 있습니다. 대표가 배낭 제약 Σ w<sub>j</sub>x<sub>j</sub> ≤ W(x 이진, w ≥ 0)의 <strong>덮개 부등식(cover inequality)</strong>입니다. 무게 합이 W를 넘는 물건 묶음 C(덮개)가 있으면 C를 전부 넣을 수는 없으므로</p>
+    <div class="formula">Σ<sub>j∈C</sub> x<sub>j</sub> ≤ |C| − 1</div>
+    <p>이 유효합니다. 예를 들어 3x<sub>1</sub> + 3x<sub>2</sub> + 2x<sub>3</sub> ≤ 7에서 C = {1, 2, 3}은 무게 합 8 &gt; 7이므로 x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 2입니다. LP 점 (1, 1, ½)은 원래 제약은 지키지만(3 + 3 + 1 = 7) 덮개 부등식은 어깁니다(2.5 &gt; 2). CVRP의 용량 제약에서 "이 고객들은 한 차에 다 못 싣는다"를 부등식으로 만드는 것과 같은 발상입니다. 솔버는 덮개, 클릭(1부), 흐름 덮개, 혼합 정수 반올림(MIR) 등 여러 가족의 분리 문제를 내장하고 있습니다(이름만 소개합니다).</p>
+  </section>
+
+  <section>
+    <h2>분지절단법</h2>
+    <p>절단평면만으로 끝까지 가는 것도, 분지만으로 끝까지 가는 것도 비효율적입니다. 현대 솔버는 둘을 섞은 <strong>분지절단법(branch-and-cut)</strong>을 씁니다. 뿌리에서 절단평면을 여러 번(라운드) 더해 하한을 끌어올린 뒤 분지하고, 가지에서도 필요하면 절단평면을 더합니다. 절단평면을 많이 넣을수록 하한은 오르지만 LP가 커져 한 번 푸는 시간이 늘어나므로, 솔버는 효과가 작은 절단평면을 버리는 규칙을 둡니다. 가이드 4장 3부의 표에서 「절단평면」이 "하한을 올림"으로 분류된 것이 이 뜻입니다.</p>
+    <p>정식화의 강도와 절단평면은 같은 목표의 두 수단입니다. 처음부터 강하게 적으면 솔버가 깎아야 할 것이 줄고, 약하게 적으면 솔버가 절단평면으로 메워야 합니다. 다만 big-M처럼 구조적으로 약한 식은 범용 절단평면으로 다 메워지지 않는 경우가 많습니다. 그래서 가이드 4장이 "모형을 작고 강하게 적는 것"을 성패의 열쇠로 꼽았습니다.</p>
+  </section>
+
+  <div class="gref">
+    <p>가이드 4장 3부 「현대 솔버 = 분지한계법 + 네 가지 보조 장치」의 절단평면 행("정수해는 하나도 자르지 않으면서 LP의 소수 해만 잘라 내는 부등식")이 정의 10.12~10.13입니다. 가이드 4장 1부 그림의 "색칠한 영역을 굵은 점들 쪽으로 깎아 들어가는 것"이 이 장 1부 그림의 연한 쐐기를 깎는 일입니다.</p>
+    <p>가이드 8장 「설정하지 않은 것들」에는 <span class="mono">// model.set(GRB_IntParam_Cuts, 0);</span>이 주석으로 남아 있습니다. 절단평면을 끄는 실험의 흔적으로 보인다고 가이드는 적었습니다. 절단평면은 하한을 올리는 대신 LP를 키우므로, 하한이 점수에 쓰이지 않는 대회에서 끄는 쪽이 나을 수도 있다는 생각을 시험해 본 것일 수 있습니다. 결과는 자료에 없습니다.</p>
+  </div>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>X = {(0, 0), (1, 0), (0, 1)}의 두 정식화 P<sub>1</sub>: x + y ≤ 1, 0 ≤ x, y ≤ 1과 P<sub>2</sub>: 2x + 2y ≤ 3, 0 ≤ x, y ≤ 1이 있습니다. 둘 다 정식화인지 확인하고, 어느 쪽이 강한지, x + y를 최대화하는 LP 값이 각각 얼마인지 답하세요.</summary>
+      <p>두 영역 안의 정수점은 (0,0), (1,0), (0,1)뿐입니다((1,1)은 P<sub>1</sub>에서 2 ≤ 1, P<sub>2</sub>에서 4 ≤ 3이 거짓). 따라서 둘 다 X의 정식화입니다. x + y ≤ 1이면 2x + 2y ≤ 2 ≤ 3이므로 P<sub>1</sub> ⊆ P<sub>2</sub>, P<sub>1</sub>이 강합니다. LP 최댓값은 P<sub>1</sub>에서 1, P<sub>2</sub>에서 3/2(예: (1, ½))입니다. P<sub>1</sub>은 X의 볼록 껍질 그 자체(삼각형)입니다.</p>
+    </details>
+    <details>
+      <summary>x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub> ≤ y(각각)와 x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 3y 중 어느 쪽이 강한지 보이고, 약한 쪽에만 있는 점을 하나 드세요. 이 x들이 서로 배타적이라면 가장 강한 한 줄은 무엇인가요?</summary>
+      <p>세 줄을 더하면 한 줄짜리 식이 나오므로 "각각" 쪽이 강합니다. 약한 쪽에만 있는 점: x = (1, 0, 0), y = 1/3(3·(1/3) = 1 ≥ 1이지만 x<sub>1</sub> ≤ y는 1 ≤ 1/3로 거짓). 서로 배타적이라면 x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ y 한 줄이 가장 강합니다(요령 10.6). 이 한 줄은 "각각 ≤ y"와 "합 ≤ 1"을 모두 함의합니다.</p>
+    </details>
+    <details>
+      <summary>노드 1, 2, 3, 4와 간선 12, 23, 34, 41로 된 순환(길이 4)의 근접 행렬이 TU인 이유를 정리 10.9로 설명하세요. 간선 13을 더하면 어떻게 되나요?</summary>
+      <p>길이 4인 순환은 홀수 순환이 없어 이분 그래프입니다. 두 편을 {1, 3}과 {2, 4}로 나누면 모든 간선이 두 편 사이를 잇고, 열마다 +1이 두 개이며 서로 다른 묶음에 있으므로 정리 10.9의 조건을 만족해 TU입니다. 간선 13을 더하면 삼각형 1-2-3(또는 1-3-4)이 생깁니다. 홀수 순환이므로 정리 10.10에 의해 TU가 아니고, 실제로 삼각형 부분의 행렬식이 ±2입니다.</p>
+    </details>
+    <details>
+      <summary>정수 x, y ≥ 0와 제약 2x + 3y ≥ 5에서 u = 1/2로 Chvátal–Gomory 절단을 만들고, 그것이 LP 점 (5/2, 0)을 자르는지 확인하세요.</summary>
+      <p>섞으면 x + 1.5y ≥ 2.5, 계수 올림 x + 2y ≥ 2.5, 오른쪽 올림 x + 2y ≥ 3. 정수 가능해 중 x + 2y의 최솟값은 3(예: (1, 1), (3, 0))이라 유효합니다. 점 (5/2, 0)에서는 2.5 &lt; 3이라 잘립니다.</p>
+    </details>
+    <details>
+      <summary>어떤 순수 정수 문제의 최적 단체표에 x<sub>1</sub> + (1/4)x<sub>3</sub> − (3/4)x<sub>4</sub> = 7/4라는 행이 있습니다(x<sub>3</sub>, x<sub>4</sub>는 비기저). Gomory 분수 절단을 적으세요.</summary>
+      <p>frac(1/4) = 1/4, frac(−3/4) = −3/4 − (−1) = 1/4, frac(7/4) = 3/4. 절단평면은 (1/4)x<sub>3</sub> + (1/4)x<sub>4</sub> ≥ 3/4, 곧 x<sub>3</sub> + x<sub>4</sub> ≥ 3입니다. 현재 LP 해에서 x<sub>3</sub> = x<sub>4</sub> = 0이므로 잘립니다.</p>
+    </details>
+    <details>
+      <summary>배낭 제약 5x<sub>1</sub> + 4x<sub>2</sub> + 3x<sub>3</sub> ≤ 8(x 이진)의 덮개 중 어떤 원소를 빼도 덮개가 아니게 되는 것(최소 덮개)을 모두 찾고, 덮개 부등식을 적으세요. LP 점 (1, ¾, 0)은 잘리나요?</summary>
+      <p>{1, 2}는 9 &gt; 8이라 덮개이고 원소를 하나 빼면 5나 4라 덮개가 아니므로 최소 덮개입니다. {1, 3}은 8로 넘지 않고, {2, 3}은 7입니다. {1, 2, 3}은 덮개지만 {1, 2}를 품어 최소가 아닙니다. 덮개 부등식은 x<sub>1</sub> + x<sub>2</sub> ≤ 1. 점 (1, ¾, 0)은 원래 제약을 지키지만(5 + 3 = 8) x<sub>1</sub> + x<sub>2</sub> = 1.75 &gt; 1이라 잘립니다.</p>
+    </details>
+    <details>
+      <summary>Gomory 분수 절단을 만들 때 왜 여유·잉여 변수까지 정수여야 하나요? 데이터에 소수 계수가 있으면 어떻게 되나요?</summary>
+      <p>증명에서 "왼쪽 x<sub>B</sub> + Σ⌊α<sub>j</sub>⌋x<sub>j</sub> − ⌊β⌋가 정수"를 썼는데, 비기저 변수에는 여유·잉여 변수가 섞여 있으므로 그것들도 정수여야 합니다. A와 b가 정수이면 s = Ax − b도 정수라 문제없습니다. 소수 계수가 있으면 먼저 분모의 공배수를 곱해 정수 데이터로 만들거나, 연속 변수가 섞인 MIP용으로 일반화된 절단(Gomory 혼합 정수 절단)을 써야 합니다.</p>
+    </details>
+    <details>
+      <summary>본문의 tryAgain LP 해에서 항구 1, 칸 1의 제약 ②, ③, ④를 확인하세요. x<sub>02,1</sub> = x<sub>13,1</sub> = ½, 칸 1의 나머지 x는 모두 0이고(그래서 항구 1에서 끝나는 구간도 칸 1에 없습니다), y<sub>1,1</sub> = ½입니다.</summary>
+      <p>② 항구 1에서 칸 1에 머무는 차는 항구 0에서 실려 항구 1보다 뒤에 내리는 구간이므로 x<sub>02,1</sub>(그 밖의 x<sub>03,1</sub>, x<sub>04,1</sub>은 0) = ½, ½ ≤ 1 − ½ 성립. ③ 항구 1에서 칸 1로부터 내리는 구간은 x<sub>01,1</sub> = 0 ≤ ½ 성립. ④ 항구 1에서 칸 1에 싣는 구간은 x<sub>12,1</sub> + x<sub>13,1</sub> + x<sub>14,1</sub> = ½ ≤ ½ 성립. 반 대가 머무는 칸에 반 대를 싣는 셈이고, 정수해에서는 불가능한 상태입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">교과서</span><a href="https://www.wiley.com/en-us/Integer+Programming%2C+2nd+Edition-p-9781119606536">L. A. Wolsey, Integer Programming, 2판 (Wiley, 2020)</a> — 1장 Formulations(정식화와 강도), 3장 Well-Solved Problems(3.2절 TU 행렬), 8장 Cutting Plane Algorithms(CG·Gomory 절단), 9장 Strong Valid Inequalities(덮개 등). 장 번호는 출판사의 목차 PDF로 확인했습니다.</li>
+      <li><span class="tagc">교과서</span><a href="https://link.springer.com/book/10.1007/978-3-319-11008-0">M. Conforti, G. Cornuéjols, G. Zambelli, Integer Programming (Springer GTM 271, 2014)</a> — 4장 Perfect Formulations(이상적 정식화, TU), 5장 Split and Gomory Inequalities, 7장 Valid Inequalities for Structured Integer Programs. Wolsey 다음 단계의 대학원 교재.</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, Introduction to Linear Optimization (Athena Scientific, 1997)</a> — 목차 페이지의 순서로 10장 Integer programming formulations, 11장 Integer programming methods(절단평면 포함).</li>
+      <li><span class="tagc">무료</span><a href="http://math.mit.edu/~goemans/18433S13/polyhedral.pdf">M. Goemans, 18.433 강의 노트 「Linear Programming and Polyhedral Combinatorics」 (MIT, 2013)</a> — "Total unimodularity" 절에 TU의 정의와 이분 그래프 근접 행렬이 TU라는 정리가 있습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/4717f89c50e91aaa455dbe9cb5a3e225_MIT15_053S13_tut11.pdf">MIT OCW 15.053 튜토리얼 11 「Gomory Cuts and a little more」 (2013)</a> — Gomory 절단을 그림과 예로 따라가는 학부 자료.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-083j-integer-programming-and-combinatorial-optimization-fall-2009/">MIT OCW 15.083J Integer Programming and Combinatorial Optimization (2009)</a> — 강의 3~7(정식화 강화, 이상적 정식화), 17~18(절단평면). 대학원 강의 슬라이드.</li>
+      <li><span class="tagc">무료</span><a href="https://dspace.mit.edu/handle/1721.1/96480">J. P. Vielma, "Mixed Integer Linear Programming Formulation Techniques", SIAM Review (2015)</a> — 같은 논리를 적는 여러 정식화의 강도를 비교하는 개관 논문(저자 공개본). 1부 내용의 심화.</li>
+      <li><span class="tagc">무료</span><a href="https://scipbook.readthedocs.io/en/latest/flp.html">Kubo 외, Mathematical Optimization: Solving Problems using SCIP and Python 「Facility location problems」</a> — "Weak and strong formulations" 절에서 창고 예와 같은 강한 식·약한 식을 비교합니다.</li>
+      <li><span class="tagc">무료</span><a href="https://en.wikipedia.org/wiki/Unimodular_matrix">Wikipedia 「Unimodular matrix」</a>, <a href="https://en.wikipedia.org/wiki/Cutting-plane_method">「Cutting-plane method」</a> — TU의 충분조건 목록과 Gomory 절단의 요약.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/볼록_폐포">위키백과 「볼록 폐포」</a> — 볼록 껍질의 한국어 항목(제목은 「볼록 폐포」).</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch9">← 이전: 9장 완화·한계·분지한계법</a><a href="#ch11">다음: 11장 분해 기법 →</a></div>
+</article>

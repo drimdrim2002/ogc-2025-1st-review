@@ -1,0 +1,250 @@
+<article class="chapter" id="ch6">
+  <header>
+    <div class="kicker">6 / 12</div>
+    <h1>쌍대성: 하한을 만드는 또 하나의 LP</h1>
+  </header>
+
+  <section>
+    <p class="lead">메타휴리스틱으로 CVRPTW를 풀 때 "지금 해가 최적에서 얼마나 먼가"는 알 수 없었습니다. 이 장은 LP에서 그 질문에 답하는 방법을 다룹니다. 제약식들을 적당한 배수로 더하면 "어떤 해도 이보다 쌀 수 없다"는 하한이 나오고, 가장 좋은 하한을 찾는 문제가 또 하나의 LP, <strong>쌍대 문제(dual problem)</strong>가 됩니다.</p>
+    <p>이 장의 결론은 하나로 요약됩니다. LP에서는 가장 좋은 하한이 정확히 최적값과 같습니다(강쌍대 정리). 그 부산물로 제약마다 "이 제약을 한 단위 풀어 주면 비용이 얼마 줄어드는가"라는 가격이 붙고, 분지한계법의 자식 LP를 빠르게 푸는 쌍대 심플렉스가 나옵니다. 둘 다 뒤의 장(9장 분지한계법, 11장 열 생성)이 기대는 도구입니다.</p>
+  </section>
+
+  <div class="part">1부 · 제약을 더해서 하한 만들기</div>
+
+  <section>
+    <h2>트럭 LP의 하한을 손으로 증명하기</h2>
+    <p>가이드 4장의 트럭 LP를 다시 봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; 10x + 7y&nbsp;&nbsp; 제약 9x + 5y ≥ 30,&nbsp; x, y ≥ 0</span></div>
+    </div>
+    <p>5장에서 심플렉스로 최적값 100/3을 구했습니다. 그런데 누가 "100/3보다 싼 해는 정말 없나요?"라고 묻는다면, 심플렉스를 다시 돌리지 않고 한 줄로 납득시킬 수 있습니다. 제약식에 10/9를 곱합니다.</p>
+    <div class="formula">(10/9)(9x + 5y) ≥ (10/9) × 30&nbsp;&nbsp; 즉&nbsp;&nbsp; 10x + (50/9)y ≥ 100/3</div>
+    <p>그리고 y ≥ 0이고 7 ≥ 50/9이므로 10x + 7y ≥ 10x + (50/9)y입니다. 둘을 이으면 <strong>모든 가능해에 대해 10x + 7y ≥ 100/3</strong>입니다. 실제로 (10/3, 0)이 100/3을 내므로 이것이 최적값입니다.</p>
+    <p>곱한 수를 u라고 일반화하면, u ≥ 0인 어떤 수를 곱해도 u(9x + 5y) ≥ 30u가 성립합니다. 이것이 목적함수 10x + 7y의 하한이 되려면 x와 y 각각의 계수가 목적함수 쪽 계수를 넘지 않아야 합니다(x, y ≥ 0이므로).</p>
+    <div class="eq">
+      <div class="row"><span>9u ≤ 10,&nbsp; 5u ≤ 7,&nbsp; u ≥ 0&nbsp; 이면&nbsp; 10x + 7y ≥ 30u</span></div>
+    </div>
+    <p>가장 좋은(가장 큰) 하한을 원하므로 "최대화 30u, 제약 9u ≤ 10, 5u ≤ 7, u ≥ 0"을 풀면 됩니다. u ≤ 10/9과 u ≤ 7/5 중 앞의 것이 더 빡빡하므로 u = 10/9, 하한 100/3. 이 작은 LP가 트럭 LP의 쌍대 문제입니다.</p>
+  </section>
+
+  <section>
+    <h2>제약이 여럿일 때: 생산 예</h2>
+    <p>5장의 생산 예는 최대화이므로 <em>상한</em>을 만듭니다. 원료 1의 제약에 u<sub>1</sub> ≥ 0, 원료 2의 제약에 u<sub>2</sub> ≥ 0을 곱해 더합니다.</p>
+    <div class="formula">u<sub>1</sub>(6x<sub>1</sub> + 4x<sub>2</sub>) + u<sub>2</sub>(x<sub>1</sub> + 2x<sub>2</sub>) ≤ 24u<sub>1</sub> + 6u<sub>2</sub></div>
+    <p>왼쪽을 x<sub>1</sub>, x<sub>2</sub>로 묶으면 (6u<sub>1</sub> + u<sub>2</sub>)x<sub>1</sub> + (4u<sub>1</sub> + 2u<sub>2</sub>)x<sub>2</sub>입니다. 이 계수가 이익 계수 5, 4 이상이면 5x<sub>1</sub> + 4x<sub>2</sub> ≤ (왼쪽) ≤ 24u<sub>1</sub> + 6u<sub>2</sub>가 되어 이익의 상한이 나옵니다. 가장 좋은 상한은</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; 24u<sub>1</sub> + 6u<sub>2</sub></span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; 6u<sub>1</sub> + u<sub>2</sub> ≥ 5,&nbsp; 4u<sub>1</sub> + 2u<sub>2</sub> ≥ 4,&nbsp; u<sub>1</sub>, u<sub>2</sub> ≥ 0</span></div>
+    </div>
+    <p>두 제약을 등식으로 풀면 u<sub>1</sub> = 3/4, u<sub>2</sub> = 1/2이고 값은 18 + 3 = 21입니다. (왜 등식으로 놓는지는 2부의 정리 6.4에서 봅니다. 지금은 이 u가 두 부등식을 지키는 것만 확인하면 충분합니다.) 5장에서 구한 최적 이익 21과 같으니, 어떤 생산 계획도 21보다 많이 벌 수 없고 21을 버는 계획이 있으므로 둘 다 최적입니다. 그리고 이 3/4, 1/2은 5장 표 2의 z 줄에서 s<sub>1</sub>, s<sub>2</sub> 아래에 적혀 있던 바로 그 숫자입니다. 우연이 아닙니다. 2부에서 이유를 봅니다.</p>
+    <div class="defn"><b>정의 6.1</b> 최소화 LP(원시 문제, primal) "최소화 c<sup>T</sup>x, Ax ≥ b, x ≥ 0"의 <strong>쌍대 문제(dual)</strong>는 "최대화 b<sup>T</sup>u, A<sup>T</sup>u ≤ c, u ≥ 0"입니다. 원시 문제의 제약 i마다 쌍대 변수 u<sub>i</sub>가 하나, 원시 변수 j마다 쌍대 제약이 하나 있습니다. 쌍대 변수를 <strong>승수(multiplier)</strong> 또는 <strong>쌍대값(dual value)</strong>이라고도 합니다.</div>
+    <p>쌍대의 쌍대를 구하면 원래 문제로 돌아옵니다. 그래서 어느 쪽을 원시라고 부를지는 관례입니다.</p>
+  </section>
+
+  <section>
+    <h2>제약이 ≥가 아닐 때: 변환 규칙</h2>
+    <p>위 논리에서 승수의 부호가 정해진 이유는 "부등식의 방향을 지키면서 더하기 위해서"였습니다. 등식에는 음수를 곱해도 되고, ≤ 제약에는 음수를 곱해야 방향이 맞습니다. 변수 쪽도 마찬가지로, x<sub>j</sub> ≥ 0이면 계수가 c<sub>j</sub> "이하"이면 충분하지만 x<sub>j</sub>의 부호가 자유이면 계수가 c<sub>j</sub>와 "같아야" 합니다. 정리하면 다음 표입니다(원시가 최소화일 때).</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>원시 (최소화 c<sup>T</sup>x)</th><th>쌍대 (최대화 b<sup>T</sup>u)</th></tr></thead>
+      <tbody>
+        <tr><td>제약 i가 a<sub>i</sub><sup>T</sup>x ≥ b<sub>i</sub></td><td>u<sub>i</sub> ≥ 0</td></tr>
+        <tr><td>제약 i가 a<sub>i</sub><sup>T</sup>x ≤ b<sub>i</sub></td><td>u<sub>i</sub> ≤ 0</td></tr>
+        <tr><td>제약 i가 a<sub>i</sub><sup>T</sup>x = b<sub>i</sub></td><td>u<sub>i</sub> 부호 자유</td></tr>
+        <tr><td>변수 x<sub>j</sub> ≥ 0</td><td>쌍대 제약 j: (A<sub>j</sub>)<sup>T</sup>u ≤ c<sub>j</sub></td></tr>
+        <tr><td>변수 x<sub>j</sub> ≤ 0</td><td>쌍대 제약 j: (A<sub>j</sub>)<sup>T</sup>u ≥ c<sub>j</sub></td></tr>
+        <tr><td>변수 x<sub>j</sub> 부호 자유</td><td>쌍대 제약 j: (A<sub>j</sub>)<sup>T</sup>u = c<sub>j</sub></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>표를 외울 필요는 없습니다. "하한을 만들려면 어느 방향으로 곱해야 하나"를 매번 따지면 같은 결과가 나옵니다. 4장의 표준형 "최소화 c<sup>T</sup>x, Ax = b, x ≥ 0"의 쌍대는 표의 셋째 줄과 넷째 줄에 따라 "최대화 b<sup>T</sup>u, A<sup>T</sup>u ≤ c, u 자유"입니다.</p>
+  </section>
+
+  <div class="part">2부 · 약쌍대, 강쌍대, 상보 여유성</div>
+
+  <section>
+    <h2>두 정리</h2>
+    <div class="thm"><b>정리 6.2 (약쌍대)</b> x가 원시 문제의 가능해이고 u가 쌍대 문제의 가능해이면 b<sup>T</sup>u ≤ c<sup>T</sup>x입니다. 즉 쌍대 가능해 하나하나가 원시 최적값의 하한입니다.</div>
+    <div class="proof"><p>(정의 6.1의 꼴로) u ≥ 0이고 Ax ≥ b이므로 b<sup>T</sup>u ≤ (Ax)<sup>T</sup>u = x<sup>T</sup>(A<sup>T</sup>u). x ≥ 0이고 A<sup>T</sup>u ≤ c이므로 x<sup>T</sup>(A<sup>T</sup>u) ≤ x<sup>T</sup>c. 1부에서 손으로 한 일과 똑같습니다.</p></div>
+    <div class="thm"><b>정리 6.3 (강쌍대)</b> 원시 문제에 최적해가 있으면 쌍대 문제에도 최적해가 있고, 두 최적값은 같습니다.</div>
+    <div class="proof"><p>표준형 "최소화 c<sup>T</sup>x, Ax = b, x ≥ 0"으로 봅니다. 5장의 심플렉스법(Bland 규칙을 쓰면 반드시 끝남)이 최적 기저 B에서 멈췄다고 합시다. u<sup>T</sup> = c<sub>B</sub><sup>T</sup>B<sup>−1</sup>로 둡니다. 심플렉스법이 「최적」이라고 멈추는 것은 감소 비용이 모두 0 이상인 기저에 닿았을 때뿐입니다(5장 정리 5.3이 그 판정 기준입니다. 최적인 꼭짓점의 기저가 모두 이 조건을 만족한다는 말이 아니라, 멈춘 기저가 만족한다는 말입니다). 따라서 멈춘 기저 B에서는 모든 j에 대해 감소 비용 c̄<sub>j</sub> = c<sub>j</sub> − u<sup>T</sup>A<sub>j</sub> ≥ 0, 곧 A<sup>T</sup>u ≤ c이므로 u는 쌍대 가능해입니다. 쌍대 목적값은 b<sup>T</sup>u = c<sub>B</sub><sup>T</sup>B<sup>−1</sup>b = c<sub>B</sub><sup>T</sup>x<sub>B</sub> = c<sup>T</sup>x로 원시 최적값과 같습니다. 약쌍대에 의해 어떤 쌍대 가능해도 이보다 클 수 없으므로 u가 쌍대 최적입니다. 여기서 쓴 약쌍대는 표준형판입니다. 표준형의 쌍대는 "최대화 b<sup>T</sup>u, A<sup>T</sup>u ≤ c, u는 부호 제한 없음"(등식 제약의 승수는 부호가 자유)이고, 약쌍대는 b<sup>T</sup>u = (Ax)<sup>T</sup>u = x<sup>T</sup>(A<sup>T</sup>u) ≤ x<sup>T</sup>c 한 줄로 나옵니다(x ≥ 0). 정의 6.1의 꼴 Ax ≥ b는 잉여 변수 s를 붙여 Ax − s = b로 바꾸면 표준형이 되고, 그때 −s 열의 쌍대 제약이 −u<sub>i</sub> ≤ 0, 곧 u<sub>i</sub> ≥ 0이 되어 정의 6.1의 쌍대로 그대로 돌아옵니다. 그래서 이 증명은 정의 6.1의 꼴에도 성립합니다.</p></div>
+    <p>증명이 쌍대 최적해를 만드는 식까지 줍니다. <strong>u<sup>T</sup> = c<sub>B</sub><sup>T</sup>B<sup>−1</sup></strong>. 숫자로 확인합니다.</p>
+    <ul class="plain">
+      <li>트럭: B = [9] (x의 열), c<sub>B</sub> = 10 → u = 10/9. 1부의 값과 같습니다.</li>
+      <li>생산: 최적 기저 {x<sub>1</sub>, x<sub>2</sub>}의 열로 B = [[6, 4], [1, 2]], c<sub>B</sub> = (5, 4). u<sup>T</sup>B = c<sub>B</sub><sup>T</sup>를 풀면 6u<sub>1</sub> + u<sub>2</sub> = 5, 4u<sub>1</sub> + 2u<sub>2</sub> = 4 → u = (3/4, 1/2). 1부의 값과 같습니다.</li>
+    </ul>
+    <p>부호 약속을 하나로 정해 둡니다. 정리 6.3은 <em>최소화</em> 표준형에 대한 것입니다. 생산 예(최대화)를 최소화 −5x<sub>1</sub> − 4x<sub>2</sub>로 바꿔 c<sub>B</sub> = (−5, −4)를 넣으면 u<sub>min</sub> = (−3/4, −1/2)이 나옵니다(≤ 제약의 승수는 최소화형에서 0 이하, 변환표와 같음). 여유 변수 s<sub>i</sub>의 열은 단위 벡터 e<sub>i</sub>이고 비용이 0이므로 감소 비용은 0 − u<sub>min</sub><sup>T</sup>e<sub>i</sub> = −u<sub>min,i</sub>, 곧 +3/4, +1/2입니다. 5장에서 본 대로 최대화 단체표의 z 줄에 적히는 값이 바로 이 최소화형 감소 비용이므로, 5장 표 2의 s<sub>1</sub>, s<sub>2</sub> 아래 3/4, 1/2이 그것입니다. 최대화 문제의 쌍대(1부에서 상한을 만든 u = (3/4, 1/2))는 u<sub>min</sub>의 부호를 뒤집은 것입니다. 위 목록에서 c<sub>B</sub> = (5, 4)를 그대로 넣어 (3/4, 1/2)을 얻은 것은 이 부호 뒤집기를 한 번에 한 셈입니다. 정리하면 <strong>단체표의 여유 변수 열 z 줄 = 최대화 쌍대의 u</strong>입니다.</p>
+  </section>
+
+  <section>
+    <h2>상보 여유성: 최적의 지문</h2>
+    <p>약쌍대 증명의 부등식 두 개가 모두 등식이 될 때에만 b<sup>T</sup>u = c<sup>T</sup>x가 됩니다. 각 부등식이 등식이 될 조건을 항별로 풀어 쓰면 다음 정리가 됩니다.</p>
+    <div class="thm"><b>정리 6.4 (상보 여유성, complementary slackness)</b> 원시 가능해 x와 쌍대 가능해 u가 둘 다 최적일 필요충분조건은 다음 두 가지입니다. (충분 방향은 약쌍대만으로 나오고, "둘 다 최적이면 성립한다"는 필요 방향은 강쌍대(두 최적값이 같다)를 씁니다.)
+      <p>(가) 원시 제약 i에 여유가 있으면(a<sub>i</sub><sup>T</sup>x &gt; b<sub>i</sub>) 그 승수는 0이다(u<sub>i</sub> = 0).</p>
+      <p>(나) 원시 변수가 양수이면(x<sub>j</sub> &gt; 0) 그 쌍대 제약은 꽉 찬다((A<sub>j</sub>)<sup>T</sup>u = c<sub>j</sub>, 곧 감소 비용 0).</p></div>
+    <p>"여유 × 가격 = 0"이 항마다 성립한다는 뜻입니다. 남아도는 원료에는 가격이 붙지 않고, 실제로 쓰는 활동은 순 비용이 0이어야 합니다(순 비용이 양수면 안 하는 게 낫고, 음수면 더 하는 게 낫습니다).</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>예</th><th>확인할 것</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td>생산</td><td>x<sub>1</sub> = 3 &gt; 0 → 6u<sub>1</sub> + u<sub>2</sub> = 5?</td><td>4.5 + 0.5 = 5 ✓</td></tr>
+        <tr><td>생산</td><td>x<sub>2</sub> = 1.5 &gt; 0 → 4u<sub>1</sub> + 2u<sub>2</sub> = 4?</td><td>3 + 1 = 4 ✓</td></tr>
+        <tr><td>생산</td><td>원료 제약에 여유가 있나?</td><td>18 + 6 = 24, 3 + 3 = 6. 둘 다 꽉 참. u &gt; 0 허용 ✓</td></tr>
+        <tr><td>트럭</td><td>x = 10/3 &gt; 0 → 9u = 10?</td><td>9 × 10/9 = 10 ✓</td></tr>
+        <tr><td>트럭</td><td>y = 0 → 5u ≤ 7이기만 하면 됨</td><td>5u = 50/9, 여유 7 − 50/9 = 13/9 (= y의 감소 비용)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>마지막 줄이 하나를 더 알려 줍니다. <strong>감소 비용은 쌍대 제약의 여유</strong>입니다. c̄<sub>j</sub> = c<sub>j</sub> − (A<sub>j</sub>)<sup>T</sup>u. 원시 쪽에서 "변수 j를 넣으면 비용이 얼마 바뀌나"였던 값이 쌍대 쪽에서는 "쌍대 제약 j가 얼마나 남는가"입니다. 감소 비용이 음수인 변수가 있다는 것은 그 쌍대 제약이 깨졌다는 것, 곧 지금의 u가 쌍대 가능하지 않다는 것입니다. 11장의 열 생성은 이 사실 하나 위에 서 있습니다. 변수가 너무 많아 다 적을 수 없을 때, "쌍대 제약을 어기는 변수(감소 비용이 음수인 변수)가 있는가"만 따로 찾으면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>쌍대값 = 그림자 가격</h2>
+    <p>쌍대값의 경제적 뜻을 숫자로 확인합니다. 생산 예에서 원료 1을 24에서 25로 한 단위 늘려 다시 풀면 최적해는 (13/4, 11/8), 이익은 87/4 = 21.75입니다. 늘어난 이익 0.75가 u<sub>1</sub> = 3/4과 같습니다. 트럭 예에서 실을 짐을 30톤에서 31톤으로 늘리면 최적 비용은 310/9 ≈ 34.44로 10/9 늘고, u = 10/9와 같습니다.</p>
+    <div class="thm"><b>성질 6.5 (그림자 가격)</b> 최적 기저가 바뀌지 않는 범위에서 우변 b<sub>i</sub>를 Δ만큼 바꾸면 최적값은 u<sub>i</sub>Δ만큼 바뀝니다. 이 때문에 쌍대값을 <strong>그림자 가격(shadow price)</strong>이라고 부릅니다. 제약 i라는 자원 한 단위의 한계 가치입니다.</div>
+    <p>이유는 강쌍대 증명의 식 c<sup>T</sup>x = u<sup>T</sup>b에 있습니다. 기저 B가 그대로이면 u<sup>T</sup> = c<sub>B</sub><sup>T</sup>B<sup>−1</sup>도 그대로이고 최적값은 u<sup>T</sup>b의 일차식입니다. Δ가 너무 커서 x<sub>B</sub> = B<sup>−1</sup>b에 음수가 생기면 기저가 바뀌고 가격도 바뀝니다. 이 범위를 따지는 일을 민감도 분석이라고 합니다.</p>
+    <p>CVRPTW 개발자에게 익숙한 장면으로 옮기면, 고객마다 "정확히 한 번 방문" 제약이 있을 때 그 제약의 쌍대값은 "이 고객을 서비스하는 데 드는 한계 비용"쯤으로 읽힙니다. 가이드 9장이 branch-and-price를 설명하며 말한 "고객마다의 가격"이 이것입니다(11장).</p>
+  </section>
+
+  <section>
+    <h2>원시와 쌍대가 함께 가질 수 있는 상태</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>쌍대: 최적해 있음</th><th>쌍대: 비유계</th><th>쌍대: 불능</th></tr></thead>
+      <tbody>
+        <tr><td>원시: 최적해 있음</td><td>가능, 값이 같음 (강쌍대)</td><td>불가능</td><td>불가능</td></tr>
+        <tr><td>원시: 비유계</td><td>불가능</td><td>불가능</td><td>가능 (약쌍대: 하한이 있으면 비유계일 수 없으므로)</td></tr>
+        <tr><td>원시: 불능</td><td>불가능</td><td>가능</td><td>가능</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>"원시가 불능이면 쌍대는 비유계이거나 불능"이라는 칸에는 직관적인 짝이 있습니다. 원시 문제가 불능이라는 것은, 제약들을 적당히 곱해 더하면 0 ≥ (양수) 같은 모순이 나온다는 것과 같습니다. 예를 들어 x + y ≥ 3과 x + y ≤ 1이 함께 있으면 첫 식에서 둘째 식을 빼서 0 ≥ 2를 얻습니다. 이런 "모순의 증거가 되는 승수"가 존재한다는 정리를 <strong>Farkas 보조정리</strong>라고 합니다. 이 승수를 쌍대 변수로 보면 이렇습니다. 위 예에서 x + y ≥ 3에 1을, x + y ≤ 1(곧 −x − y ≥ −1)에 1을 주면, 쌍대 제약의 왼쪽(변수 x, y의 계수를 섞은 값)에는 1 − 1 = 0이 더해져 아무것도 바뀌지 않고, 쌍대 목적값(오른쪽 숫자를 섞은 값)에는 3 − 1 = 2가 더해집니다. 그래서 쌍대 가능해가 하나라도 있으면, 거기에 이 승수를 몇 배든 더해도 여전히 쌍대 가능하고 목적값은 2씩 끝없이 오릅니다. 곧 쌍대가 가능하다면 비유계입니다. 이 교재에서는 직관만으로 충분합니다. 가능하지 않다는 것도 승수 하나로 증명된다는 점, 그리고 그 승수 역시 "제약을 곱해서 더한다"는 같은 동작이라는 점만 기억해 두면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>쌍대 간격</h2>
+    <div class="defn"><b>정의 6.6</b> 원시 가능해 x와 쌍대 가능해 u가 있을 때, c<sup>T</sup>x − b<sup>T</sup>u ≥ 0을 그 쌍의 <strong>쌍대 간격(duality gap)</strong>이라고 합니다. 원시 최적값은 이 구간 [b<sup>T</sup>u, c<sup>T</sup>x] 안에 있습니다.</div>
+    <p>간격이 0이면 약쌍대(정리 6.2)에 의해 두 해 모두 최적임이 증명된 것입니다. 거꾸로 "최적인 쌍의 간격은 0"이라는 것이 강쌍대(정리 6.3)입니다. 간격이 ε이면 x는 최적보다 많아야 ε만큼 나쁩니다. 이 구조, 곧 "가능해 하나(상한)와 하한을 증명하는 증거 하나를 함께 들고 다니며 그 사이를 좁힌다"는 것은 7장의 내부점법이 멈추는 기준이고, 9장에서 MIP(일부 변수가 정수여야 하는 문제, 2장 「먼저 정해 둘 말」) 솔버의 gap(지금까지 찾은 가장 좋은 정수해의 값인 incumbent와, 증명된 하한인 best bound의 차이)으로 다시 나옵니다. MIP의 gap은 끝까지 가도 0이 된다는 보장이 정리 6.3처럼 공짜로 주어지지 않는다는 점만 다르고, 그 차이를 메우는 것이 분지입니다.</p>
+  </section>
+
+  <div class="part">3부 · 쌍대 심플렉스: 분지한계법의 일꾼</div>
+
+  <section>
+    <h2>"최적성은 유지, 가능성만 깨짐"에서 출발하기</h2>
+    <p>먼저 이 절의 배경을 한 문단으로 정해 둡니다(자세한 것은 9장). 트럭 예 같은 정수 문제를 풀 때 솔버는 먼저 정수 조건을 지운 LP(<strong>LP 완화</strong>)를 풉니다. 답이 x = 10/3처럼 정수가 아니면, 3과 4 사이에는 정수가 없으므로 "x ≤ 3을 더한 문제"와 "x ≥ 4를 더한 문제" 둘로 나눠 각각 LP를 다시 풉니다. 이것을 <strong>분지</strong>, 나뉜 문제 하나하나를 <strong>가지</strong>라고 하고, 이 나누기를 되풀이하는 방법이 <strong>분지한계법</strong>입니다. 그 과정에서 지금까지 찾은 가장 좋은 정수해를 <strong>incumbent</strong>라고 부르며, 어떤 가지의 LP 값(하한)이 incumbent 이상이면 그 가지는 더 볼 필요가 없어 버립니다(<strong>가지치기</strong>). 가이드 4장의 트럭 예 표는 이 가지들에 ①~⑦ 번호를 붙였습니다(① 뿌리, ② x ≥ 4, ③ x ≤ 3, ④ ③에 y ≤ 0을 더한 것, ⑤ ③에 y ≥ 1을 더한 것, ⑥ ⑤에 x ≥ 3을, ⑦ ⑤에 x ≤ 2를 더한 것. 표 전체와 각 가지의 값은 9장 2부에서 계산합니다).</p>
+    <p>5장 끝에서 본 상황입니다. 트럭 LP의 최적 사전</p>
+    <div class="eq">
+      <div class="row"><span>x = 10/3 − (5/9)y + (1/9)s</span></div>
+      <div class="row"><span>비용 = 100/3 + (13/9)y + (10/9)s</span></div>
+    </div>
+    <p>에 분지 제약 x ≤ 3을 더합니다(가이드 4장 트럭 예의 ③ 가지, 곧 "x ≤ 3을 더한 자식 LP"). 여유 변수 t ≥ 0을 붙여 x + t = 3으로 쓰고, x를 위 식으로 바꿔 t를 비기저 변수 y, s로 적습니다.</p>
+    <div class="formula">t = 3 − x = −1/3 + (5/9)y − (1/9)s</div>
+    <p>새 기저 {x, t}의 상태는 이렇습니다.</p>
+    <ul class="plain">
+      <li><strong>원시 가능하지 않음.</strong> t = −1/3 &lt; 0. 부모의 해가 새 제약을 어깁니다.</li>
+      <li><strong>쌍대 가능함.</strong> 비용 줄의 감소 비용 13/9, 10/9가 그대로 0 이상입니다. 이 장 2부의 말로 하면 지금 기저에서 만든 u는 여전히 쌍대 가능해이고, 따라서 지금의 값 100/3은 자식 LP의 하한입니다.</li>
+    </ul>
+    <p>원시 심플렉스는 원시 가능성을 지키며 최적성을 찾아가는 방법이었습니다. 이 상태에서는 거꾸로, <strong>쌍대 가능성(감소 비용 ≥ 0)을 지키며 원시 가능성을 찾아가는</strong> 방법이 알맞습니다. 이것이 쌍대 심플렉스입니다.</p>
+    <div class="defn"><b>정의 6.7</b> <strong>쌍대 심플렉스(dual simplex)</strong>의 한 걸음. (1) 값이 음수인 기저 변수 하나를 탈출 변수로 고릅니다. (2) 그 줄에서, 올리면 탈출 변수가 커지는 비기저 변수(사전에서 계수가 양수인 것)들 가운데, (감소 비용) ÷ (그 계수)가 가장 작은 것을 진입 변수로 고릅니다. 이 비율 검사가 감소 비용을 모두 0 이상으로 지켜 줍니다. (3) 5장과 똑같이 피벗합니다. 음수인 기저 변수가 없어지면 원시 가능해졌고, 쌍대 가능성은 계속 유지됐으므로 최적입니다. (2)에서 후보가 하나도 없으면, 곧 탈출 변수의 줄에서 어떤 비기저 변수를 올려도 그 값이 커지지 않으면, 그 변수를 0 이상으로 만들 방법이 없으므로 이 LP는 <strong>불능</strong>입니다(5장 최소비 검사의 "막는 줄이 없으면 비유계"와 짝을 이룹니다).</div>
+    <p>트럭 예에 적용합니다.</p>
+    <ol class="plain">
+      <li>탈출 변수: t (값 −1/3).</li>
+      <li>t의 줄에서 계수가 양수인 비기저 변수는 y(5/9)뿐입니다. s는 계수가 −1/9이라 올리면 t가 더 작아집니다. 비율 (13/9) ÷ (5/9) = 13/5. y 진입.</li>
+      <li>t의 줄을 y에 대해 풀면 y = 3/5 + (9/5)t + (1/5)s. 대입하면
+        <div class="eq">
+          <div class="row"><span>y = 3/5 + (9/5)t + (1/5)s</span></div>
+          <div class="row"><span>x = 10/3 − (5/9)[3/5 + (9/5)t + (1/5)s] + (1/9)s = 3 − t</span></div>
+          <div class="row"><span>비용 = 100/3 + (13/9)[3/5 + (9/5)t + (1/5)s] + (10/9)s = 171/5 + (13/5)t + (7/5)s</span></div>
+        </div>
+      </li>
+      <li>기저 변수 x = 3, y = 3/5 모두 0 이상이고 감소 비용 13/5, 7/5도 0 이상입니다. 최적. 값 171/5 = 34.2.</li>
+    </ol>
+    <p>불능 판정의 예도 바로 나옵니다. 위 결과에 y ≤ 0을 더하면(가이드 4장 표의 ④ 가지) 여유 변수 r ≥ 0을 붙여 y + r = 0, 곧 r = −y = −3/5 − (9/5)t − (1/5)s입니다. r = −3/5 &lt; 0이라 탈출 변수인데, t와 s의 계수가 모두 음수라 무엇을 올려도 r이 커지지 않습니다. 진입 후보가 없으므로 이 가지는 불능입니다. 실제로 x ≤ 3, y ≤ 0이면 9x + 5y ≤ 27 &lt; 30이라 짐을 다 실을 수 없습니다.</p>
+    <p>피벗 한 번으로 가이드 4장 표의 ③ "(3, 0.6), 비용 34.2"에 도착했습니다. 처음부터 다시 풀었다면 2단계법부터 해야 했을 것입니다.</p>
+    <p><strong>진입 후보가 둘인 경우.</strong> 위 예에서는 후보가 하나뿐이라 (2)의 "비율이 가장 작은 것"을 고를 일이 없었습니다. ③의 최적 사전에 y ≥ 1을 더한 ⑤ 가지에서는 후보가 둘입니다. 잉여 변수 r ≥ 0을 두어 y − r = 1로 쓰면</p>
+    <div class="formula">r = y − 1 = −2/5 + (9/5)t + (1/5)s</div>
+    <p>r = −2/5 &lt; 0이라 r이 탈출 변수이고, t와 s 모두 계수가 양수라 둘 다 후보입니다. 비율은 t가 (13/5) ÷ (9/5) = 13/9, s가 (7/5) ÷ (1/5) = 7입니다. 작은 쪽인 t가 들어갑니다. r의 줄을 t에 대해 풀면 t = 2/9 + (5/9)r − (1/9)s이고, 대입하면</p>
+    <div class="eq">
+      <div class="row"><span>x = 3 − t = 25/9 − (5/9)r + (1/9)s,&nbsp;&nbsp; y = 1 + r</span></div>
+      <div class="row"><span>비용 = 171/5 + (13/5)[2/9 + (5/9)r − (1/9)s] + (7/5)s = 313/9 + (13/9)r + (10/9)s</span></div>
+    </div>
+    <p>기저 변수 x = 25/9, y = 1, t = 2/9가 모두 0 이상이고 감소 비용 13/9, 10/9도 0 이상이므로 최적입니다. 값은 313/9 ≈ 34.78입니다. 비율이 큰 s를 넣었다면 어떻게 될까요. s = 2 + 5r − 9t를 비용에 넣으면 t의 계수가 13/5 − 7 × (9/5) = −10으로 음수가 됩니다. 쌍대 가능성이 깨져서 "도중의 값이 하한"이라는 보장도, 멈췄을 때 최적이라는 보장도 없어집니다. 비율이 가장 작은 변수를 고르는 이유가 이것입니다. 진입 변수의 감소 비용이 가장 먼저 0에 닿게 해서 나머지가 음수로 넘어가지 않게 합니다.</p>
+    <p>하나 더 볼 점이 있습니다. 쌍대 심플렉스는 피벗마다 쌍대 가능해를 들고 있으므로, <strong>도중의 목적값이 그 자식 LP의 하한</strong>이고 피벗할수록 올라갑니다(100/3 → 34.2). 그래서 분지한계법은 자식 LP를 끝까지 풀기 전에도, 그 하한이 이미 incumbent 이상이 되는 순간 계산을 멈추고 가지를 버릴 수 있습니다. 원시 심플렉스의 도중 값은 상한 쪽이라 이런 쓸모가 없습니다.</p>
+  </section>
+
+  <section>
+    <h2>왜 분지한계법은 쌍대 심플렉스를 쓰는가</h2>
+    <p>정리합니다. 분지한계법이 자식을 만들 때 바꾸는 것은 제약(변수의 범위)뿐이고 목적함수는 그대로입니다. 그러면</p>
+    <ul class="plain">
+      <li>부모의 최적 기저는 자식에서 감소 비용이 그대로라 <strong>쌍대 가능</strong>합니다.</li>
+      <li>대신 분지 제약을 어기므로 <strong>원시 가능하지 않습니다.</strong></li>
+    </ul>
+    <p>이 출발점은 쌍대 심플렉스에 꼭 맞고, 부모와 자식은 제약 하나만 다르니 몇 번의 피벗으로 끝나는 것이 보통입니다. 반대로 원시 심플렉스는 원시 가능한 기저가 필요해 이 출발점을 그대로 쓰지 못합니다. 가이드 4장이 "가지를 이어 풀 때는 주로 쌍대 심플렉스를 씁니다"라고 한 이유가 이것입니다. 그리고 이 모든 것은 <em>부모의 답에 기저가 있다</em>는 전제 위에 있습니다. 7장에서 기저가 없는 답을 내는 방법(배리어)을 보면 이 전제가 왜 중요한지가 드러납니다.</p>
+  </section>
+
+  <div class="part">4부 · 가이드와 연결</div>
+
+  <section>
+    <h2>가이드의 어느 문장이 이 장의 내용인가</h2>
+    <div class="gref">
+      <p><strong>가이드 4장 1부 「상한과 하한 사이에 답이 있다」.</strong> 하한(best bound)을 "문헌에서는 dual bound라고도 부릅니다. 이름만 알아 두면 됩니다"라고 했습니다. 이 장의 말로는 쌍대 가능해의 목적값이 원시 최적값의 하한이라는 약쌍대 정리(정리 6.2)가 그 이름의 출처입니다. MIP에서는 LP 완화의 최적값이 하한이고(9장), LP 완화의 최적값은 강쌍대에 의해 그 LP의 쌍대 최적값과 같습니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 3부 「LP를 푸는 두 방법」.</strong> "원(primal) 심플렉스와 쌍대(dual) 심플렉스 두 변종이 있고, 가지를 이어 풀 때는 주로 쌍대 심플렉스를 씁니다." 3부의 트럭 예가 바로 그 장면입니다. 가이드 4장 2부 트럭 예 표의 ③, ⑤, ⑦ 같은 가지들이 부모의 기저에서 쌍대 심플렉스 피벗 몇 번으로 풀린다고 보면 됩니다(③과 ⑤는 3부 본문에서, ②는 연습문제에서 풀어 봅니다).</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 9장 「발표자료가 꼽은 세 갈래」의 branch-and-price.</strong> "그 LP가 알려 주는 '고객마다의 가격'(각 제약이 목적함수에 미치는 영향의 크기)을 써서 지금 추가하면 비용이 줄어들 경로가 있는지를 찾는" 부분의 가격이 이 장의 쌍대값(그림자 가격)이고, "비용이 줄어들 경로"는 감소 비용이 음수인 변수, 곧 쌍대 제약을 어기는 변수입니다. 11장에서 이어 갑니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 10장 5단계 「정식화의 강도와 이론」.</strong> 쌍대성을 "모든 LP에 짝이 되는 LP가 있고 두 문제의 최적값이 같다는 정리 … 제약식마다 '이 제약을 한 단위 풀어 주면 비용이 얼마나 줄어드는가'를 뜻하는 가격(쌍대값)이 붙는다"고 요약했습니다. 정리 6.3과 성질 6.5가 그 두 문장의 정확한 형태입니다. 정확히는 "최적값이 같다"는 원시에 최적해가 있을 때의 이야기이고, 가격의 뜻은 최적 기저가 바뀌지 않는 범위에서만 성립합니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>최소화 3x<sub>1</sub> + 2x<sub>2</sub>, 제약 x<sub>1</sub> + x<sub>2</sub> ≥ 4, x<sub>1</sub> − x<sub>2</sub> ≤ 2, x ≥ 0의 쌍대 문제를 변환 규칙표로 적으세요.</summary>
+      <p>첫 제약(≥)에 u<sub>1</sub> ≥ 0, 둘째 제약(≤)에 u<sub>2</sub> ≤ 0. 변수가 모두 ≥ 0이므로 쌍대 제약은 ≤. 최대화 4u<sub>1</sub> + 2u<sub>2</sub>, 제약 u<sub>1</sub> + u<sub>2</sub> ≤ 3, u<sub>1</sub> − u<sub>2</sub> ≤ 2, u<sub>1</sub> ≥ 0, u<sub>2</sub> ≤ 0. (원시 최적은 (0, 4), 값 8. 쌍대 최적은 u = (2, 0), 값 8로 같습니다. 원시에서 x<sub>2</sub> &gt; 0이므로 둘째 쌍대 제약 u<sub>1</sub> − u<sub>2</sub> = 2가 꽉 차고, 원시 둘째 제약은 0 − 4 = −4 &lt; 2로 여유가 있으니 u<sub>2</sub> = 0. 상보 여유성과 맞습니다.)</p>
+    </details>
+    <details>
+      <summary>트럭 LP에서 u = 1을 쓰면 어떤 하한이 나오나요? u = 1.2는요?</summary>
+      <p>u = 1: 9 ≤ 10, 5 ≤ 7로 쌍대 가능하므로 하한 30. 맞지만 100/3보다 약합니다. u = 1.2: 9 × 1.2 = 10.8 &gt; 10이라 쌍대 가능하지 않습니다. 실제로 10x + 7y ≥ 36은 거짓입니다((10/3, 0)이 33.33을 냅니다). x의 계수를 목적함수보다 크게 만들면 하한 논리가 깨집니다.</p>
+    </details>
+    <details>
+      <summary>생산 예에서 원료 2를 6에서 7로 늘리면 이익은 얼마가 되나요? 쌍대값으로 먼저 예측하고 직접 풀어 확인하세요.</summary>
+      <p>예측: u<sub>2</sub> = 1/2이므로 21.5. 직접: 6x<sub>1</sub> + 4x<sub>2</sub> = 24, x<sub>1</sub> + 2x<sub>2</sub> = 7 → 둘째 식의 두 배를 빼면 4x<sub>1</sub> = 10, x<sub>1</sub> = 5/2, x<sub>2</sub> = 9/4. 둘 다 양수라 기저가 그대로이고 이익 12.5 + 9 = 21.5. 일치합니다.</p>
+    </details>
+    <details>
+      <summary>가이드 4장 트럭 예의 ② 가지(x ≥ 4)를 부모의 최적 사전에서 쌍대 심플렉스로 풀어 보세요.</summary>
+      <p>x − t = 4, t ≥ 0. t = x − 4 = −2/3 − (5/9)y + (1/9)s. t &lt; 0이므로 t 탈출. 이 줄에서 계수가 양수인 비기저 변수는 s(1/9)뿐, 비율 (10/9) ÷ (1/9) = 10. s 진입: s = 6 + 9t + 5y. 대입하면 x = 4 + t, 비용 = 100/3 + (13/9)y + (10/9)(6 + 9t + 5y) = 40 + 10t + 7y. 감소 비용 10, 7 ≥ 0이고 x = 4, s = 6 ≥ 0. 최적 (4, 0), 비용 40. 가이드 표의 ②와 같습니다.</p>
+    </details>
+    <details>
+      <summary>쌍대 심플렉스 도중에 자식 LP의 목적값이 incumbent 이상이 되면 왜 그 자리에서 가지를 버려도 되나요?</summary>
+      <p>쌍대 심플렉스는 피벗마다 쌍대 가능성(감소 비용 ≥ 0)을 유지하므로 그 시점의 목적값은 쌍대 가능해의 값이고, 약쌍대에 의해 자식 LP 최적값의 하한입니다. 자식 LP 최적값은 다시 그 가지 안 정수해들의 하한입니다. 따라서 그 가지에서 incumbent보다 좋은 해는 나올 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>"최소화 c<sup>T</sup>x, Ax ≥ b, x ≥ 0"에서 원시 가능해 x와 쌍대 가능해 u의 쌍대 간격 c<sup>T</sup>x − b<sup>T</sup>u를 상보 여유성의 두 항의 합으로 써 보세요.</summary>
+      <p>c<sup>T</sup>x − b<sup>T</sup>u = (c − A<sup>T</sup>u)<sup>T</sup>x + u<sup>T</sup>(Ax − b). 첫 항은 Σ(감소 비용 × x<sub>j</sub>), 둘째 항은 Σ(승수 × 제약 여유)이고, 가능해이면 각 곱이 0 이상입니다. 간격이 0인 것과 모든 곱이 0인 것(상보 여유성)이 같다는 것이 이 식에서 바로 보입니다. 7장의 내부점법은 이 곱들을 모두 μ로 같게 두고 μ를 줄여 갑니다.</p>
+    </details>
+    <details>
+      <summary>원시 LP가 비유계이면 쌍대 LP는 왜 불능이어야 하나요?</summary>
+      <p>쌍대 가능해 u가 하나라도 있으면 약쌍대에 의해 원시의 모든 가능해 값이 b<sup>T</sup>u 이상이어서 원시가 아래로 끝없이 내려갈(최소화에서 비유계일) 수 없습니다. 따라서 쌍대 가능해가 없습니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1390032">KOCW 「선형계획의 대수적 해법과 쌍대문제」 (한국공학대 허재석, 2021)</a> — 9~13강이 쌍대문제의 경제적 해석, 변환, 원문제와 쌍대문제의 관계입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1317851">KOCW 「경영과학」 (연세대 송용욱, 2018)</a> — 9~11강 민감도 분석, 12~13강 쌍대이론.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — 「쌍대성」 절에 약쌍대·강쌍대가 정리되어 있습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/pages/lecture-notes/">MIT OCW 6.251J 강의 노트</a> — 9~11강 Duality I~III, 12강 Sensitivity.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트</a> — 6강 Sensitivity analysis and shadow prices(그림자 가격을 학부 수준으로).</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">Bertsimas, Tsitsiklis, Introduction to Linear Optimization</a> — 4장 Duality theory(Farkas 보조정리, 쌍대 심플렉스 포함), 5장 Sensitivity analysis. 출판사 목차 페이지로 장 순서를 확인했습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/~boyd/cvxbook/">Boyd, Vandenberghe, Convex Optimization (무료 PDF)</a> — 5장 Duality. LP를 넘어 볼록 최적화 일반의 쌍대(라그랑지 쌍대)로 넓힌 설명이라 11장의 라그랑지 완화와 이어집니다. 수준이 높습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">참고</span><a href="https://en.wikipedia.org/wiki/Dual_linear_program">Wikipedia 「Dual linear program」</a>, <a href="https://en.wikipedia.org/wiki/Linear_programming#Complementary_slackness">「Linear programming」의 Complementary slackness 절</a>.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch5">← 이전: 5장 심플렉스법</a><a href="#ch7">다음: 7장 내부점법과 크로스오버 →</a></div>
+</article>

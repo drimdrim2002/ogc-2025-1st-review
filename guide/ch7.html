@@ -1,0 +1,382 @@
+<article class="chapter" id="ch7">
+  <header>
+    <div class="kicker">7 / 10</div>
+    <h1>해 복원: 숫자 표를 경로 목록으로</h1>
+  </header>
+
+  <section>
+    <p class="lead">솔버가 끝나면 손에 남는 것은 x, y, z의 값입니다. "항구 1에서 칸 4에 실려 항구 4에서 내려지는 구간이 있다"는 식의 사실들입니다. 대회가 요구하는 것은 항구마다 <strong>실행 순서대로 늘어놓은 (경로, 수요 번호) 목록</strong>입니다. 이 장은 그 사이를 잇는 코드 <code>get_solution</code>(<span class="mono">function.cpp</span> 179~347줄)을 읽습니다.</p>
+    <p>이 부분에는 최적화가 없습니다. 5장에서 "순서와 경로는 규칙으로 정해진다"고 했던 그 규칙을 그대로 실행하는 절차입니다. 예시는 6장의 최적해를 이어서 씁니다.</p>
+  </section>
+
+  <section>
+    <h2>채워야 할 빈칸 세 가지</h2>
+    <p>x가 말해 주는 것과 출력에 필요한 것을 나란히 놓으면 빠진 것이 보입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>출력에 필요한 것</th><th>x가 말해 주는가</th><th>채우는 방법</th></tr></thead>
+      <tbody>
+        <tr><td>어느 항구에서 어느 칸에 싣고 내리는가</td><td>예. x<sub>pqi</sub> = 1이면 항구 p에서 칸 i에 싣고 항구 q에서 내립니다</td><td>그대로 읽음</td></tr>
+        <tr><td>그 차가 <strong>몇 번 수요</strong>인가</td><td>아니요. x에는 (p, q)만 있고, 임시 하역으로 생긴 토막은 원래 수요와 (p, q)가 다릅니다</td><td>z를 보고 수요 번호를 토막에 나눠 줌 (<code>getDemandIdVec</code>)</td></tr>
+        <tr><td>어떤 <strong>경로</strong>로 가는가</td><td>아니요</td><td>머무는 차를 지운 그래프에서 BFS (<code>getAccessibilityInfo</code>, <code>getBFSOrientation</code>, <code>getUnloadingRoute</code>)</td></tr>
+        <tr><td>어떤 <strong>순서</strong>로 실행하는가</td><td>아니요</td><td>하역 먼저, 가까운 것부터. 그다음 선적, 먼 것부터</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <div class="part">1부 · 수요 번호 나눠 주기</div>
+
+  <section>
+    <h2>getDemandIdVec: (p, q) 주머니에 수요 번호 넣기</h2>
+    <p>항구 쌍 (p, q)마다 주머니를 하나 둡니다. 주머니에는 "이 구간으로 실릴 차의 수요 번호"가 대수만큼 들어갑니다. 코드에서는 <code>demandIdVec[idx2(p, q, num_ports)]</code>라는 정수 벡터입니다.</p>
+    <p><strong>1단계: 원래 수요를 넣는다.</strong> 수요 k가 (o, d), r대이면 주머니 (o, d)에 k를 r번 넣습니다.</p>
+<pre><span class="c">// function.cpp 274~284줄</span>
+vector&lt;vector&lt;int&gt;&gt; demandIdVec(num_ports * num_ports);          <span class="c">// 주머니 P×P개 (처음엔 모두 빈 벡터)</span>
+for (int demand_id = 0; demand_id &lt; num_demands; ++demand_id)
+{
+    const PortId origin = demand_origin[demand_id];              <span class="c">// K의 demand_id번째 항목의 출발 항구</span>
+    const PortId destination = demand_dest[demand_id];           <span class="c">// 도착 항구</span>
+    auto&amp; bag = demandIdVec[idx2(origin, destination, num_ports)];
+    bag.resize(demand_quantity[demand_id]);                      <span class="c">// 대수만큼 자리를 만들고</span>
+    std::fill(bag.begin(), bag.end(), demand_id);                <span class="c">// 전부 수요 번호로 채운다</span>
+}</pre>
+    <p>(원래 코드는 <code>bag</code>이라는 이름을 쓰지 않고 <code>demandIdVec[idx2(…)]</code>를 매번 풀어 적습니다. 읽기 쉽게 줄인 것이고 동작은 같습니다.)</p>
+    <p><strong>2단계: z만큼 쪼갠다.</strong> z<sub>pqr</sub> = n이면 주머니 (p, r)에서 번호 n개를 꺼내, 같은 번호를 주머니 (p, q)와 (q, r)에 <strong>하나씩 양쪽 다</strong> 넣습니다. 한 대가 두 토막이 되고 두 토막은 같은 수요 번호를 가집니다.</p>
+<pre><span class="c">// function.cpp 286~328줄. 줄바꿈과 주석만 손봤다</span>
+<span class="c">// (p, q, r) → 아직 못 쪼갠 대수</span>
+unordered_map&lt;tuple&lt;PortId, PortId, PortId&gt;, int&gt; remainingSplitAmountMap;
+for (PortId p = 0; p &lt; num_ports - 2; ++p)
+    for (PortId q = p + 1; q &lt; num_ports - 1; ++q)
+        for (PortId r = q + 1; r &lt; num_ports; ++r)
+        {
+            const int splitAmount =
+                std::round(z_pqr[idx3(p, q, r, num_ports, num_ports)].get(GRB_DoubleAttr_X));
+            if (splitAmount &gt; 0)
+                remainingSplitAmountMap[make_tuple(p, q, r)] = splitAmount;   <span class="c">// 0보다 큰 z만 기록</span>
+        }
+
+int num_leftSplit = remainingSplitAmountMap.size();           <span class="c">// 아직 다 못 쪼갠 (p, q, r)의 수</span>
+while (num_leftSplit &gt; 0)
+    for (auto [key, value] : remainingSplitAmountMap)
+    {
+        const PortId p = get&lt;0&gt;(key);
+        const PortId q = get&lt;1&gt;(key);
+        const PortId r = get&lt;2&gt;(key);
+
+        int splitAmount = std::min(value, static_cast&lt;int&gt;(demandIdVec[idx2(p, r, num_ports)].size()));
+        if (splitAmount == 0) continue;                       <span class="c">// 주머니 (p, r)이 비어 있으면 다음 바퀴에</span>
+
+        for (int j = 0; j &lt; splitAmount; ++j)
+        {
+            const int demandId = demandIdVec[idx2(p, r, num_ports)].back();
+            demandIdVec[idx2(p, r, num_ports)].pop_back();    <span class="c">// (p, r)에서 번호 하나를 꺼내</span>
+            demandIdVec[idx2(p, q, num_ports)].push_back(demandId);   <span class="c">// 앞 토막 주머니와</span>
+            demandIdVec[idx2(q, r, num_ports)].push_back(demandId);   <span class="c">// 뒤 토막 주머니에 넣는다</span>
+        }
+        remainingSplitAmountMap[key] -= splitAmount;
+        if (splitAmount == value) --num_leftSplit;            <span class="c">// 이 (p, q, r)은 다 쪼갰다</span>
+    }</pre>
+    <p><code>.get(GRB_DoubleAttr_X)</code>는 Gurobi 변수에서 "솔버가 찾은 가장 좋은 해에서의 값"을 읽는 호출입니다. 값이 실수로 돌아오므로 정수 변수 z는 <code>std::round</code>로 반올림합니다. <code>unordered_map</code>은 해시 맵이라 원소를 도는 순서가 정해져 있지 않습니다.</p>
+    <p>바깥의 <code>while</code>이 필요한 이유는 두 번 쪼개지는 차 때문입니다. 항구 0 → 4인 차가 항구 2에서 쪼개지고(z<sub>024</sub>), 뒤 토막 (2, 4)가 항구 3에서 또 쪼개진다면(z<sub>234</sub>), 주머니 (2, 4)는 첫 번째 쪼개기가 끝나야 채워집니다. 맵을 도는 순서가 정해져 있지 않으므로, 아직 재료가 없는 쪼개기는 건너뛰고 다음 바퀴에 다시 시도합니다. 쪼개기는 항상 긴 구간에서 짧은 구간을 만들기 때문에 서로 물고 물리는 일이 없습니다. 그리고 6장의 제약 ①이 모든 (p, q)에 대해 "들어온 번호의 수 − 쪼개져 나간 번호의 수 = Σ<sub>i</sub> x<sub>pqi</sub> ≥ 0"을 보장하므로, 가장 긴 구간부터 차례로 따져 보면 어느 쪼개기든 재료가 결국 채워집니다. 그래서 반복은 반드시 끝납니다.</p>
+    <p>두 번 쪼개지는 경우를 숫자로 보면 이렇습니다. 항구 0 → 4인 수요 7이 1대 있고 z<sub>024</sub> = 1, z<sub>234</sub> = 1이라고 합시다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>시점</th><th>주머니 (0, 4)</th><th>(0, 2)</th><th>(2, 4)</th><th>(2, 3)</th><th>(3, 4)</th></tr></thead>
+      <tbody>
+        <tr><td>1단계 뒤</td><td>[7]</td><td>[ ]</td><td>[ ]</td><td>[ ]</td><td>[ ]</td></tr>
+        <tr><td>(2, 3, 4)를 먼저 시도</td><td colspan="5">주머니 (2, 4)가 비어 있어 건너뜀</td></tr>
+        <tr><td>(0, 2, 4)를 쪼갬</td><td>[ ]</td><td>[7]</td><td>[7]</td><td>[ ]</td><td>[ ]</td></tr>
+        <tr><td>다음 바퀴에 (2, 3, 4)를 쪼갬</td><td>[ ]</td><td>[7]</td><td>[ ]</td><td>[7]</td><td>[7]</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 차는 구간 셋(0 → 2, 2 → 3, 3 → 4)이 되었고 세 주머니에 같은 번호 7이 하나씩 들어 있습니다.</p>
+    <p>예시에서는 z<sub>012</sub> = 2 하나뿐입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>주머니</th><th>1단계 뒤</th><th>2단계 뒤</th></tr></thead>
+      <tbody>
+        <tr><td>(0, 2)</td><td>[0, 0]</td><td>[ ]</td></tr>
+        <tr><td>(0, 1)</td><td>[ ]</td><td>[0, 0]</td></tr>
+        <tr><td>(1, 2)</td><td>[ ]</td><td>[0, 0]</td></tr>
+        <tr><td>(1, 4)</td><td>[1]</td><td>[1]</td></tr>
+        <tr><td>(2, 3)</td><td>[2]</td><td>[2]</td></tr>
+        <tr><td>(1, 3)</td><td>[3]</td><td>[3]</td></tr>
+        <tr><td>(3, 4)</td><td>[4]</td><td>[4]</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>6장의 제약 ①이 보장하는 것은 정확히 "2단계가 끝났을 때 주머니 (p, q)에 든 번호의 수 = Σ<sub>i</sub> x<sub>pqi</sub>"입니다. 그래서 나중에 구간 하나를 실을 때마다 주머니에서 번호를 하나씩 꺼내면 남지도 모자라지도 않습니다.</p>
+    <p>주머니에서 어느 번호를 꺼내 어느 칸에 붙이든 채점은 통과합니다. 채점기는 항구를 떠날 때 "수요 k의 차가 배에 몇 대 있는가"만 세기 때문입니다(1장). 수요 k = (o, d)의 번호 하나하나는 쪼개질 때마다 이어진 두 주머니로 나뉘어 들어가므로, 결국 o에서 d까지를 빈틈없이 덮는 구간들의 사슬 하나를 이룹니다. 따라서 o ≤ p &lt; d인 어느 항구 p를 떠날 때든, 번호 k를 달고 배에 실려 있는 차는 정확히 수요 k의 대수만큼입니다.</p>
+  </section>
+
+  <div class="part">2부 · 항구마다 경로 만들기</div>
+
+  <section>
+    <h2>get_solution의 뼈대</h2>
+<pre>for (PortId currentPortId = 0; currentPortId &lt; num_ports; ++currentPortId)
+{
+    <span class="c">// ① 머무는 차가 있는 칸 표시</span>
+    getAccessibilityInfo(nodeVec, currentPortId, num_nodes, num_ports, x_pqi);
+    vector&lt;NodeId&gt; positionVec;
+    getBFSOrientation(nodeVec, positionVec);        <span class="c">// ② 남은 그래프에서 BFS</span>
+
+    if (currentPortId &gt; 0)              { <span class="c">/* ③ 하역: 가까운 칸부터 */</span> }
+    if (currentPortId &lt; num_ports - 1)  { <span class="c">/* ④ 선적: 먼 칸부터 */</span> }
+}</pre>
+    <p>항구를 0번부터 차례로 돌며 네 가지 일을 합니다.</p>
+  </section>
+
+  <section>
+    <h2>① 머무는 차가 있는 칸을 지운다</h2>
+<pre><span class="c">// function.cpp 245~272줄 (요지)</span>
+if (currentPortId == 0 || currentPortId == num_ports - 1)
+    { 모든 노드의 _accessible = true; return; }
+
+for (NodeId i = 1; i &lt; num_nodes; ++i)
+{
+    bool inaccessibility_found = false;
+    for (PortId p = 0; p &lt; currentPortId; ++p)
+        for (PortId r = currentPortId + 1; r &lt; num_ports; ++r)
+            <span class="c">// 이 항구를 사이에 낀 구간이 있으면</span>
+            if (x_pqi[idx3(p, r, i, num_ports, num_nodes)].get(GRB_DoubleAttr_X) &gt; 1 - TOL)
+                inaccessibility_found = true;
+    nodeVec[i]._accessible = !inaccessibility_found;
+}</pre>
+    <p>6장 제약 ②의 왼쪽과 같은 합입니다. 현재 항구보다 전에 실려 뒤에 내려지는 구간이 칸 i에 있으면 그 칸을 <code>_accessible = false</code>로 둡니다. 여기서 두 가지를 눈여겨봅니다.</p>
+    <ul class="plain">
+      <li><strong>y를 읽지 않습니다.</strong> 접근 가능 여부를 x에서 다시 계산합니다. 여기서의 <code>_accessible</code>은 "머무는 차가 없다"는 뜻일 뿐이고, 출입구까지 길이 있는지는 다음 단계의 BFS가 알아냅니다.</li>
+      <li><strong><code>&gt; 1 - TOL</code>로 비교합니다.</strong> 솔버가 돌려주는 값은 실수라서 이진변수도 0.9999999 같은 값으로 올 수 있습니다. <code>TOL = 1e-3</code>이므로 0.999보다 크면 1로 봅니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>② 남은 그래프에서 다시 BFS</h2>
+    <p>5장에서 본 <code>getBFSOrientation</code>을 다시 부릅니다. 이번에는 <code>_accessible</code>이 false인 칸을 건너뛰므로, <strong>머무는 차가 없는 칸들만으로 이루어진 그래프</strong>에서 출입구로부터 BFS를 하는 셈입니다. 결과로 세 가지가 새로 정해집니다.</p>
+    <ul class="plain">
+      <li><code>positionVec</code>: 출입구에서 닿을 수 있는 칸들이 가까운 순서로 들어 있는 목록. 닿지 못하는 칸은 목록에 없습니다.</li>
+      <li><code>_pred</code>: 각 칸에서 출입구 쪽으로 한 걸음 가면 나오는 칸(BFS 트리의 부모).</li>
+      <li><code>_dist</code>: 머무는 차를 피해서 가는 최단 거리.</li>
+    </ul>
+    <p>경로는 <code>_pred</code>를 따라 출입구까지 거슬러 올라가면 나옵니다.</p>
+<pre><span class="c">// function.cpp 333~347줄</span>
+vector&lt;NodeId&gt; getUnloadingRoute(vector&lt;Node&gt;&amp; nodeVec, NodeId currentNodeId)
+{
+    vector&lt;NodeId&gt; unloadingRoute;
+    NodeId currentId = currentNodeId;
+    while (currentId != 0)
+    {
+        unloadingRoute.push_back(currentId);
+        currentId = nodeVec[currentId]._pred;     <span class="c">// 출입구 쪽으로 한 걸음</span>
+    }
+    unloadingRoute.push_back(0);
+    return unloadingRoute;          <span class="c">// [i, ..., 0] = 하역 경로. 뒤집으면 선적 경로</span>
+}</pre>
+    <div class="note">
+      <p><strong>실제 경로는 "모형을 만들 때의 높이"를 따르지 않습니다.</strong> 5장의 규칙 ②는 모형이 접근 가능성을 판정할 때 쓴 장치였습니다. 출력 경로는 항구마다 새로 돌린 BFS의 최단 경로입니다. 모형이 "이 칸은 접근 가능하다"고 한 칸에는 높이를 따라 내려가는 빈 길이 적어도 하나 있으므로 BFS가 반드시 그 칸에 닿고, BFS가 찾는 길은 그 길보다 길지 않습니다. 발표자료 3쪽은 "높이가 커지기만(작아지기만) 하는 경로로 적재(하역)한다"고 적고 있지만, 코드가 내놓는 경로는 그보다 짧을 수 있는 최단 경로입니다. 유효성에는 영향이 없습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>③ 하역: 가까운 칸부터</h2>
+<pre><span class="c">// function.cpp 199~218줄</span>
+for (int position = 1; position &lt; positionVec.size(); ++position)      <span class="c">// 가까운 칸 → 먼 칸</span>
+{
+    const NodeId currentNodeId = positionVec[position];
+    for (PortId p = 0; p &lt; currentPortId; ++p)
+        <span class="c">// 이 항구에서 끝나는 구간이 이 칸에 있으면</span>
+        if (x_pqi[idx3(p, currentPortId, currentNodeId, num_ports, num_nodes)]
+                .get(GRB_DoubleAttr_X) &gt; 1 - TOL)
+        {
+            ++portRouteNumVec[currentPortId];
+            routeDemandIndexVec.push_back(occupyingDemandIdVec[currentNodeId]);
+            vector&lt;NodeId&gt; unloadingRoute = getUnloadingRoute(nodeVec, currentNodeId);
+            routeLengthVec.push_back(unloadingRoute.size());
+            routeVec.insert(routeVec.end(), unloadingRoute.begin(), unloadingRoute.end());
+        }
+}</pre>
+    <p><code>position</code>이 1부터 시작하는 것은 0번이 출입구이기 때문입니다. BFS 순서대로 칸을 훑으면서, 이 항구에서 끝나는 구간이 있는 칸을 만날 때마다 하역 경로를 하나 내보냅니다.</p>
+    <p>이 순서가 유효한 이유는 5장에서 본 그대로입니다. 어떤 칸의 하역 경로는 <code>_pred</code>를 따라가므로 BFS 순서가 더 앞인 칸들만 지납니다. 그 칸들 중 이 항구에서 내릴 차가 있던 곳은 이미 앞에서 내렸습니다. 머무는 차가 있는 칸은 애초에 BFS에서 빠져 있습니다. 따라서 경로 위에는 차가 없습니다.</p>
+  </section>
+
+  <section>
+    <h2>④ 선적: 먼 칸부터</h2>
+<pre><span class="c">// function.cpp 220~241줄</span>
+for (int position = positionVec.size() - 1; position &gt; 0; --position)   <span class="c">// 먼 칸 → 가까운 칸</span>
+{
+    const NodeId currentNodeId = positionVec[position];
+    for (PortId r = currentPortId + 1; r &lt; num_ports; ++r)
+        <span class="c">// 이 항구에서 시작하는 구간이 이 칸에 있으면</span>
+        if (x_pqi[idx3(currentPortId, r, currentNodeId, num_ports, num_nodes)]
+                .get(GRB_DoubleAttr_Xn) &gt; 1 - TOL)
+        {
+            ++portRouteNumVec[currentPortId];
+            <span class="c">// 주머니 (현재 항구, r)에서 번호 하나를 꺼낸다</span>
+            const int demandId = demandIdVec[idx2(currentPortId, r, num_ports)].back();
+            demandIdVec[idx2(currentPortId, r, num_ports)].pop_back();
+            routeDemandIndexVec.push_back(demandId);
+            vector&lt;NodeId&gt; unloadingRoute = getUnloadingRoute(nodeVec, currentNodeId);
+            routeLengthVec.push_back(unloadingRoute.size());
+            <span class="c">// 하역 경로를 뒤집어서 넣는다 (rbegin, rend)</span>
+            routeVec.insert(routeVec.end(), unloadingRoute.rbegin(), unloadingRoute.rend());
+        }
+}</pre>
+    <p>하역과 거울상입니다. (값을 읽는 속성 이름이 여기서만 <code>GRB_DoubleAttr_Xn</code>인데, 이 코드에서는 <code>GRB_DoubleAttr_X</code>와 같은 값을 돌려줍니다. 4부에서 설명합니다.) BFS 순서의 뒤에서부터 훑고, 경로는 하역 경로를 뒤집은 <code>[0, …, i]</code>입니다. 수요 번호는 1부에서 만든 주머니 (현재 항구, r)에서 하나 꺼냅니다. 먼 칸부터 채우므로 나중에 싣는 차의 길 위에는 방금 실은 차가 없습니다.</p>
+    <p>하역을 다 한 다음에 선적을 하므로, 같은 항구에서 차를 내린 칸에 곧바로 다른 차를 실을 수 있습니다. 같은 BFS 결과를 하역과 선적에 함께 써도 되는 이유는, 하역이 끝난 시점에 배에 남은 차가 정확히 "머무는 차"이기 때문입니다.</p>
+  </section>
+
+  <section>
+    <h2>예시를 따라가기</h2>
+    <p>6장의 최적해(1인 x 여덟 개: x<sub>011</sub>, x<sub>012</sub>, x<sub>121</sub>, x<sub>122</sub>, x<sub>133</sub>, x<sub>144</sub>, x<sub>231</sub>, x<sub>341</sub>)에 이 절차를 적용한 결과입니다. 같은 절차를 Python으로 옮겨 실행한 것입니다(10장 부록의 <code>reconstruct</code> 함수). 표에서 「—」는 그 항구에서 해당 작업 자체가 없다는 뜻이고(첫 항구에는 하역이, 마지막 항구에는 선적이 없고, 두 항구에서는 머무는 차를 따지지 않습니다), 「없음」은 따져 봤더니 없다는 뜻입니다. 하역 경로에는 수요 번호를 적지 않았습니다. 코드가 하역 경로에 붙이는 번호는 실제 수요와 상관없이 항상 0이기 때문인데, 이유는 4부에서 봅니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>머무는 차가 있는 칸</th><th>BFS로 닿는 칸</th><th>하역 (가까운 칸부터)</th><th>선적 (먼 칸부터)</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>—</td><td>1, 2, 3, 4</td><td>—</td><td><code>[0,1,2]</code> 수요 0<br><code>[0,1]</code> 수요 0</td><td class="num">23</td></tr>
+        <tr><td>1</td><td>없음</td><td>1, 2, 3, 4</td><td><code>[1,0]</code><br><code>[2,1,0]</code></td><td><code>[0,1,2,3,4]</code> 수요 1<br><code>[0,1,2,3]</code> 수요 3<br><code>[0,1,2]</code> 수요 0<br><code>[0,1]</code> 수요 0</td><td class="num">73</td></tr>
+        <tr><td>2</td><td>3, 4</td><td>1, 2</td><td><code>[1,0]</code><br><code>[2,1,0]</code></td><td><code>[0,1]</code> 수요 2</td><td class="num">34</td></tr>
+        <tr><td>3</td><td>4</td><td>1, 2, 3</td><td><code>[1,0]</code><br><code>[3,2,1,0]</code></td><td><code>[0,1]</code> 수요 4</td><td class="num">35</td></tr>
+        <tr><td>4</td><td>—</td><td>1, 2, 3, 4</td><td><code>[1,0]</code><br><code>[4,3,2,1,0]</code></td><td>—</td><td class="num">25</td></tr>
+        <tr><td colspan="5"><strong>총비용</strong></td><td class="num"><strong>190</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>각 항구를 떠날 때 배의 상태는 다음과 같습니다. 칸마다 그 칸에 있는 차의 수요 번호를 적었습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>떠나는 항구</th><th>칸 1</th><th>칸 2</th><th>칸 3</th><th>칸 4</th><th>채점기가 기대하는 것 (o ≤ p &lt; d인 수요)</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>수요 0</td><td>수요 0</td><td>빈칸</td><td>빈칸</td><td>수요 0이 2대</td></tr>
+        <tr><td>1</td><td>수요 0</td><td>수요 0</td><td>수요 3</td><td>수요 1</td><td>수요 0이 2대, 수요 1과 3이 1대씩</td></tr>
+        <tr><td>2</td><td>수요 2</td><td>빈칸</td><td>수요 3</td><td>수요 1</td><td>수요 1, 2, 3이 1대씩</td></tr>
+        <tr><td>3</td><td>수요 4</td><td>빈칸</td><td>빈칸</td><td>수요 1</td><td>수요 1, 4가 1대씩</td></tr>
+        <tr><td>4</td><td>빈칸</td><td>빈칸</td><td>빈칸</td><td>빈칸</td><td>없음</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>경로는 16개이고 총비용은 모형의 목적함수 값 190과 같습니다. 일렬 배에는 순환이 없어서 모형의 비용과 실제 비용이 일치합니다(6장). 채점 규칙으로 검사하면 유효하고, 목적함수는 190 − 137 = 53입니다.</p>
+    <p>항구 1의 줄이 임시 하역입니다. 칸 1, 2의 차(수요 0)를 내리고, 안쪽 칸 4와 3에 새 차를 넣은 뒤, 같은 수요 0의 차를 칸 2, 1에 다시 싣습니다. 항구 1에서 내리는 두 경로(11 + 12)와 마지막 두 선적 경로(12 + 11), 이 네 개가 재배치 경로이고 비용은 46입니다.</p>
+    <p>목적함수 53에서 46을 뺀 나머지 7은 어디서 올까요? LB는 "항구마다 가장 가까운 칸들을 쓴다"고 가정하는데, 실제로는 더 먼 칸을 써야 했던 몫입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th class="num">실제 비용</th><th class="num">그중 재배치</th><th class="num">LB의 몫</th><th class="num">차이</th><th>차이의 원인</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td class="num">23</td><td class="num">0</td><td class="num">23</td><td class="num">0</td><td></td></tr>
+        <tr><td>1</td><td class="num">73</td><td class="num">46</td><td class="num">23</td><td class="num">4</td><td>새 차 두 대를 칸 1, 2가 아니라 칸 4, 3에 실음: (4 + 3) − (1 + 2)</td></tr>
+        <tr><td>2</td><td class="num">34</td><td class="num">0</td><td class="num">34</td><td class="num">0</td><td></td></tr>
+        <tr><td>3</td><td class="num">35</td><td class="num">0</td><td class="num">34</td><td class="num">1</td><td>칸 1, 2가 아니라 칸 1, 3에서 내림</td></tr>
+        <tr><td>4</td><td class="num">25</td><td class="num">0</td><td class="num">23</td><td class="num">2</td><td>칸 1, 2가 아니라 칸 1, 4에서 내림</td></tr>
+        <tr><td><strong>합</strong></td><td class="num"><strong>190</strong></td><td class="num"><strong>46</strong></td><td class="num"><strong>137</strong></td><td class="num"><strong>7</strong></td><td>46 + 7 = 53</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>목적함수는 이렇게 "재배치 경로의 비용"과 "가까운 칸을 쓰지 못한 추가 거리" 두 가지로 이루어집니다. 고정비가 큰 실제 문제에서는 앞의 것이 훨씬 큽니다.</p>
+  </section>
+
+  <div class="part">3부 · C++에서 Python으로</div>
+
+  <section>
+    <h2>납작한 배열 네 개</h2>
+    <p>대회의 진입점은 Python 함수이고 알고리듬은 C++로 짠 공유 라이브러리 안에 있습니다. Python의 표준 모듈 <code>ctypes</code>가 둘을 이어 줍니다. <code>ctypes</code>로는 정수나 정수 배열 같은 단순한 값만 주고받을 수 있으므로, C++ 함수는 결과를 정수 배열 네 개에 눌러 담아 돌려줍니다(빌드와 호출 방법은 8장). 같은 내용이 세 군데에서 다른 이름으로 불리므로 표로 정리합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>내용</th><th><code>get_solution</code> 안에서</th><th><code>solve()</code>의 출력 인자</th><th>Python 쪽 배열</th></tr></thead>
+      <tbody>
+        <tr><td>항구별 경로 개수</td><td><code>portRouteNumVec</code></td><td><code>out_port_route_num</code></td><td><code>c_out_port_route_num</code></td></tr>
+        <tr><td>경로마다 수요 번호</td><td><code>routeDemandIndexVec</code></td><td><code>out_demand_indices</code></td><td><code>c_out_demand_indices</code></td></tr>
+        <tr><td>경로마다 노드 개수</td><td><code>routeLengthVec</code></td><td><code>out_route_lengths</code></td><td><code>c_out_route_lengths</code></td></tr>
+        <tr><td>모든 경로의 노드를 이어 붙인 것</td><td><code>routeVec</code></td><td><code>out_routes</code></td><td><code>c_out_routes</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>입력도 같은 식으로 납작하게 만들어 넘깁니다. Python 쪽에서 입력 <code>K</code>를 둘로 나눕니다.</p>
+<pre><span class="c"># myalgorithm.py (입력 변환 부분)</span>
+edges_flat = [node for pair in prob_info['E'] for node in pair]     <span class="c"># [[0,1],[1,2]] → [0,1,1,2]</span>
+od_pairs = [item[0] for item in prob_info['K']]                     <span class="c"># [[0,2],[1,4],...]  (출발, 도착)</span>
+demands  = [item[1] for item in prob_info['K']]                     <span class="c"># [2, 1, ...]        대수</span>
+od_pairs_flat = [port for pair in od_pairs for port in pair]        <span class="c"># [0,2,1,4,...]</span></pre>
+    <p>C++ 쪽은 이것을 받아 <code>demand_origin[k]</code>, <code>demand_dest[k]</code>, <code>demand_quantity[k]</code> 세 벡터로 되돌립니다. 예시의 결과는 출력 배열에 다음과 같이 담깁니다.</p>
+<pre>out_port_route_num  = [2, 6, 3, 3, 2]                       <span class="c">← 항구별 경로 개수 (길이 P)</span>
+out_demand_indices  = [0,0,  0,0,1,3,0,0,  0,0,2,  0,0,4,  0,0]   <span class="c">← 경로마다 수요 번호 (하역은 항상 0)</span>
+out_route_lengths   = [3,2,  2,3,5,4,3,2,  2,3,2,  2,4,2,  2,5]   <span class="c">← 경로마다 노드 개수</span>
+out_routes          = [0,1,2, 0,1,  1,0, 2,1,0, 0,1,2,3,4, ...]   <span class="c">← 모든 경로의 노드를 이어 붙인 것</span></pre>
+    <p><code>out_route_lengths</code>의 값은 간선 수가 아니라 <strong>노드 수</strong>입니다(<code>unloadingRoute.size()</code>). <span class="mono">myalgorithm.py</span>는 커서 두 개를 움직이며 이것을 다시 자릅니다.</p>
+<pre><span class="c"># myalgorithm.py 91~116줄 (요지)</span>
+for port_idx in range(num_ports):
+    for _ in range(c_out_port_route_num[port_idx]):
+        route_len = c_out_route_lengths[route_data_cursor]
+        demand_k  = c_out_demand_indices[route_data_cursor]
+        route = [c_out_routes[j] for j in range(path_nodes_cursor, path_nodes_cursor + route_len)]
+        solution[port_idx].append([route, demand_k])
+        path_nodes_cursor += route_len
+        route_data_cursor += 1</pre>
+    <p>배열은 Python 쪽에서 미리 넉넉하게 잡아 둡니다. 경로 개수의 상한은 다음 식으로 계산합니다.</p>
+<pre>max_num_routes = sum(2 * (od_pairs[i][1] - od_pairs[i][0]) * demands[i] for i in range(len(od_pairs)))
+max_total_route_len = max_num_routes * num_nodes</pre>
+    <p>예시에서는 2×2×2 + 2×3×1 + 2×1×1 + 2×2×1 + 2×1×1 = 22이고, 실제로 쓰인 경로는 16개입니다. 항구 o에서 d까지 가는 차는 사이의 항구 d − o − 1곳에서 모두 임시로 내려진다 해도 구간이 d − o개이고, 구간 하나에 경로가 둘이므로 차 한 대의 경로는 많아야 2(d − o)개입니다. 5장에서 본 "항구마다 전부 내렸다 다시 싣는" 최악의 해도 이 상한 안에 들어옵니다.</p>
+  </section>
+
+  <div class="part">4부 · 코드에서 눈에 띄는 점</div>
+
+  <section>
+    <h2>하역 경로의 수요 번호는 항상 0이다</h2>
+    <p>③의 코드에서 하역 경로의 수요 번호는 <code>occupyingDemandIdVec[currentNodeId]</code>에서 읽습니다. 이름으로 보면 "그 칸을 차지하고 있는 차의 수요 번호"를 담는 배열입니다. 그런데 이 배열은 선언만 되어 있고(187줄, <code>vector&lt;int&gt; occupyingDemandIdVec(num_nodes);</code>) <strong>값을 써넣는 줄이 코드 어디에도 없습니다</strong>. 선적할 때 <code>occupyingDemandIdVec[currentNodeId] = demandId;</code>가 있어야 할 것 같은 자리에 없습니다. 벡터는 0으로 초기화되므로, 제출된 코드는 모든 하역 경로에 수요 번호 0을 붙입니다. 위 배열 예에서 하역 경로 자리가 전부 0인 것이 그 때문입니다.</p>
+    <p>그런데도 유효해로 채점됩니다. 1장에서 옮겨 본 채점 코드의 하역 부분을 다시 보면 이유가 보입니다.</p>
+<pre>for route, k in route_list:
+    ...
+    elif route[-1] == 0:                                <span class="c"># 하역 경로</span>
+        unloading_node = route[0]
+        if node_allocations[unloading_node] == -1:      → 무효 (내릴 차가 없음)
+        for i in route[1:]:
+            if node_allocations[i] != -1:               → 무효 (길이 막힘)
+        node_allocations[unloading_node] = -1           <span class="c"># 칸을 비운다. k는 어디에도 쓰이지 않는다</span></pre>
+    <p>주최 측 <code>util.py</code>의 <code>check_feasibility</code>는 하역 경로를 처리할 때 수요 번호 k를 보지 않습니다. 첫 노드에 차가 있는지, 나머지 노드가 비었는지, 간선이 있는지만 확인하고 그 칸을 비웁니다. 수요 번호는 선적 경로에서만 쓰이고(그 칸에 어느 수요의 차가 놓였는지 기록), 항구를 떠날 때 배에 있는 차의 수요별 대수를 세는 데 쓰입니다.</p>
+    <p>의도한 생략인지 빠뜨린 것인지는 코드만으로는 알 수 없습니다. 어느 쪽이든 대회의 채점 규칙 아래에서는 결과에 영향이 없습니다. 이 코드를 다른 곳에 가져다 쓰면서 하역 경로의 수요 번호가 필요하다면 한 줄을 채워 넣어야 합니다.</p>
+  </section>
+
+  <section>
+    <h2>그 밖의 관찰</h2>
+    <ul class="plain">
+      <li><strong><code>X</code>와 <code>Xn</code>이 섞여 있습니다.</strong> 하역과 접근 가능 계산은 <code>GRB_DoubleAttr_X</code>를, 선적은 <code>GRB_DoubleAttr_Xn</code>을 읽습니다. <code>X</code>는 가장 좋은 해의 값입니다. Gurobi는 탐색 중에 찾은 해를 몇 개까지 보관해 두는데(이 목록을 해 풀, solution pool이라고 합니다), <code>Xn</code>은 그 목록에서 <code>SolutionNumber</code>번째 해의 값입니다. <code>SolutionNumber</code>의 기본값이 0(가장 좋은 해)이고 코드가 이 값을 바꾸지 않으므로 둘은 같은 값을 돌려줍니다(Gurobi 12 문서의 Xn 항목). 동작에는 차이가 없습니다.</li>
+      <li><strong>해가 있는지 확인하지 않습니다.</strong> <code>model.optimize()</code> 뒤에 상태나 해의 개수를 검사하는 코드가 없습니다. 솔버가 제한 시간 안에 가능해를 하나도 못 찾았다면 <code>.get(GRB_DoubleAttr_X)</code>에서 Gurobi가 예외를 던지는데, 이를 받는 <code>try/catch</code>도 없습니다. 그 경우 프로그램은 비정상 종료할 것으로 보입니다(실행해 확인하지는 않았습니다). 대회 결과에 tryAgain의 crash나 infeasible 기록은 없으므로 실제로는 일어나지 않았습니다.</li>
+      <li><strong>같은 (출발, 도착) 쌍의 수요는 하나뿐이라고 가정합니다.</strong> 수요 표를 만들 때 <code>demandQuantityVec[idx2(p, q)] = …</code>로 덮어쓰고, 주머니도 <code>resize</code>와 <code>fill</code>로 덮어씁니다. 입력 <code>K</code>에 같은 쌍이 두 번 나오면 뒤의 것만 남습니다. 문제 설명이 이를 명시적으로 보장하지는 않지만, 대회 문제에서는 문제가 되지 않았습니다.</li>
+      <li><strong>쓰이지 않는 인자가 있습니다.</strong> <code>get_solution</code>은 <code>y_pi</code>와 <code>fixed_cost</code>를 받지만 쓰지 않습니다. 복원에 필요한 것은 x와 z뿐입니다.</li>
+      <li><strong>z는 반올림해서 읽습니다.</strong> <code>std::round(z.get(GRB_DoubleAttr_X))</code>. 정수 변수도 실수로 돌아오기 때문입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>항구 2에서 BFS로 닿는 칸이 1, 2뿐인 이유는 무엇인가요?</summary>
+      <p>칸 3(x<sub>133</sub>)과 칸 4(x<sub>144</sub>)에 항구 2를 사이에 낀 구간, 즉 머무는 차가 있어서 <code>_accessible</code>이 false이기 때문입니다. 일렬 배에서 칸 3이 빠지면 그 너머의 칸 4도 어차피 닿을 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>하역을 먼 칸부터 하면 어떤 일이 생기나요?</summary>
+      <p>먼 칸의 차가 나가는 길 위에, 아직 내리지 않은 가까운 칸의 차가 있을 수 있습니다. 그 경로는 무효입니다. 예시의 항구 1에서 <code>[2,1,0]</code>을 <code>[1,0]</code>보다 먼저 실행하면 칸 1의 차에 막힙니다.</p>
+    </details>
+    <details>
+      <summary>임시로 내린 차와 다시 실은 차가 "같은 차"라는 것은 출력의 어디에 나타나나요?</summary>
+      <p>재적재 선적 경로의 수요 번호에 나타납니다. <code>getDemandIdVec</code>이 쪼갠 두 토막의 주머니에 같은 수요 번호를 넣었기 때문에, 다시 싣는 경로가 원래 수요 번호를 달고 나옵니다. 하역 경로 쪽의 번호는 채점에 쓰이지 않습니다.</p>
+    </details>
+    <details>
+      <summary>모형의 목적함수 값과 채점기가 계산한 총비용이 다를 수 있는 경우는 언제인가요?</summary>
+      <p>배에 홀수 길이의 순환이 있고, 어떤 칸의 "거리가 1 작은 이웃"이 모두 머무는 차로 막혀 같은 거리의 이웃을 거쳐 돌아가야 하는 경우입니다. 이때 실제 경로가 dist(i)보다 길어져 채점기의 비용이 더 큽니다(6장).</p>
+    </details>
+    <details>
+      <summary><code>out_route_lengths</code>의 합은 무엇과 같아야 하나요?</summary>
+      <p><code>out_routes</code>에 실제로 채워진 원소의 수입니다. 예시에서는 3+2+2+3+5+4+3+2+2+3+2+2+4+2+2+5 = 46입니다. 간선 수의 합은 여기서 경로 수 16을 뺀 30이고, 총비용은 16 × 10 + 30 = 190입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><a href="https://docs.gurobi.com/projects/optimizer/en/12.0/features/solutionpool.html">Gurobi 문서 「Solution Pool」</a>, <a href="https://docs.gurobi.com/projects/optimizer/en/12.0/reference/attributes/variable.html">변수 속성 X, Xn</a> — 솔버에서 해를 읽는 법.</li>
+      <li><span class="tagc">실습</span><span class="mono">tryAgain_소스/util.py</span>의 <code>check_feasibility</code> — 하역 경로에서 수요 번호를 쓰지 않는다는 것을 직접 확인할 수 있습니다.</li>
+      <li><span class="tagc">실습</span>10장 부록의 <code>reconstruct</code> 함수(<span class="mono">guide/examples/toy_bruteforce.py</span>) — <code>get_solution</code>을 Python으로 옮긴 것.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch6">← 이전: 6장 정식화 한 줄씩</a><a href="#ch8">다음: 8장 솔버 설정과 시간 관리 →</a></div>
+</article>

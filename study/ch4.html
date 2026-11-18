@@ -1,0 +1,203 @@
+<article class="chapter" id="ch4">
+  <header>
+    <div class="kicker">4 / 12</div>
+    <h1>선형계획의 기하: 최적해는 꼭짓점에 있다</h1>
+  </header>
+
+  <section>
+    <p class="lead">가이드 4장은 "LP는 빠르게 풀린다", "심플렉스의 답은 항상 꼭짓점이다", "기저는 지금 어느 꼭짓점에 있는지를 나타내는 정보다"라고 짧게 말하고 넘어갔습니다. 이 장은 그 세 문장을 정의와 정리로 바꿉니다.</p>
+    <p>핵심은 하나입니다. <strong>LP의 최적해는 (있다면) 꼭짓점 중에 있고, 꼭짓점은 연립방정식 하나를 풀어 얻는 「기저가능해」와 같다.</strong> 무한히 많은 점 중에서 찾는 문제가 유한 개의 후보 중에서 고르는 문제로 바뀝니다. 5장의 심플렉스법은 이 후보들 사이를 영리하게 옮겨 다니는 방법입니다.</p>
+  </section>
+
+  <div class="part">1부 · LP와 그 세 가지 결말</div>
+
+  <section>
+    <h2>선형계획 문제</h2>
+    <div class="defn"><b>정의 4.1</b> <strong>선형계획(linear programming, LP)</strong> 문제는 실수 변수 x ∈ ℝ<sup>n</sup>에 대해 1차 목적함수 c<sup>T</sup>x를 1차 등식·부등식 제약 아래에서 최소화(또는 최대화)하는 문제입니다. x를 <strong>결정변수</strong>, 제약을 모두 지키는 x를 <strong>가능해(feasible solution)</strong>, 가능해 전체의 집합을 <strong>가능 영역</strong>이라고 합니다. 가능해 중 목적함수 값이 가장 좋은 것이 <strong>최적해</strong>, 그 값이 <strong>최적값</strong>입니다.</div>
+    <p>가능 영역은 정의상 다면체(2장 정의 2.9)입니다. 이 교재에서 계속 쓰는 두 예를 다시 적습니다.</p>
+    <div class="obj">
+      <div><span class="f">트럭 LP (최소화)</span><p>최소화 10x + 7y<br>제약 9x + 5y ≥ 30, x ≥ 0, y ≥ 0<br>가이드 3·4장의 트럭 예에서 정수 조건을 지운 것입니다.</p></div>
+      <div><span class="f">생산 LP (최대화)</span><p>최대화 5x<sub>1</sub> + 4x<sub>2</sub><br>제약 6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24, x<sub>1</sub> + 2x<sub>2</sub> ≤ 6, x ≥ 0<br>2장에서 가능 영역을 그린 예입니다.</p></div>
+    </div>
+    <div class="defn"><b>정의 4.2</b> LP의 결말은 셋 중 하나입니다. ① <strong>최적해가 있다.</strong> ② <strong>불능(infeasible)</strong>: 가능해가 하나도 없다. ③ <strong>비유계(unbounded)</strong>: 가능해는 있지만 목적함수를 한없이 좋게 만들 수 있어 최적값이 없다(최소화라면 −∞까지 내려간다).</div>
+    <p>비선형 문제와 달리 LP에는 네 번째 결말, 예를 들어 "값이 어떤 수에 한없이 가까워지기만 하고 닿지 않는다"가 없습니다. 이것은 이 장의 정리 4.9에서 나옵니다.</p>
+    <ul class="plain">
+      <li>불능의 예: x ≥ 3과 x ≤ 1을 동시에 요구하는 LP.</li>
+      <li>비유계의 예: 트럭 LP의 가능 영역에서 x + y를 <em>최대화</em>. 트럭을 얼마든지 많이 부를 수 있으니 끝이 없습니다. 같은 영역에서 <em>최소화</em>하면 최적해가 있습니다. 비유계는 영역이 아니라 영역과 목적함수의 짝에 대한 말입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>도해법: 변수가 둘이면 그려서 푼다</h2>
+    <p>목적함수가 같은 값 z인 점들 {x : c<sup>T</sup>x = z}는 초평면이고, 2차원에서는 직선입니다. 이 직선을 <strong>등고선</strong>이라고 부르겠습니다. z를 바꾸면 등고선은 기울기를 유지한 채 평행 이동합니다. 2장에서 본 대로 벡터 c 방향으로 갈수록 c<sup>T</sup>x가 커집니다.</p>
+    <p>생산 LP에서 5x<sub>1</sub> + 4x<sub>2</sub> = z의 등고선을 z = 10부터 키워 가며 c = (5, 4) 방향으로 밀면, 가능 영역에 마지막으로 닿는 곳이 꼭짓점 (3, 3/2)이고 그때 z = 21입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="생산 LP의 도해법. 가능 영역 사각형 위에 등고선 5x1+4x2=10과 21이 그려져 있고, 21인 등고선이 꼭짓점 (3,1.5)에서 영역에 닿는다">
+        <defs><marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <polygon class="f-steel" opacity=".6" points="70,262 310,262 250,172 70,82"/>
+        <g class="s-line" stroke-width="1.2"><line x1="70" y1="262" x2="420" y2="262"/><line x1="70" y1="262" x2="70" y2="12"/></g>
+        <g class="s-crane" stroke-width="1.6" stroke-dasharray="6 4"><line x1="70" y1="112" x2="190" y2="262"/><line x1="130" y1="22" x2="322" y2="262"/></g>
+        <g class="s-line" stroke-width="1.4"><line x1="154" y1="208" x2="199" y2="172" marker-end="url(#ar4)"/></g>
+        <g class="f-crane"><circle cx="250" cy="172" r="5"/></g>
+        <g font-size="12" text-anchor="middle" class="t-muted"><text x="70" y="280">0</text><text x="130" y="280">1</text><text x="190" y="280">2</text><text x="250" y="280">3</text><text x="310" y="280">4</text><text x="370" y="280">5</text><text x="58" y="206">1</text><text x="58" y="146">2</text><text x="58" y="86">3</text><text x="58" y="26">4</text></g>
+        <g font-size="12.5"><text x="262" y="168">(3, 1.5): z = 21</text><text x="182" y="246">z = 10</text><text x="148" y="36">z = 21</text><text x="188" y="208">c = (5, 4)</text><text x="430" y="275">x₁</text><text x="78" y="16">x₂</text></g>
+      </svg>
+      </div>
+      <figcaption>생산 LP. 주황 점선이 등고선 z = 10과 z = 21이고, 화살표 c 방향으로 밀수록 z가 커집니다. z = 21인 등고선은 영역과 꼭짓점 (3, 1.5) 한 점에서만 만납니다. z를 조금만 더 키우면 영역과 만나지 않습니다.</figcaption>
+    </figure>
+    <p>트럭 LP는 최소화이므로 등고선 10x + 7y = z를 −c = (−10, −7) 방향, 곧 왼쪽 아래로 밉니다. 영역의 경계 9x + 5y = 30 위에서 z는 x축 쪽 끝 (10/3, 0)에서 100/3, y축 쪽 끝 (0, 6)에서 42이므로, 마지막으로 닿는 곳은 (10/3, 0)이고 최적값은 100/3 ≈ 33.33입니다. 가이드 4장 1부의 그림이 이 장면입니다. 영역은 위·오른쪽으로 끝없이 뻗어 있지만(유계가 아님) 최소화 방향으로는 막혀 있어서 최적해가 있습니다.</p>
+    <p>등고선이 영역의 <em>변 하나와 평행</em>하면 그 변 전체가 한꺼번에 닿습니다. 생산 LP의 목적함수를 6x<sub>1</sub> + 4x<sub>2</sub>로 바꾸면 첫째 제약과 평행해져서 (4, 0)과 (3, 3/2)를 잇는 변 위의 모든 점이 값 24로 최적입니다. 최적해가 하나가 아니어도 그중에 꼭짓점이 있다는 점은 변하지 않습니다. 이 경우는 7장에서 다시 중요해집니다.</p>
+  </section>
+
+  <div class="part">2부 · 표준형</div>
+
+  <section>
+    <h2>모든 LP를 한 모양으로</h2>
+    <p>이론과 알고리듬은 LP를 하나의 정해진 모양으로 받는 편이 편합니다. 이 교재는 다음을 표준형으로 씁니다.</p>
+    <div class="defn"><b>정의 4.3 (표준형)</b> 최소화 c<sup>T</sup>x,&nbsp; 제약 Ax = b,&nbsp; x ≥ 0. 여기서 A는 m × n 행렬이고, 행들이 일차독립(계수(rank)가 m)이라고 가정합니다. 독립이 아닌 행은 다른 행들로 만들어지므로 지워도 되거나(같은 내용의 반복) 아니면 불능을 뜻합니다.</div>
+    <p>어떤 LP든 다음 네 가지 변환으로 표준형이 됩니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>원래 모양</th><th>바꾸는 법</th><th>새로 생기는 것</th></tr></thead>
+      <tbody>
+        <tr><td>최대화 c<sup>T</sup>x</td><td>최소화 (−c)<sup>T</sup>x. 답은 같고 최적값은 부호만 바뀜</td><td>—</td></tr>
+        <tr><td>a<sup>T</sup>x ≤ β</td><td>a<sup>T</sup>x + s = β, s ≥ 0</td><td><strong>여유 변수(slack)</strong> s: 남는 양</td></tr>
+        <tr><td>a<sup>T</sup>x ≥ β</td><td>a<sup>T</sup>x − s = β, s ≥ 0</td><td><strong>잉여 변수(surplus)</strong> s: 넘치는 양</td></tr>
+        <tr><td>부호 제한 없는 변수 x<sub>j</sub></td><td>x<sub>j</sub> = x<sub>j</sub><sup>+</sup> − x<sub>j</sub><sup>−</sup>, 둘 다 ≥ 0</td><td>변수 하나가 둘로</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>두 예를 표준형으로 바꾸면 다음과 같습니다. 이 모양을 5장과 6장에서 그대로 씁니다.</p>
+    <div class="eq">
+      <div class="row"><span>트럭: 최소화 10x + 7y,&nbsp; 9x + 5y − s = 30,&nbsp; x, y, s ≥ 0</span><span class="all">m = 1, n = 3</span></div>
+      <div class="row"><span>생산: 최소화 −5x<sub>1</sub> − 4x<sub>2</sub>,&nbsp; 6x<sub>1</sub> + 4x<sub>2</sub> + s<sub>1</sub> = 24,&nbsp; x<sub>1</sub> + 2x<sub>2</sub> + s<sub>2</sub> = 6,&nbsp; x, s ≥ 0</span><span class="all">m = 2, n = 4</span></div>
+    </div>
+    <p>여유 변수에는 뜻이 있습니다. 생산 예의 최적해 (3, 3/2)에서 s<sub>1</sub> = 24 − 18 − 6 = 0, s<sub>2</sub> = 6 − 3 − 3 = 0이므로 원료 1과 원료 2를 다 썼습니다. 여유 변수가 0인 제약을 그 점에서 <strong>등호로 성립하는(tight)</strong> 제약이라고 부릅니다.</p>
+  </section>
+
+  <div class="part">3부 · 꼭짓점을 계산으로: 기저해</div>
+
+  <section>
+    <h2>기저와 기저해</h2>
+    <p>2장에서 "2차원의 꼭짓점은 독립인 제약 두 개가 등호인 가능한 점"이라고 했습니다. 표준형에서는 이것을 "변수 몇 개를 0으로 두고 나머지를 연립방정식으로 푼다"로 적습니다. 변수가 n개, 등식이 m개이므로 n − m개를 0으로 고정하면 미지수 m개, 식 m개가 남습니다.</p>
+    <div class="defn"><b>정의 4.4</b> 표준형에서 A의 열 m개를 골라 그 열들로 만든 m × m 행렬 B가 역행렬을 가지면(det B ≠ 0), 고른 열의 번호 집합을 <strong>기저(basis)</strong>, 그 변수들을 <strong>기저 변수</strong>, 나머지를 <strong>비기저 변수</strong>라고 합니다. 비기저 변수를 모두 0으로 두고 기저 변수를 Bx<sub>B</sub> = b에서 푼 점(x<sub>B</sub> = B<sup>−1</sup>b)을 <strong>기저해</strong>라고 합니다. 기저해가 x ≥ 0까지 만족하면 <strong>기저가능해(basic feasible solution)</strong>라고 합니다.</div>
+    <p>"기저"라는 말은 대개 "기저 변수의 집합"을 가리킵니다. 가이드 4장이 "지금 어느 꼭짓점에 있는지를 나타내는 정보를 기저(basis)라고 한다"고 한 것이 이것입니다. 어느 변수들이 기저인지만 알면 연립방정식을 풀어 점을 복원할 수 있으니, 기저는 꼭짓점의 "이름표"입니다.</p>
+    <p>생산 LP(m = 2, n = 4)에서 열 2개를 고르는 방법은 C(4, 2) = 6가지입니다. 모두 따져 봅니다(목적은 원래의 최대화 값 5x<sub>1</sub> + 4x<sub>2</sub>로 적음).</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>기저</th><th class="num">det B</th><th>기저해 (x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>)</th><th>가능?</th><th class="num">5x<sub>1</sub> + 4x<sub>2</sub></th><th>그림에서</th></tr></thead>
+      <tbody>
+        <tr><td>{s<sub>1</sub>, s<sub>2</sub>}</td><td class="num">1</td><td>(0, 0, 24, 6)</td><td>예</td><td class="num">0</td><td>꼭짓점 (0, 0)</td></tr>
+        <tr><td>{x<sub>1</sub>, s<sub>2</sub>}</td><td class="num">6</td><td>(4, 0, 0, 2)</td><td>예</td><td class="num">20</td><td>꼭짓점 (4, 0)</td></tr>
+        <tr><td>{x<sub>1</sub>, x<sub>2</sub>}</td><td class="num">8</td><td>(3, 3/2, 0, 0)</td><td>예</td><td class="num">21</td><td>꼭짓점 (3, 1.5)</td></tr>
+        <tr><td>{x<sub>2</sub>, s<sub>1</sub>}</td><td class="num">−2</td><td>(0, 3, 12, 0)</td><td>예</td><td class="num">12</td><td>꼭짓점 (0, 3)</td></tr>
+        <tr><td>{x<sub>1</sub>, s<sub>1</sub>}</td><td class="num">−1</td><td>(6, 0, −12, 0)</td><td>아니요 (s<sub>1</sub> &lt; 0)</td><td class="num">—</td><td>영역 밖 (6, 0)</td></tr>
+        <tr><td>{x<sub>2</sub>, s<sub>2</sub>}</td><td class="num">4</td><td>(0, 6, 0, −6)</td><td>아니요 (s<sub>2</sub> &lt; 0)</td><td class="num">—</td><td>영역 밖 (0, 6)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>기저가능해 넷이 정확히 그림의 꼭짓점 넷이고, 가능하지 않은 기저해 둘은 두 제약 직선이 축과 만나는 영역 밖의 점입니다. 가장 좋은 꼭짓점은 21인 (3, 3/2)로, 도해법의 답과 같습니다.</p>
+    <div class="thm"><b>정리 4.5 (꼭짓점 = 기저가능해)</b> 표준형 LP의 가능 영역 P = {x : Ax = b, x ≥ 0}에서, 점 x가 꼭짓점(극점)인 것과 x가 어떤 기저의 기저가능해인 것은 같습니다.</div>
+    <div class="proof">
+      <p><strong>기저가능해 ⇒ 꼭짓점</strong>: x가 기저 B의 기저가능해인데 x = ½(u + w)로 서로 다른 가능해 u, w의 가운데라고 합시다. 비기저 변수 j에서 x<sub>j</sub> = 0이고 u<sub>j</sub>, w<sub>j</sub> ≥ 0이므로 u<sub>j</sub> = w<sub>j</sub> = 0. 그러면 u와 w도 Bu<sub>B</sub> = b, Bw<sub>B</sub> = b를 만족하는데 B가 역행렬을 가지니 해가 하나뿐이라 u<sub>B</sub> = w<sub>B</sub> = x<sub>B</sub>. u = w = x가 되어 "서로 다른"에 모순입니다.</p>
+      <p><strong>꼭짓점 ⇒ 기저가능해</strong>: x가 꼭짓점이라 하고, 양수인 성분의 번호 집합을 J라 합시다. A의 J 열들이 일차독립임을 보이면, 독립인 열은 m개 이하이므로 다른 열을 보태 m개짜리 기저를 만들 수 있고(A의 계수(rank)가 m이므로. 2장 정의 2.4 아래의 사실 ①②), x는 그 기저의 기저가능해가 됩니다. J 열들이 종속이라면 Σ<sub>j∈J</sub> d<sub>j</sub>A<sub>j</sub> = 0인 0이 아닌 d가 있습니다(A<sub>j</sub>는 A의 j번째 열)(J 밖은 d<sub>j</sub> = 0). Ad = 0이므로 x ± εd도 Ax = b를 만족하고, J 안의 성분은 양수이니 ε을 아주 작게 잡으면 ≥ 0도 유지됩니다. 그러면 x = ½((x + εd) + (x − εd))로 서로 다른 두 가능해의 가운데가 되어 꼭짓점이라는 가정에 모순입니다.</p>
+    </div>
+    <div class="thm"><b>따름정리 4.6</b> 표준형 LP의 꼭짓점은 많아야 C(n, m)개, 곧 유한 개입니다.</div>
+    <p>꼭짓점이 유한하니 "모든 기저를 다 풀어 보고 가장 좋은 것을 고른다"로도 LP를 풀 수 있습니다. 하지만 C(n, m)은 금방 천문학적이 됩니다(n = 100, m = 50이면 약 10<sup>29</sup>). 5장의 심플렉스는 그중 아주 적은 수만 거칩니다.</p>
+  </section>
+
+  <section>
+    <h2>축퇴: 이름표 여러 개를 가진 꼭짓점</h2>
+    <div class="defn"><b>정의 4.7</b> 기저해에서 기저 변수 중 0인 것이 있으면 그 기저해를 <strong>축퇴(degenerate)</strong>되었다고 합니다.</div>
+    <p>생산 LP에 제약 x<sub>1</sub> ≤ 3을 하나 더하면(여유 변수 s<sub>3</sub>) 꼭짓점 (3, 3/2)에서 원료 1, 원료 2, x<sub>1</sub> ≤ 3 세 제약이 모두 등호입니다. 2차원에서는 두 개면 점이 정해지는데 세 개가 지나갑니다. 이제 m = 3이므로 기저 변수가 셋인데, 이 점에서 양수인 변수는 x<sub>1</sub> = 3, x<sub>2</sub> = 3/2 둘뿐이라 세 번째 기저 변수는 s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub> 중 하나가 0인 채로 들어갑니다. 어느 것을 넣어도 같은 점이 나오므로 <strong>한 꼭짓점이 기저 세 개(이름표 셋)</strong>를 가집니다. 정리 4.5는 "꼭짓점마다 기저가 정확히 하나"라고 말하지 않습니다. 축퇴가 있으면 여러 개입니다.</p>
+    <p>축퇴는 이상한 예외가 아니라 조합최적화 모형에서 흔합니다. 0·1 변수가 많고 "많아야 하나" 같은 제약이 겹치는 모형에서는 꼭짓점 하나에 등호 제약이 잔뜩 몰립니다. 5장에서 축퇴가 심플렉스를 "제자리걸음"하게 만드는 것을 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>LP의 기본 정리</h2>
+    <p>2장의 정리 2.18은 유계인 다면체에서만 증명했습니다. 트럭 LP처럼 영역이 유계가 아닐 때도 같은 결론이 나옵니다.</p>
+    <div class="thm"><b>정리 4.8 (LP의 기본 정리)</b> 표준형 LP에 대해 ① 가능해가 있으면 기저가능해가 있다. ② 최적해가 있으면 기저가능해인 최적해가 있다.</div>
+    <div class="proof">
+      <p>②만 보입니다(①도 같은 방법입니다). 최적해 중에서 양수 성분의 개수가 가장 적은 것 x를 고릅니다. x가 기저가능해가 아니라면, 정리 4.5의 둘째 증명처럼 양수 성분 위에서 Ad = 0인 0이 아닌 d가 있습니다. x ± εd가 모두 가능하므로, c<sup>T</sup>d ≠ 0이면 둘 중 하나가 x보다 좋아 최적성에 모순입니다. 따라서 c<sup>T</sup>d = 0이고, x + td는 가능한 동안 모두 최적입니다. d에 음수 성분이 있도록 부호를 고르고(없으면 −d), t를 0에서 키우면 언젠가 어떤 양수 성분이 처음으로 0이 됩니다. 그 점은 여전히 가능하고 최적인데 양수 성분이 하나 줄었습니다. "가장 적은 것"이라는 선택에 모순입니다.</p>
+    </div>
+    <div class="thm"><b>정리 4.9</b> 표준형 LP는 불능, 비유계, 최적해 있음 중 정확히 하나입니다.</div>
+    <p>이 정리는 증명 없이 결과만 씁니다. 가장 짧은 증명은 심플렉스법이 (순환을 막는 규칙을 쓰면) 유한 번 만에 "최적" 또는 "비유계"로 멈춘다는 사실에서 나옵니다. 5장은 그 규칙(Bland 규칙)을 소개하지만 유한성의 증명까지는 하지 않으므로, 증명이 궁금하면 Bertsimas–Tsitsiklis의 심플렉스 장(출판사 목차 순서로 3장)을 보세요. 이 장과 이후 장의 내용은 이 정리의 증명을 몰라도 이해됩니다.</p>
+    <p>정리 4.8이 가이드 4장의 "답은 항상 꼭짓점입니다"의 정확한 뜻입니다. 정확히는 "최적해가 있으면 꼭짓점 중에도 최적해가 있다"입니다. 최적해가 변 전체인 경우(1부의 6x<sub>1</sub> + 4x<sub>2</sub> 예)에는 변 위의 다른 점들도 최적이지만, 심플렉스는 꼭짓점만 밟으므로 꼭짓점 답을 냅니다.</p>
+  </section>
+
+  <section>
+    <h2>최적해의 집합은 면이다</h2>
+    <p>최적값을 z*라 하면 최적해의 집합은 P ∩ {x : c<sup>T</sup>x = z*}입니다. P 전체가 반공간 c<sup>T</sup>x ≥ z* 안에 있고(최소화이므로) 그 경계 초평면과 닿는 부분이므로, 2장에서 말한 「면」입니다. 이것을 <strong>최적면(optimal face)</strong>이라고 부르겠습니다. 최적해가 하나면 최적면은 꼭짓점 하나, 위의 예처럼 변 전체면 1차원 면입니다. 최적면은 볼록 집합이고, 그 꼭짓점들은 P의 꼭짓점이기도 합니다.</p>
+    <p>이 구분이 7장에서 쓰입니다. 심플렉스는 최적면의 꼭짓점 하나를 내지만, 내부점법은 최적면의 "한가운데" 쪽으로 다가가므로 최적면이 꼭짓점 하나가 아닐 때 꼭짓점이 아닌 답을 냅니다.</p>
+  </section>
+
+  <section>
+    <h2>왜 LP는 쉬운가</h2>
+    <p>가이드 3장의 표는 LP를 "쉽다. 변수 수백만 개도 풉니다", IP와 MIP를 "어렵다(NP-hard)"로 나눴습니다(NP-hard는 "입력이 커져도 빠르게, 곧 다항 시간에 푸는 방법이 알려져 있지 않은 문제 부류"라는 뜻으로만 읽으면 됩니다. 8장에서 다시 말합니다). 이 장과 2장의 결과로 그 차이를 이렇게 설명할 수 있습니다.</p>
+    <ul class="plain">
+      <li>LP의 가능 영역은 볼록이고 목적함수는 1차식이라 지역 최적이 곧 전역 최적입니다(2장 정리 2.17). 꼭짓점에서 더 좋은 이웃 꼭짓점이 없으면 끝입니다(5장).</li>
+      <li>최적해를 찾을 후보가 유한 개의 꼭짓점으로 줄어듭니다(정리 4.8).</li>
+      <li>변수 수와 입력 숫자의 자릿수(비트 수)에 대해 다항 시간에 푸는 알고리듬이 있습니다(7장의 내부점법).</li>
+    </ul>
+    <p>정수계획에서는 첫째가 깨집니다. 정수점 집합은 볼록이 아니고, 이웃 정수해만 보고는 최적인지 알 수 없습니다. 둘째도 깨집니다. 정수 최적해는 LP 영역의 꼭짓점이 아닌 곳(영역 안쪽의 격자점)에 있을 수 있습니다. 트럭 예의 정수 최적 (3, 1)은 LP 영역의 꼭짓점이 아닙니다.</p>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref">
+      <p><strong>가이드 3장 「LP, IP, MIP: 무엇이 허용되는가」</strong>의 "1차식만, ≤ ≥ =만"은 가능 영역이 다면체가 되기 위한 조건입니다. 진부등호(&lt;)를 못 쓰는 이유도 여기서 보입니다. x &lt; 5 같은 조건은 경계가 빠진 영역을 만들어, "값이 5에 한없이 가까워지기만 하는" 최적값 없는 문제를 만들 수 있습니다(정리 4.9의 세 결말 밖).</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 1부의 그림 설명</strong> "비용이 같은 점들은 직선(점선)을 이루고, 그 직선을 싼 쪽으로 평행 이동하다가 … 마지막으로 닿는 곳이 최적점"은 2부의 도해법이고, "그곳은 영역의 모서리, 곧 꼭짓점"은 정리 4.8입니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 3부 「LP를 푸는 두 방법: 심플렉스와 배리어」</strong>의 "답은 항상 꼭짓점", "지금 어느 꼭짓점에 있는지를 나타내는 정보를 기저(basis)라고 한다"는 정의 4.4와 정리 4.5입니다. "배리어는 답이 꼭짓점이 아닐 수 있고(기저가 없고)"는 최적면이 꼭짓점 하나가 아닐 때의 이야기이며 7장에서 다룹니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 6장 「강도: big-M이 없다」</strong>에서 "모든 계수가 0, 1, −1"인 모형은 축퇴가 많기 쉬운 전형적인 조합 모형입니다. 이 장의 축퇴 절에서 본 것처럼 "많아야 하나" 제약들이 한 꼭짓점에 몰리기 때문입니다. 축퇴가 실제로 풀이 시간에 얼마나 영향을 줬는지는 가이드에도 이 교재에도 측정 자료가 없습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>다음 LP를 표준형으로 바꾸세요. 최대화 3x − y, 제약 x + y ≤ 5, x − 2y ≥ −4, x ≥ 0, y는 부호 제한 없음.</summary>
+      <p>y = y<sup>+</sup> − y<sup>−</sup>로 쪼개고, 최대화를 최소화로 바꾸고, 여유·잉여 변수를 붙입니다. 최소화 −3x + y<sup>+</sup> − y<sup>−</sup>, 제약 x + y<sup>+</sup> − y<sup>−</sup> + s<sub>1</sub> = 5, x − 2y<sup>+</sup> + 2y<sup>−</sup> − s<sub>2</sub> = −4, 모든 변수 ≥ 0. (b가 음수인 것이 싫으면 둘째 식 양변에 −1을 곱해 −x + 2y<sup>+</sup> − 2y<sup>−</sup> + s<sub>2</sub> = 4로 둡니다.)</p>
+    </details>
+    <details>
+      <summary>트럭 LP의 표준형(9x + 5y − s = 30, m = 1, n = 3)에서 기저는 열 하나입니다. 기저 세 개의 기저해를 모두 구하고, 기저가능해와 최적 꼭짓점을 찾으세요.</summary>
+      <p>{x}: x = 30/9 = 10/3, (10/3, 0, 0), 비용 100/3. {y}: y = 6, (0, 6, 0), 비용 42. {s}: −s = 30이라 s = −30, 가능하지 않음. 기저가능해는 둘(꼭짓점 (10/3, 0)과 (0, 6))이고 최적은 (10/3, 0), 100/3입니다. {s}의 기저해는 원점 (0, 0)인데 짐을 하나도 안 실으니 영역 밖입니다.</p>
+    </details>
+    <details>
+      <summary>생산 LP의 목적함수를 x<sub>1</sub> + 2x<sub>2</sub>로 바꾸면 최적해는 무엇인가요? 최적면은?</summary>
+      <p>등고선이 둘째 제약 x<sub>1</sub> + 2x<sub>2</sub> = 6과 평행합니다. 영역 안에서 x<sub>1</sub> + 2x<sub>2</sub>는 최대 6이고, (0, 3)과 (3, 3/2)를 잇는 변 위의 모든 점이 6을 줍니다. 최적면은 그 변이고, 꼭짓점 최적해는 (0, 3)과 (3, 3/2) 둘입니다.</p>
+    </details>
+    <details>
+      <summary>정리 4.5의 증명을 따라, 생산 LP의 점 (2, 0)이 꼭짓점이 아님을 "양수 성분의 열이 종속"으로 확인하세요.</summary>
+      <p>(2, 0)의 표준형 점은 (x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>) = (2, 0, 12, 4). 양수 성분은 x<sub>1</sub>, s<sub>1</sub>, s<sub>2</sub> 셋인데 m = 2이므로 열 세 개는 ℝ<sup>2</sup>에서 반드시 종속입니다(2장 정의 2.4 아래의 사실 ①). 실제로 (6, 1) − 6·(1, 0) − 1·(0, 1) = 0이므로 d = (1, 0, −6, −1)이고, (2, 0, 12, 4) ± εd는 둘 다 가능합니다. 그림에서는 x<sub>1</sub>축 위로 좌우로 움직이는 것입니다.</p>
+    </details>
+    <details>
+      <summary>최소화 x + y, 제약 x + y ≥ 2, x − y ≤ 1, x, y ≥ 0은 불능, 비유계, 최적 중 무엇인가요? 최대화라면?</summary>
+      <p>최소화: 최적. x + y ≥ 2이므로 값은 2 이상입니다. (2, 0)은 x − y = 2 &gt; 1이라 가능하지 않지만, (1.5, 0.5)는 x − y = 1, x + y = 2로 가능하고 값 2. (0, 2)도 값 2. 최적값 2이고 최적면은 (0, 2)와 (1.5, 0.5)를 잇는 변입니다. 최대화: y를 한없이 키울 수 있으므로(x = 0, y → ∞) 비유계입니다.</p>
+    </details>
+    <details>
+      <summary>표준형에서 n = 10, m = 4이면 꼭짓점은 많아야 몇 개인가요? 이 수를 다 따지는 것이 왜 현실적이지 않은지 한 문장으로 말하세요.</summary>
+      <p>C(10, 4) = 210개. 이 정도는 다 따져도 되지만, 기저 수는 n과 m에 대해 지수적으로 늘어 n = 100, m = 50이면 약 10<sup>29</sup>개가 되므로 실전 크기에서는 불가능합니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — 2장 The geometry of linear programming(극점, 기저해, 축퇴, LP의 기본 정리). 이 장의 정리 4.5와 4.8의 엄밀한 증명이 있습니다. (장 번호는 출판사 목차 페이지의 순서로 센 것)</li>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판)</a> — 3장 Algebra versus Geometry: 기저해와 꼭짓점의 관계.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 앞쪽 강의(1~3강)가 LP 모형과 기하.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1368479">KOCW 「선형계획의 이해」 (한국공학대 허재석)</a> — 13강짜리 동영상 강의. LP 모형화와 도해법(이 장 1부)을 한국어로 다룹니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a></li>
+      <li><span class="tagc">교과서</span><span class="tagc">한국어</span>박순달, 『선형계획법』 4판 (민영사, 1999)과 우메타니 슌지, 『제대로 배우는 수학적 최적화』 (한빛미디어, 2021) — 한국어 교재. 이번에는 서점 페이지가 열리지 않아 목차를 확인하지 못했습니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch3">← 이전: 3장 그래프 기초</a><a href="#ch5">다음: 5장 심플렉스법 →</a></div>
+</article>

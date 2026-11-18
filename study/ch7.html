@@ -1,0 +1,230 @@
+<article class="chapter" id="ch7">
+  <header>
+    <div class="kicker">7 / 12</div>
+    <h1>내부점법과 크로스오버: 안쪽을 가로지르는 LP 풀이</h1>
+  </header>
+
+  <section>
+    <p class="lead">5장의 심플렉스법은 가능 영역의 겉면(모서리)을 따라 꼭짓점을 옮겨 다녔습니다. 이 장의 내부점법(interior point method)은 반대로 <strong>가능 영역의 안쪽을 가로질러</strong> 최적점에 다가갑니다. 솔버 문서에서 「배리어(barrier)」라고 부르는 것이 이 계열입니다.</p>
+    <p>이 장의 목표는 계산 절차를 익히는 것이 아니라, 가이드 4장과 8장의 다음 이야기를 이론으로 납득하는 것입니다. "배리어는 큰 LP에서 빠르고 여러 코어를 잘 쓴다. 대신 답이 꼭짓점이 아닐 수 있다. 그래서 크로스오버라는 후처리가 있다. 그리고 분지한계법에는 꼭짓점(기저)이 필요하다." 마지막 문장의 이유는 6장에서 이미 봤습니다(자식 LP를 쌍대 심플렉스로 이어 풀려면 부모의 기저가 있어야 합니다).</p>
+    <p>필요한 수학은 1변수 함수의 미분(접선의 기울기)과 로그 함수 ln의 성질 두 가지(ln t는 t → 0일 때 −∞로 떨어진다, ln t의 도함수는 1/t)뿐입니다. 덧붙여 두 가지만 미리 적어 둡니다. 안쪽 식의 부호가 뒤집힌 ln(3 − x)의 도함수는 −1/(3 − x)입니다(x가 커지면 3 − x가 줄기 때문입니다). 그리고 2부의 변수 둘짜리 예에서는 <strong>편미분</strong>, 곧 한 변수만 움직이고 나머지는 상수로 둔 채 하는 미분을 한 번 씁니다. 계산 규칙은 1변수 미분과 같습니다.</p>
+  </section>
+
+  <div class="part">1부 · 벽을 밀어내는 벌점</div>
+
+  <section>
+    <h2>장벽 함수: 경계에 다가가면 무한히 비싸지게</h2>
+    <p>메타휴리스틱에서 제약을 어기는 해에 벌점을 주는 방법을 써 본 적이 있을 것입니다. 장벽(barrier) 방법은 방향이 반대입니다. 제약을 어기는 해가 아니라 <em>제약의 경계에 가까워지는</em> 해에 벌점을 줍니다. 그 벌점이 경계에서 무한대가 되도록 만들어 두면, 벌점을 더한 문제를 어떻게 풀든 해가 영역 밖으로 나가지 못합니다.</p>
+    <p>가장 단순한 예로 시작합니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; x&nbsp;&nbsp; 제약 1 ≤ x ≤ 3</span><span class="all">답은 당연히 x = 1</span></div>
+    </div>
+    <p>제약마다 "여유"를 적습니다. x − 1 ≥ 0과 3 − x ≥ 0입니다. 여유가 0에 가까워질수록 −ln(여유)는 +∞로 커집니다. 이 벌점에 작은 양수 μ를 곱해 목적함수에 더합니다.</p>
+    <div class="defn"><b>정의 7.1</b> 제약 g<sub>i</sub>(x) ≥ 0들에 대한 <strong>로그 장벽 문제</strong>는 "최소화 f(x) − μ Σ<sub>i</sub> ln g<sub>i</sub>(x)"입니다(모든 g<sub>i</sub>(x) &gt; 0인 점, 곧 <strong>내부점</strong>에서만 정의). μ &gt; 0을 장벽 매개변수라고 합니다. μ마다 장벽 문제의 최소점 x(μ)가 정해지고, μ를 바꿔 가며 이 점들을 이은 곡선을 <strong>중심 경로(central path)</strong>라고 합니다.</div>
+    <p>예에 적용하면 B<sub>μ</sub>(x) = x − μ ln(x − 1) − μ ln(3 − x)입니다. 최소점에서는 도함수가 0입니다.</p>
+    <div class="formula">B<sub>μ</sub>′(x) = 1 − μ/(x − 1) + μ/(3 − x) = 0</div>
+    <p>양변에 (x − 1)(3 − x)를 곱해 정리하면 x² − (4 + 2μ)x + (3 + 4μ) = 0이고, 1과 3 사이의 근은</p>
+    <div class="formula">x(μ) = 2 + μ − √(1 + μ²)</div>
+    <p>입니다. μ = 1이면 x = 3 − √2 ≈ 1.586입니다. 몇 개 더 계산하면 다음과 같습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>μ</th><th class="num">x(μ)</th><th class="num">x(μ) − 1</th><th>읽기</th></tr></thead>
+      <tbody>
+        <tr><td>10</td><td class="num">1.950</td><td class="num">0.950</td><td>벌점이 커서 양쪽 벽에서 멀리, 거의 가운데(2)</td></tr>
+        <tr><td>1</td><td class="num">1.586</td><td class="num">0.586</td><td>3 − √2</td></tr>
+        <tr><td>0.5</td><td class="num">1.382</td><td class="num">0.382</td><td></td></tr>
+        <tr><td>0.1</td><td class="num">1.095</td><td class="num">0.095</td><td></td></tr>
+        <tr><td>0.01</td><td class="num">1.00995</td><td class="num">0.00995</td><td></td></tr>
+        <tr><td>0.001</td><td class="num">1.0010</td><td class="num">0.0010</td><td>답 1에 μ 정도로 붙음</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>μ가 클 때는 벌점이 목적함수를 압도해 두 벽에서 가장 먼 점(2)에 가깝고, μ를 줄이면 원래 목적(x를 작게)이 이겨 답 1로 다가갑니다. 그러면서도 x(μ)는 항상 1보다 큽니다. <strong>경계에 닿지 않고, 안쪽에서 다가갑니다.</strong> μ → ∞일 때의 극한점(여기서는 2)을 해석적 중심(analytic center)이라고 합니다.</p>
+  </section>
+
+  <section>
+    <h2>중심 경로 위에서는 쌍대 간격이 정확히 보인다</h2>
+    <p>6장에서 원시 가능해와 쌍대 가능해를 함께 들고 있으면 최적값이 그 사이에 있다고 했습니다. 중심 경로 위의 점은 쌍대 가능해를 공짜로 줍니다. 위 예의 쌍대를 6장의 규칙으로 적으면(제약 x ≥ 1에 u<sub>1</sub> ≥ 0, −x ≥ −3에 u<sub>2</sub> ≥ 0)</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp; u<sub>1</sub> − 3u<sub>2</sub>&nbsp;&nbsp; 제약 u<sub>1</sub> − u<sub>2</sub> = 1,&nbsp; u<sub>1</sub>, u<sub>2</sub> ≥ 0</span><span class="all">x가 부호 자유이므로 등식</span></div>
+    </div>
+    <p>이제 u<sub>1</sub> = μ/(x − 1), u<sub>2</sub> = μ/(3 − x)로 두면, 최소점 조건 B<sub>μ</sub>′(x) = 0이 바로 u<sub>1</sub> − u<sub>2</sub> = 1이므로 u는 쌍대 가능해입니다. 그리고 이 정의는 다음과 같다는 뜻입니다.</p>
+    <div class="formula">u<sub>1</sub> × (x − 1) = μ,&nbsp;&nbsp; u<sub>2</sub> × (3 − x) = μ</div>
+    <p>6장의 상보 여유성은 "승수 × 여유 = 0"이었습니다. 중심 경로는 그것을 <strong>"승수 × 여유 = μ"로 모두 똑같이 느슨하게 한 것</strong>입니다. 그래서 쌍대 간격은 (6장 연습문제의 식대로) 이 곱들의 합, 곧 2μ입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>μ</th><th class="num">원시 값 x</th><th class="num">u<sub>1</sub></th><th class="num">u<sub>2</sub></th><th class="num">쌍대 값 u<sub>1</sub> − 3u<sub>2</sub></th><th class="num">간격</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="num">1.58579</td><td class="num">1.70711</td><td class="num">0.70711</td><td class="num">−0.41421</td><td class="num">2.0</td></tr>
+        <tr><td>0.1</td><td class="num">1.09501</td><td class="num">1.05249</td><td class="num">0.05249</td><td class="num">0.89501</td><td class="num">0.2</td></tr>
+        <tr><td>0.01</td><td class="num">1.00995</td><td class="num">1.00502</td><td class="num">0.00502</td><td class="num">0.98995</td><td class="num">0.02</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>최적값 1은 언제나 [쌍대 값, 원시 값] 사이에 있고, 간격이 μ에 비례해 줄어듭니다. 장벽 항이 붙은 부등식(변수의 부호 제약 포함)이 k개인 LP라면 간격은 kμ입니다. (여기서 k는 4장의 m, 곧 표준형의 등식 행 수와 다른 수입니다.) 그러니 "간격이 ε 이하가 될 때까지 μ를 줄인다"가 그대로 멈춤 기준이 됩니다. 내부점법이 내는 답은 원시 해와 쌍대 해가 함께 있는, 증명서가 붙은 근사해입니다.</p>
+  </section>
+
+  <div class="part">2부 · 경로를 따라가는 법</div>
+
+  <section>
+    <h2>뉴턴법: 접선으로 영점 찾기</h2>
+    <p>예에서는 x(μ)를 공식으로 구했지만, 변수가 수만 개인 LP에서는 장벽 문제의 최소점을 반복 계산으로 찾습니다. 그 도구가 뉴턴법입니다. 최소점은 도함수 g(x) = B<sub>μ</sub>′(x)가 0인 점이므로, g의 영점을 찾으면 됩니다.</p>
+    <div class="defn"><b>정의 7.2</b> <strong>뉴턴 걸음(Newton step)</strong>. 현재 점 x에서 g의 그래프에 접선을 긋고, 접선이 0이 되는 점으로 옮깁니다. x<sub>새</sub> = x − g(x) / g′(x). 변수가 여럿이면 g′(x) 자리에 2계 도함수들을 모은 행렬이 오고, 나눗셈 대신 그 행렬을 계수로 하는 연립 1차방정식을 풉니다.</div>
+    <p>예에서 g′(x) = μ/(x − 1)² + μ/(3 − x)²입니다. μ = 1의 중심 x = 1.585786에서 출발해 μ = 0.5의 중심(1.381966)을 뉴턴법으로 찾으면</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>걸음</th><th class="num">x</th><th class="num">목표 1.381966과의 차</th></tr></thead>
+      <tbody>
+        <tr><td>출발 (μ = 1의 중심)</td><td class="num">1.585786</td><td class="num">0.204</td></tr>
+        <tr><td>1</td><td class="num">1.292893</td><td class="num">−0.089</td></tr>
+        <tr><td>2</td><td class="num">1.361929</td><td class="num">−0.020</td></tr>
+        <tr><td>3</td><td class="num">1.380975</td><td class="num">−0.00099</td></tr>
+        <tr><td>4</td><td class="num">1.381964</td><td class="num">−0.000002</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>목표에 가까워질수록 오차가 대략 제곱으로 줄어듭니다(0.020 → 0.001 → 0.000002). 뉴턴법은 답 근처에서 매우 빠릅니다. 그런데 μ를 1에서 0.1로 한꺼번에 줄이면, 같은 출발점에서 첫 뉴턴 걸음이 x ≈ −1.05로 튀어 영역 밖으로 나갑니다. 먼 목표에는 접선 근사가 맞지 않기 때문입니다.</p>
+    <p>그래서 실제 방법은 <strong>μ를 조금씩 줄이고, 매번 이전 중심에서 출발해 뉴턴 걸음 몇 번(필요하면 보폭을 줄여서)으로 새 중심 근처로 옮깁니다.</strong> 중심 경로를 정확히 밟지 않고 그 근처를 따라가므로 경로 추종(path-following)법이라고 합니다. 실제 솔버는 원시와 쌍대를 동시에 움직이는 원시-쌍대(primal-dual) 판을 쓰며, 위의 "승수 × 여유 = μ" 식들에 바로 뉴턴법을 적용합니다. 원리는 같습니다.</p>
+  </section>
+
+  <section>
+    <h2>2변수 예: 심플렉스의 길과 배리어의 길</h2>
+    <p>5장의 생산 예(최대화 5x<sub>1</sub> + 4x<sub>2</sub>)에 같은 방법을 쓰면 중심 경로는 다음 점들을 지납니다. 장벽 항은 네 부등식 x<sub>1</sub> ≥ 0, x<sub>2</sub> ≥ 0, 24 − 6x<sub>1</sub> − 4x<sub>2</sub> ≥ 0, 6 − x<sub>1</sub> − 2x<sub>2</sub> ≥ 0의 여유에 붙고, 점들은 뉴턴법으로 계산했습니다. 풀어야 할 식은 최소화 −5x<sub>1</sub> − 4x<sub>2</sub> − μ(ln x<sub>1</sub> + ln x<sub>2</sub> + ln s<sub>1</sub> + ln s<sub>2</sub>)의 두 편미분이 0이라는 조건, 곧 −5 − μ/x<sub>1</sub> + 6μ/s<sub>1</sub> + μ/s<sub>2</sub> = 0, −4 − μ/x<sub>2</sub> + 4μ/s<sub>1</sub> + 2μ/s<sub>2</sub> = 0입니다(s<sub>1</sub> = 24 − 6x<sub>1</sub> − 4x<sub>2</sub>, s<sub>2</sub> = 6 − x<sub>1</sub> − 2x<sub>2</sub>).</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>μ</th><th class="num">(x<sub>1</sub>, x<sub>2</sub>)</th><th class="num">이익</th><th class="num">최적값 21과의 차</th><th class="num">간격 상한 4μ</th></tr></thead>
+      <tbody>
+        <tr><td>10</td><td class="num">(1.70, 1.06)</td><td class="num">12.75</td><td class="num">8.25</td><td class="num">40</td></tr>
+        <tr><td>1</td><td class="num">(3.10, 0.99)</td><td class="num">19.48</td><td class="num">1.52</td><td class="num">4</td></tr>
+        <tr><td>0.1</td><td class="num">(3.06, 1.38)</td><td class="num">20.81</td><td class="num">0.19</td><td class="num">0.4</td></tr>
+        <tr><td>0.01</td><td class="num">(3.007, 1.487)</td><td class="num">20.98</td><td class="num">0.020</td><td class="num">0.04</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 560 300" role="img" aria-label="생산 예의 가능 영역. 심플렉스는 (0,0)에서 (4,0)을 거쳐 (3,1.5)로 모서리를 따라가고, 배리어의 중심 경로는 영역 안쪽을 지나 (3,1.5)로 다가간다">
+        <polygon class="f-steel" stroke="none" opacity=".45" points="60,260 300,260 240,170 60,80"/>
+        <g class="s-line" stroke-width="1.2"><line x1="60" y1="260" x2="440" y2="260"/><line x1="60" y1="260" x2="60" y2="20"/></g>
+        <g class="s-crane" stroke-width="3" opacity=".8"><line x1="60" y1="260" x2="300" y2="260"/><line x1="300" y1="260" x2="240" y2="170"/></g>
+        <polyline class="s-ok" stroke-width="2.5" points="135.6,200.4 161.9,196.1 214.8,199.4 246.1,200.5 248.0,188.1 243.6,177.4 240.4,170.8"/>
+        <g class="f-ok"><circle cx="135.6" cy="200.4" r="4"/><circle cx="161.9" cy="196.1" r="4"/><circle cx="214.8" cy="199.4" r="4"/><circle cx="246.1" cy="200.5" r="4"/><circle cx="248.0" cy="188.1" r="4"/><circle cx="243.6" cy="177.4" r="4"/></g>
+        <circle cx="240" cy="170" r="6" class="f-crane"/>
+        <g font-size="12" class="t-muted" text-anchor="middle"><text x="60" y="278">0</text><text x="120" y="278">1</text><text x="180" y="278">2</text><text x="240" y="278">3</text><text x="300" y="278">4</text><text x="48" y="204">1</text><text x="48" y="144">2</text><text x="48" y="84">3</text></g>
+        <g font-size="12"><text x="100" y="222">μ=100</text><text x="146" y="216">μ=10</text><text x="196" y="190">μ=3</text><text x="224" y="219">μ=1</text><text x="256" y="190">μ=0.3</text><text x="252" y="178">μ=0.1</text><text x="210" y="158">최적 (3, 1.5)</text><text x="320" y="250">심플렉스: 모서리를 따라</text><text x="74" y="170">배리어: 안쪽을 가로질러</text><text x="440" y="275">x₁</text><text x="66" y="24">x₂</text></g>
+      </svg>
+      </div>
+      <figcaption>주황색 굵은 선은 5장의 심플렉스가 지나간 모서리, 녹색 점들은 배리어의 중심 경로입니다. 중심 경로는 경계에 닿지 않고 최적 꼭짓점으로 다가갑니다. 좌표는 뉴턴법으로 계산한 값을 그렸습니다.</figcaption>
+    </figure>
+    <p>그림 앞에 있는 표의 마지막 열은 1부의 결론(간격 = 부등식 수 × μ = 4μ)이 실제로 상한 노릇을 하는 것을 보여 줍니다. 최적값과의 차는 항상 4μ 이하입니다.</p>
+  </section>
+
+  <section>
+    <h2>얼마나 빠른가</h2>
+    <div class="thm"><b>성질 7.3 (계산량, 알려진 결과)</b> 경로 추종 내부점법은 변수와 제약의 수(그리고 계수의 자릿수)에 대한 다항식 횟수의 연산으로 LP를 원하는 정밀도까지 풉니다. 반면 심플렉스법은 5장의 Klee–Minty 예처럼 최악의 경우 지수 번 피벗할 수 있습니다.</div>
+    <p>역사적으로는 1979년의 타원체법이 LP가 다항 시간에 풀린다는 것을 처음 보였지만 실전에서는 느렸고, 1984년 Karmarkar의 방법 이후 내부점법이 실용적인 다항 시간 방법으로 자리 잡았습니다. 실전의 감각은 이렇습니다.</p>
+    <ul class="plain">
+      <li><strong>반복 횟수가 적고 크기에 둔감합니다.</strong> 대개 수십 번 안팎의 반복으로 끝나는 것으로 알려져 있습니다. 심플렉스의 피벗 수가 문제 크기에 따라 늘어나는 것과 대조적입니다.</li>
+      <li><strong>대신 반복 한 번이 무겁습니다.</strong> 매 반복 큰 연립 1차방정식 하나(등식 행 수 m × m 크기의 대칭 행렬)를 풉니다. 이 계산은 큰 행렬을 여러 조각으로 나눠 동시에 처리하는 선형대수 연산이라 <strong>여러 코어로 나누기 좋습니다.</strong> 심플렉스의 피벗은 하나씩 차례로 일어나서 그렇지 못합니다(5장).</li>
+      <li>결과적으로 <strong>큰 LP를 처음부터 한 번 풀 때는 배리어가 유리한 경우가 많고</strong>, 작은 LP나 조금 바뀐 LP를 이어 풀 때는 심플렉스가 유리합니다. 어느 쪽이 빠를지 미리 알기 어려우므로, 두 방법을 서로 다른 코어에서 동시에 돌려 먼저 끝난 답을 쓰는 방식(concurrent)도 있습니다. 코어를 나눠 쓰는 대가가 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">3부 · 꼭짓점이 아닌 답과 크로스오버</div>
+
+  <section>
+    <h2>최적해가 여럿이면 배리어는 그 "가운데"로 간다</h2>
+    <p>4장에서 LP의 최적해 집합은 면(꼭짓점 하나일 수도, 모서리일 수도, 더 큰 면일 수도 있음)이라고 했습니다. 최적해가 꼭짓점 하나뿐이면 배리어의 극한도 그 꼭짓점입니다. 최적해가 여럿이면 사정이 다릅니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; y&nbsp;&nbsp; 제약 0 ≤ x ≤ 1,&nbsp; 0 ≤ y ≤ 1</span><span class="all">최적해: 아래 변 전체 (x 아무거나, y = 0)</span></div>
+    </div>
+    <p>장벽 문제는 y − μ[ln x + ln(1 − x) + ln y + ln(1 − y)]입니다. x는 목적함수에 없으므로 x에 대해서는 −ln x − ln(1 − x)를 최소화하는 x = 1/2이 μ와 상관없이 답입니다. y는 1부와 같은 계산으로 y(μ) = [(1 + 2μ) − √(1 + 4μ²)] / 2이고(μ = 1, 0.1, 0.01에서 0.382, 0.090, 0.0099), μ → 0일 때 0으로 갑니다. 중심 경로는 수직선 x = 1/2을 따라 내려와 <strong>(1/2, 0)</strong>, 최적 변의 한가운데에 도착합니다.</p>
+    <p>(1/2, 0)도 최적해입니다. 하지만 꼭짓점이 아닙니다. 심플렉스법이라면 (0, 0)이나 (1, 0)을 냈을 것입니다. 일반적으로도 그렇습니다.</p>
+    <div class="thm"><b>성질 7.4</b> 중심 경로는 μ → 0일 때 최적면의 "상대 내부"(최적면 안에서 그 면의 경계가 아닌 곳)에 있는 한 점으로 수렴합니다. 그래서 최적해가 여럿이면 배리어의 답은 보통 꼭짓점이 아니고, 기저(5장)가 대응하지 않습니다.</div>
+    <p>이유는 장벽 항이 "어느 경계에도 가깝지 않은 점"을 끝까지 선호하기 때문입니다. 목적함수가 최적면 안에서 차이를 두지 않으면, 장벽 항만이 남아 그 면의 가운데를 고릅니다. 덧붙여 배리어는 정밀도 ε에서 멈추므로, 최적해가 하나일 때도 답이 꼭짓점 근처의 <em>안쪽 점</em>이고 꼭짓점 그 자체는 아닙니다(위 2변수 예의 μ = 0.01 점 (3.007, 1.487)처럼).</p>
+  </section>
+
+  <section>
+    <h2>크로스오버: 안쪽 점을 꼭짓점으로</h2>
+    <div class="defn"><b>정의 7.5</b> <strong>크로스오버(crossover)</strong>는 내부점법이 낸 (근사) 최적해를 같은 목적값의 최적 꼭짓점, 곧 최적 기저로 바꾸는 후처리입니다. 원리는 이렇습니다. 경계에 붙지 않은 변수(0이 아닌 변수. 솔버는 x ≤ u 같은 변수 범위도 따로 다루므로 그 경우 상한에 닿지 않은 변수도 포함)를, 목적값을 나쁘게 하지 않는 방향으로 하나씩 경계까지 밀어 붙입니다. 경계에 붙지 않은 변수들의 열이 일차독립이 될 때까지 이것을 반복하면(그러면 그 개수는 자연히 m 이하) 4장 정리 4.5에 의해 그 점은 꼭짓점이고, 그 열들에 다른 열을 보태 기저를 만들 수 있습니다. 마지막으로 그 기저에서 심플렉스 피벗 몇 번으로 최적성을 확인·마무리합니다.</div>
+    <p>위 정사각형 예에서는 (1/2, 0)에서 x를 0 쪽(또는 1 쪽)으로 미는 것입니다. 목적함수에 x가 없으니 값은 그대로이고, x가 0에 닿으면 꼭짓점 (0, 0)입니다. 큰 문제에서는 밀어 붙여야 할 변수가 수천, 수만 개일 수 있고, 그 과정의 피벗들이 배리어 본체만큼 시간이 걸리기도 합니다.</p>
+  </section>
+
+  <section>
+    <h2>왜 분지한계법은 꼭짓점이 필요한가</h2>
+    <p>9장에서 자세히 보겠지만, MIP 솔버는 맨 처음 LP 완화(뿌리 완화)를 푼 뒤 그 답을 바탕으로 가지를 나누고, 가지마다 LP를 수없이 다시 풉니다. 6장 3부에서 본 대로 그 가지 LP들은 <strong>부모의 최적 기저에서 쌍대 심플렉스로 이어 푸는 것</strong>이 빠릅니다. 여기서 결론이 나옵니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>뿌리 LP</th><th>가지 LP</th><th>크로스오버</th><th>대가</th></tr></thead>
+      <tbody>
+        <tr><td>배리어</td><td>쌍대 심플렉스(이어 풀기)</td><td><strong>필요.</strong> 뿌리 답을 기저로 바꿔야 가지들이 그 기저에서 출발할 수 있음</td><td>크로스오버 시간</td></tr>
+        <tr><td>배리어</td><td>배리어(매번 처음부터)</td><td>생략 가능. 기저를 물려줄 일이 없음</td><td>가지마다 이어 풀기 없이 큰 계산을 반복 → 분지 전체가 느려질 수 있음</td></tr>
+        <tr><td>심플렉스</td><td>쌍대 심플렉스</td><td>해당 없음. 답이 처음부터 기저</td><td>큰 뿌리 LP에서 느릴 수 있음</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>다시 말해 "뿌리에서 크로스오버를 끈다"는 선택은 "가지들도 기저 없이 푼다"는 선택과 짝을 이룰 때만 앞뒤가 맞습니다. 하나 더 있습니다. 10장에서 볼 Gomory 절단은 최적 단체표의 한 줄에서 만들어지므로, 뿌리 LP의 기저가 없으면 이런 절단도 만들 수 없습니다.</p>
+  </section>
+
+  <div class="part">4부 · 가이드와 연결</div>
+
+  <section>
+    <h2>가이드의 어느 문장이 이 장의 내용인가</h2>
+    <div class="gref">
+      <p><strong>가이드 4장 3부 「LP를 푸는 두 방법: 심플렉스와 배리어」.</strong> "가능 영역의 안쪽을 가로질러 최적점으로 다가갑니다"가 1~2부의 중심 경로(그림의 녹색 점들)입니다. "큰 LP에서 대체로 빠르고 여러 코어를 잘 씁니다"는 성질 7.3 뒤의 설명(반복 수가 적고, 반복 한 번은 큰 선형 방정식이라 나누기 좋음)입니다. "답이 꼭짓점이 아닐 수 있고(기저가 없고), 이어 풀기가 안 됩니다"가 3부의 성질 7.4입니다. "분지한계법은 꼭짓점 답(기저)에서 출발해야 하므로 … 크로스오버로 꼭짓점을 얻은 뒤 그 아래 가지들을 심플렉스로 이어 풉니다"가 3부 마지막 표의 첫 줄이고, 그 이유(쌍대 심플렉스의 이어 풀기)는 6장 3부입니다. "모형이 크면 여러 방법을 동시에 돌려 먼저 끝난 것을 씁니다"는 2부의 concurrent입니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 8장 2부 「Method = 2, Crossover = 0: 뿌리 완화를 배리어로」.</strong> tryAgain은 뿌리 완화를 배리어로 고정하고 크로스오버를 끄도록 설정했습니다. 가이드가 인용한 Gurobi 12 문서의 단서는 "MIP의 뿌리 완화에서는 Method와 NodeMethod가 둘 다 배리어일 때만 크로스오버를 끌 수 있다"는 것입니다. 이 장의 3부 표가 그 단서의 이론적 이유입니다. NodeMethod(가지 LP를 푸는 방법)가 심플렉스 계열이면 가지들이 뿌리의 기저를 물려받아야 하므로 크로스오버를 건너뛸 수 없고, 따라서 tryAgain의 코드에서는 크로스오버가 그대로 수행될 것이라는 가이드의 추론(로그로는 확인되지 않음)과 맞습니다. 가이드의 괄호 문장 "정말로 끄려면 NodeMethod도 배리어로 줘야 하는데, 그러면 모든 가지의 LP를 이어 풀기 없이 배리어로 처음부터 풀게 되어 분지한계법 전체가 느려질 수 있습니다"는 표의 둘째 줄입니다.</p>
+    </div>
+    <div class="gref">
+      <p><strong>가이드 4장 3부 「모형이 크면 뿌리에서 막힌다: NoRel 휴리스틱」.</strong> "변수가 수만, 수십만 개가 되면 맨 처음의 LP 하나를 푸는 데만 수십 초에서 몇 분"이라는 상황에서 배리어를 고르는 것은 성질 7.3의 실전 감각과 맞습니다. 다만 가이드 8장에 따르면 tryAgain의 큰 문제(x 변수 근사 수가 10,000 초과)는 제한 시간 내내 NoRel 휴리스틱(LP를 풀지 않고 정수 가능해를 직접 찾는 솔버 기능. 9장 4부)을 돌리므로 뿌리 LP를 풀 일이 없을 것이고, 배리어 설정이 실제로 쓰이는 것은 작은 문제 쪽입니다. 그 효과를 측정한 자료는 가이드에도 없습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>최소화 x, 제약 1 ≤ x ≤ 3의 장벽 문제에서 x(μ) = 2 + μ − √(1 + μ²)을 직접 유도해 보세요.</summary>
+      <p>1 − μ/(x − 1) + μ/(3 − x) = 0에 (x − 1)(3 − x)를 곱하면 (x − 1)(3 − x) − μ(3 − x) + μ(x − 1) = 0, 곧 −x² + 4x − 3 + 2μx − 4μ = 0. x² − (4 + 2μ)x + (3 + 4μ) = 0의 근은 (2 + μ) ± √((2 + μ)² − 3 − 4μ) = (2 + μ) ± √(1 + μ²). 더한 쪽은 2 + μ + √(1+μ²) &gt; 3이라 영역 밖이므로 뺀 쪽입니다.</p>
+    </details>
+    <details>
+      <summary>같은 예에서 μ = 0.1일 때 쌍대 간격이 0.2임을 숫자로 확인하세요.</summary>
+      <p>x = 2.1 − √1.01 ≈ 1.095012. u<sub>1</sub> = 0.1/0.095012 ≈ 1.052494, u<sub>2</sub> = 0.1/1.904988 ≈ 0.052494. u<sub>1</sub> − u<sub>2</sub> = 1(쌍대 가능). 쌍대 값 u<sub>1</sub> − 3u<sub>2</sub> ≈ 0.895012. 간격 1.095012 − 0.895012 = 0.2 = 2μ.</p>
+    </details>
+    <details>
+      <summary>최소화 x, 제약 0 ≤ x ≤ 4에 대해 μ = 1의 중심을 구하세요. 해석적 중심은 어디인가요?</summary>
+      <p>1 − 1/x + 1/(4 − x) = 0 → x(4 − x) − (4 − x) + x = 0 → −x² + 6x − 4 = 0 → x = 3 − √5 ≈ 0.764(영역 안의 근). μ → ∞이면 장벽 항만 남아 −ln x − ln(4 − x)를 최소화하는 x = 2가 해석적 중심입니다.</p>
+    </details>
+    <details>
+      <summary>정사각형 예의 목적함수를 "최소화 x + y"로 바꾸면 배리어의 극한점은 어디인가요? 크로스오버가 필요한가요?</summary>
+      <p>x와 y가 대칭이므로 x(μ) = y(μ) = [(1 + 2μ) − √(1 + 4μ²)]/2 → 0. 극한은 (0, 0)이고 최적해가 이 꼭짓점 하나뿐이라 극한점이 꼭짓점입니다. 그래도 배리어는 유한한 μ에서 멈추므로 답은 (0, 0) 근처의 안쪽 점이고, 정확한 꼭짓점(기저)을 원하면 크로스오버가 (짧게) 필요합니다.</p>
+    </details>
+    <details>
+      <summary>"뿌리 LP는 배리어로, 가지 LP는 쌍대 심플렉스로, 크로스오버는 생략"이 왜 앞뒤가 맞지 않나요?</summary>
+      <p>쌍대 심플렉스는 쌍대 가능한 기저에서 출발해야 하는데, 그 기저는 부모(여기서는 뿌리) LP의 최적 기저에서 옵니다(6장). 크로스오버를 생략하면 뿌리 답에 기저가 없으므로 첫 가지들이 이어 풀 출발점이 없습니다. 그래서 뿌리에서 크로스오버를 건너뛰려면 가지들도 기저가 필요 없는 방법(배리어)으로 풀어야 합니다.</p>
+    </details>
+    <details>
+      <summary>뉴턴법 표에서 μ를 1에서 0.1로 한 번에 줄이면 첫 걸음이 x ≈ −1.05가 됩니다. 이 값을 계산해 보고, 실제 방법이 이 문제를 어떻게 피하는지 말해 보세요.</summary>
+      <p>x = 1.585786에서 g = 1 − 0.1/0.585786 + 0.1/1.414214 ≈ 1 − 0.170711 + 0.070711 = 0.9, g′ = 0.1/0.343146 + 0.1/2 ≈ 0.341421. x − g/g′ ≈ 1.585786 − 2.636039 ≈ −1.050. 영역 밖입니다. 실제 방법은 μ를 한 번에 조금씩만 줄여 새 중심이 이전 점에 가깝게 하고, 보폭을 줄여(새 점의 여유가 모두 양수가 될 때까지 걸음을 절반씩 줄이는 등) 영역 밖으로 나가지 않게 합니다.</p>
+    </details>
+    <details>
+      <summary>배리어가 큰 LP에서 심플렉스보다 여러 코어를 잘 쓰는 이유를 두 문장으로 설명하세요.</summary>
+      <p>배리어는 반복 수가 적은 대신 반복마다 큰 연립 1차방정식을 풀고, 그 행렬 계산은 조각으로 나눠 여러 코어에서 동시에 할 수 있습니다. 심플렉스는 가벼운 피벗을 많이 하는데 각 피벗이 직전 피벗의 결과(기저)에 의존해 차례로만 진행되므로 나눠 하기 어렵습니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><a href="https://www.ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/b7e0327ff40019baae4c41c208fd8cc3_MIT6_251JF09_lec21.pdf">MIT OCW 6.251J 21강 「Primal Barrier Interior Point Algorithm」 (PDF)</a> — 장벽 방법, 중심 경로, 경로 근사, 계산량. 같은 강좌의 <a href="https://ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/pages/lecture-notes/">강의 노트 목록</a>에 20~22강 Interior point I~III이 있습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/class/msande310/lecture13.pdf">Stanford MS&amp;E 310, Yinyu Ye 강의 13 (PDF)</a> — 내부점법의 기하(해석적 중심, 중심 경로). 대학원 수준.</li>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/~boyd/cvxbook/">Boyd, Vandenberghe, Convex Optimization (무료 PDF)</a> — 11장 Interior-point methods(로그 장벽, 중심 경로, 쌍대 간격 mμ), 9장 Unconstrained minimization(뉴턴법). 이 장의 1변수 계산을 일반 볼록 문제로 넓힌 정식 설명입니다.</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">Bertsimas, Tsitsiklis, Introduction to Linear Optimization</a> — 9장 Interior point methods, 8장 Complexity of linear programming and the ellipsoid method. 출판사 목차 페이지로 장 순서를 확인했습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — 「내부점법」 절. 짧은 개관입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">참고</span><a href="https://en.wikipedia.org/wiki/Interior-point_method">Wikipedia 「Interior-point method」</a> — 역사(Karmarkar 등)와 변종 개관.</li>
+      <li><span class="tagc">무료</span><span class="tagc">참고</span><a href="https://docs.gurobi.com/projects/optimizer/en/12.0/reference/parameters.html">Gurobi 12.0 「Parameter Reference」</a> — Crossover, Method, NodeMethod 항목. 설정 방법이 아니라 3부의 단서("뿌리 완화에서 크로스오버는 Method와 NodeMethod가 둘 다 배리어일 때만 끌 수 있다")의 원문을 확인하는 용도입니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch6">← 이전: 6장 쌍대성</a><a href="#ch8">다음: 8장 정수계획 모델링 →</a></div>
+</article>

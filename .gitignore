@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+*.pyc
+tryAgain_소스/
+tryAgain_소스.zip
+tryAgain_발표자료.pdf

@@ -1,0 +1,186 @@
+<article class="chapter" id="ch1">
+  <header>
+    <div class="kicker">1 / 12</div>
+    <h1>들어가며: 이 교재의 지도</h1>
+  </header>
+
+  <section>
+    <p class="lead">이 교재는 「OGC 2025 1등 해법 해설」 가이드(이하 「가이드」)를 이론적으로 납득하는 데 필요한 배경지식을 모은 것입니다. 가이드가 짧게 소개하거나 "몰라도 된다"고 넘어간 개념들, 곧 LP 완화, 꼭짓점, 기저, 심플렉스와 배리어, 쌍대성, 분지한계법과 gap, 강한 정식화, 완전 단모듈성, 절단평면, 라그랑지 완화와 열 생성, 그리고 BFS 높이와 이분 그래프를 처음부터 설명합니다.</p>
+    <p>독자는 CVRPTW를 휴리스틱으로 풀어 본 개발자로 가정합니다. 지역 탐색과 메타휴리스틱, 그래프와 최단 경로에는 익숙하지만 LP와 MIP 이론은 처음인 사람입니다. 고등학교 수준의 1차식, 연립방정식, 미분만 있으면 읽을 수 있게 썼습니다.</p>
+  </section>
+
+  <section>
+    <h2>이 교재가 하는 일과 하지 않는 일</h2>
+    <ul class="plain">
+      <li><strong>하는 일.</strong> 정의, 정리, 짧은 증명, 그리고 숫자를 끝까지 따라가는 손계산 예제. 같은 예(가이드의 트럭 예, 생산 예, 3 × 3 격자 배, 창고 예)를 여러 장에 걸쳐 다시 써서 개념이 쌓이는 것을 보입니다.</li>
+      <li><strong>하지 않는 일.</strong> Gurobi나 다른 솔버의 사용법, 코딩 실습. 솔버의 파라미터는 "이론적으로 무엇을 건드리는가"만 설명합니다.</li>
+      <li><strong>장 하나의 구성.</strong> 직관 → 정의(초록 테두리 상자) → 손계산 예 → 정리(주황 테두리 상자)와 증명 → 「가이드와 연결」(연두색 상자: 가이드 몇 장 어디에 이 개념이 나오는지) → 연습문제(답과 풀이 수록) → 더 읽을 자료.</li>
+      <li><strong>순서의 약속.</strong> 앞 장은 뒤 장의 지식을 요구하지 않습니다. 뒤 장을 가리키는 한 줄("10장에서 다룹니다")이 있더라도 그것을 몰라도 지금 장이 읽히게 썼습니다. 용어는 처음 나오는 곳에서 정의합니다.</li>
+      <li><strong>가이드 참조.</strong> 가이드의 장은 항상 「가이드 N장」으로 적고, 이 교재의 장은 그냥 "N장"으로 적습니다. 가이드의 용어(상한/하한, incumbent, 가지, 구간, 머무는 차, 아래 이웃, 높이, 접근 가능)를 그대로 쓰되, 뜻은 이 교재 안에서 다시 정의합니다(문제에 관한 말은 바로 아래 「가이드의 문제 한눈에」에서).</li>
+      <li><strong>약어 하나.</strong> BFS는 이 교재에서 너비 우선 탐색(breadth-first search)만 뜻합니다. LP 교과서에서 같은 약어로 쓰는 basic feasible solution은 「기저가능해」로 풀어 씁니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>가이드의 문제 한눈에</h2>
+    <p>이 교재의 「가이드와 연결」 상자와 3·8·10·12장의 예는 가이드가 다루는 문제를 가리킵니다. 가이드를 아직 읽지 않았어도 따라올 수 있게 필요한 만큼만 적어 둡니다. 자세한 것은 가이드 1·5·6장에 있습니다.</p>
+    <ul class="plain">
+      <li><strong>문제.</strong> OGC 2025라는 최적화 대회의 문제는 자동차 운반선 선적 문제입니다. 차가 제 바퀴로 굴러 들어가고 나오는 배(Roll-on Roll-off)라서 줄여 <strong>RORO 문제</strong>라고 부릅니다. <strong>tryAgain</strong>은 1등 팀의 이름이고, 이 교재에서 「tryAgain 모형」은 그 팀이 이 문제를 적은 MIP 모형을 뜻합니다.</li>
+      <li><strong>배와 항구.</strong> 배 안은 그래프입니다. 노드는 차 한 대를 세우는 칸, 간선은 두 칸 사이를 차가 지나다닐 수 있다는 뜻(길이 1)이고, 노드 0은 하나뿐인 출입구입니다. 배는 항구 0, 1, …, P−1을 차례로 들르고, 수요는 "항구 o에서 실어 항구 d에서 내릴 차 r대" 꼴로 주어집니다.</li>
+      <li><strong>비용.</strong> 차를 싣거나 내릴 때마다 출입구와 칸 사이에 경로가 하나 생기고, 경로 하나의 비용은 고정비 F에 지나간 간선 수를 더한 값입니다. 길 위에 다른 차가 서 있으면 지나갈 수 없어서, 막는 차를 잠깐 내렸다가 다시 실어야 하고 그만큼 경로가 늘어납니다. 대회의 목적함수는 총비용에서 <strong>LB</strong>(차들이 서로 길을 막지 않는다고 칠 때의 비용. 문제마다 정해진 상수)를 뺀 값입니다.</li>
+      <li><strong>tryAgain 모형의 말.</strong> 차 한 대가 항구 p에서 실려 항구 q에서 내릴 때까지 한 칸에 서 있는 것을 <strong>구간</strong>이라 합니다. 어떤 항구에서 내리지도 싣지도 않고 그대로 서 있는 차가 <strong>머무는 차</strong>이고, 길을 막는 것은 이 차뿐입니다. 머무는 차를 피해 출입구까지 가는 길이 있는 칸이 <strong>접근 가능</strong>한 칸입니다(정확한 규칙은 3장). 모형은 경로의 길이를 dist(i), 곧 출입구에서 칸 i까지의 최단 거리로 세고, 실제 경로는 모형을 푼 뒤에 따로 찾습니다. 그래서 "모형이 센 비용"과 "실제 경로의 비용"이 같은지가 3장과 12장의 주제 중 하나입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>장의 흐름</h2>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="장의 의존 관계. 2장 수학 준비에서 4장 LP 기하로, 4장에서 5장 심플렉스, 6장 쌍대성, 7장 내부점법으로 이어진다. 3장 그래프는 8장 모델링과 10장 강도로 이어진다. 8장에서 9장 분지한계법, 10장 강도, 11장 분해로 가고, 모두 12장 종합으로 모인다">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g class="s-muted" stroke-width="1.3">
+          <line x1="130" y1="60" x2="190" y2="60" marker-end="url(#ar1)"/>
+          <line x1="300" y1="60" x2="350" y2="60" marker-end="url(#ar1)"/>
+          <line x1="455" y1="60" x2="500" y2="60" marker-end="url(#ar1)"/>
+          <line x1="600" y1="60" x2="630" y2="60" marker-end="url(#ar1)"/>
+          <line x1="80" y1="80" x2="80" y2="185" marker-end="url(#ar1)"/>
+          <line x1="245" y1="80" x2="245" y2="185" marker-end="url(#ar1)"/>
+          <line x1="130" y1="205" x2="190" y2="205" marker-end="url(#ar1)"/>
+          <line x1="300" y1="205" x2="350" y2="205" marker-end="url(#ar1)"/>
+          <line x1="455" y1="205" x2="500" y2="205" marker-end="url(#ar1)"/>
+          <line x1="550" y1="80" x2="550" y2="185" marker-end="url(#ar1)"/>
+          <line x1="600" y1="205" x2="624" y2="205" marker-end="url(#ar1)"/>
+          <line x1="670" y1="80" x2="670" y2="185" marker-end="url(#ar1)"/>
+        </g>
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="30" y="40" width="100" height="40" rx="6" class="f-steel"/><text x="80" y="58">2 수학 준비</text><text x="80" y="73" class="t-muted" font-size="11">벡터·볼록성</text>
+          <rect x="195" y="40" width="105" height="40" rx="6" class="f-steel"/><text x="247" y="58">4 LP의 기하</text><text x="247" y="73" class="t-muted" font-size="11">꼭짓점·기저</text>
+          <rect x="355" y="40" width="100" height="40" rx="6" class="f-steel"/><text x="405" y="58">5 심플렉스</text><text x="405" y="73" class="t-muted" font-size="11">피벗·감소 비용</text>
+          <rect x="505" y="40" width="95" height="40" rx="6" class="f-steel"/><text x="552" y="58">6 쌍대성</text><text x="552" y="73" class="t-muted" font-size="11">하한·쌍대 심플렉스</text>
+          <rect x="635" y="40" width="75" height="40" rx="6" class="f-steel"/><text x="672" y="58">7 내부점</text><text x="672" y="73" class="t-muted" font-size="11">크로스오버</text>
+          <rect x="30" y="185" width="100" height="40" rx="6" class="f-hull"/><text x="80" y="203">3 그래프</text><text x="80" y="218" class="t-muted" font-size="11">BFS·DAG·이분</text>
+          <rect x="195" y="185" width="105" height="40" rx="6" class="f-hull"/><text x="247" y="203">8 MIP 모델링</text><text x="247" y="218" class="t-muted" font-size="11">관용구·MTZ</text>
+          <rect x="355" y="185" width="100" height="40" rx="6" class="f-hull"/><text x="405" y="203">9 분지한계법</text><text x="405" y="218" class="t-muted" font-size="11">완화·gap</text>
+          <rect x="505" y="185" width="95" height="40" rx="6" class="f-hull"/><text x="552" y="203">10 강도·절단</text><text x="552" y="218" class="t-muted" font-size="11">볼록 껍질·TU</text>
+          <rect x="628" y="185" width="88" height="40" rx="6" class="f-hull"/><text x="672" y="203">11 분해</text><text x="672" y="218" class="t-muted" font-size="10.5">라그랑지·열 생성</text>
+          <rect x="250" y="255" width="220" height="34" rx="6" class="f-crane"/><text x="360" y="277">12 종합: tryAgain 모형과 CVRPTW</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>윗줄(파랑)은 연속 최적화, 아랫줄(초록)은 정수 최적화입니다. 가로 화살표는 "앞 장을 알아야 읽힌다"는 주된 흐름이고, 세로 화살표는 대표적인 의존 몇 가지만 그린 것입니다(2장→3장의 행렬, 4장→8장의 LP, 6장→10장의 제약 섞기와 쌍대 심플렉스, 7장→11장 쪽의 솔버 이야기). 그 밖에도 6장의 쌍대값은 9장과 11장에, 7장의 크로스오버는 9장과 12장에 쓰입니다. 숫자 순서대로 읽으면 모든 의존을 지킵니다. 모든 장이 12장으로 모입니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>가이드를 읽는 데 필요한 개념과 그 위치</h2>
+    <p>가이드 10장을 읽고 각 장을 훑어서, 가이드가 전제하거나 짧게만 다룬 개념을 모았습니다. 왼쪽 열이 개념, 가운데가 그 개념을 설명하는 이 교재의 장, 오른쪽이 가이드에서 그 개념이 쓰이는 곳입니다.</p>
+    <div class="scroll">
+    <table class="long">
+      <thead><tr><th>개념</th><th>이 교재</th><th>가이드에서 쓰이는 곳</th></tr></thead>
+      <tbody>
+        <tr><td>벡터, 내적, Ax ≤ b, 행렬식</td><td>2장 1부</td><td>3장 2부(첨자, Σ, ∀), 6장(계수 0, ±1)</td></tr>
+        <tr><td>초평면, 다면체, 꼭짓점, 볼록 껍질</td><td>2장 2~3부</td><td>4장 1부 그림, 4장 4부</td></tr>
+        <tr><td>볼록성과 "지역 최적 = 전역 최적"</td><td>2장 3부</td><td>3장(LP는 쉽고 IP는 어렵다)</td></tr>
+        <tr><td>바닥·천장, k의 배수 논증</td><td>2장 4부</td><td>4장 2부 ⑦, 8장 MIPGapAbs</td></tr>
+        <tr><td>BFS, 층, 최단거리, BFS 트리</td><td>3장 2부</td><td>5장 규칙 ②, getBFSOrientation, 7장</td></tr>
+        <tr><td>방향 부여, DAG, 위상 순서</td><td>3장 3부</td><td>5장 높이, 하역·선적 순서</td></tr>
+        <tr><td>전파 규칙과 "내려가면 끝난다"</td><td>3장 3부</td><td>5장 「접근 가능」, 6장 제약 ⑤⑥</td></tr>
+        <tr><td>이분 그래프와 홀수 순환</td><td>3장 4부</td><td>6장 4부, 8장 주석 "odd circuit"</td></tr>
+        <tr><td>근접 행렬</td><td>3장 5부</td><td>(10장의 완전 단모듈성 준비)</td></tr>
+        <tr><td>LP, 도해법, 표준형, 여유 변수</td><td>4장 1~2부</td><td>3장 1부, 4장 1부</td></tr>
+        <tr><td>기저, 기저가능해, 꼭짓점 최적성, 축퇴</td><td>4장 3부</td><td>4장 3부 「LP를 푸는 두 방법」</td></tr>
+        <tr><td>심플렉스: 피벗, 감소 비용, 2단계법</td><td>5장</td><td>4장 3부, 4장 4부(로그의 It/Node)</td></tr>
+        <tr><td>이어 풀기(warm start)</td><td>5장, 6장</td><td>4장 3부, 8장 Crossover</td></tr>
+        <tr><td>쌍대 문제, 약·강쌍대, 상보 여유성, 그림자 가격</td><td>6장</td><td>4장 1부(dual bound), 9장(가격), 10장 5~6단계</td></tr>
+        <tr><td>쌍대 심플렉스</td><td>6장</td><td>4장 3부 "가지를 이어 풀 때는 주로 쌍대 심플렉스"</td></tr>
+        <tr><td>내부점법(배리어), 중심 경로, 크로스오버</td><td>7장</td><td>4장 3부, 8장 Method·Crossover·NodeMethod</td></tr>
+        <tr><td>이진 논리, big-M, 지시 제약, 곱·절댓값</td><td>8장</td><td>3장 3부, 6장 제약 ②~⑤</td></tr>
+        <tr><td>흐름 보존, 집합 분할·덮개·포장</td><td>8장</td><td>3장 3부, 6장 제약 ①, 9장 branch-and-price</td></tr>
+        <tr><td>부분 순환, MTZ, DFJ, 연결성 표현</td><td>8장</td><td>3장 4부, 5장 「서로 받쳐 주는 섬」</td></tr>
+        <tr><td>CVRPTW 3첨자 정식화, 모형 크기</td><td>8장</td><td>3장 4부, 6장 4부</td></tr>
+        <tr><td>완화와 하한, LP 완화</td><td>9장</td><td>1장 LB, 4장 1부</td></tr>
+        <tr><td>상한·하한, 원시·쌍대 한계, 절대·상대 gap</td><td>9장</td><td>4장 1부, 8장 MIPGapAbs·MIPGap</td></tr>
+        <tr><td>분지한계법, 가지치기, 노드·변수 선택</td><td>9장</td><td>4장 2부</td></tr>
+        <tr><td>전처리, 원시 휴리스틱, NoRel, MIP start, matheuristic</td><td>9장</td><td>4장 3부, 8장, 9장 4부</td></tr>
+        <tr><td>솔버 로그 읽기</td><td>9장</td><td>4장 4부</td></tr>
+        <tr><td>정식화의 강도, 이상적 정식화, 볼록 껍질</td><td>10장</td><td>4장 4부, 6장 4부</td></tr>
+        <tr><td>완전 단모듈성(TU), 이분 그래프 근접 행렬</td><td>10장</td><td>6장 「강도: big-M이 없다」</td></tr>
+        <tr><td>모은 식과 클릭 부등식</td><td>10장</td><td>4장 4부와 6장 4부의 겉보기 모순</td></tr>
+        <tr><td>유효 부등식, 절단평면, Chvátal–Gomory, Gomory 절단, 분지절단법</td><td>10장</td><td>4장 3부, 8장 Cuts 주석</td></tr>
+        <tr><td>라그랑지 완화, 부분 기울기법, 라그랑지 쌍대</td><td>11장</td><td>9장 4부, 10장 6단계</td></tr>
+        <tr><td>Dantzig–Wolfe, 열 생성, 가격 문제, branch-and-price</td><td>11장</td><td>9장 4부, 10장 6단계</td></tr>
+        <tr><td>VRPTW 집합 분할과 자원 제약 최단 경로</td><td>11장</td><td>9장 4부</td></tr>
+        <tr><td>LP·라그랑지·열 생성 하한의 관계</td><td>11장</td><td>10장 6단계 「넘어가는 기준」</td></tr>
+        <tr><td>tryAgain 모형의 변수 x, y, z와 제약 ①~⑥</td><td>8장 6부(식은 10장에도 다시 적음)</td><td>6장</td></tr>
+        <tr><td>tryAgain 모형을 이론으로 다시 읽기</td><td>12장</td><td>5~9장 전체</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>읽는 길</h2>
+    <p>처음부터 끝까지 읽는 것이 기본입니다. 가이드의 특정 장을 먼저 이해하고 싶다면 다음 순서도 됩니다. 각 길은 필요한 앞 장을 모두 포함하도록 골랐고, 빠진 장은 그 길의 목표에 필요하지 않은 장입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>목표</th><th>읽을 장</th></tr></thead>
+      <tbody>
+        <tr><td>가이드 5~7장(높이, 접근 가능, 해 복원)</td><td>2장 → 3장 → 4장 → 8장 → 12장 1부</td></tr>
+        <tr><td>가이드 4장(LP 완화, 분지한계법, gap)</td><td>2장 → 3장 → 4장 → 5장 → 6장 → 8장 → 9장</td></tr>
+        <tr><td>가이드 8장(솔버 설정)</td><td>2장 → 3장 → 4장 → 5장 → 6장 → 7장 → 8장 → 9장 → 12장 3부</td></tr>
+        <tr><td>"강한 정식화"를 제대로</td><td>2장 → 3장 → 4장 → 5장 → 6장 → 8장 → 9장 → 10장</td></tr>
+        <tr><td>가이드 9~10장의 분해 기법(CVRPTW 정확해법 포함)</td><td>2장 → 3장 → 4장 → 5장 → 6장 → 8장 → 9장 → 11장 (10장은 권장)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>가이드 10장의 학습 로드맵과는 이렇게 맞물립니다. 로드맵 1~3단계(모형 쓰기, 관용구, 솔버 원리)의 이론 부분이 이 교재의 2, 4, 8, 9장이고, 5단계(정식화의 강도)가 5, 6, 10장, 6단계(분해 기법)가 6, 11장입니다. 로드맵 4단계는 실습 중심이라 따로 대응하는 장이 없고, 3장(그래프)과 7장(내부점법)은 로드맵 단계가 아니라 가이드 5~8장을 읽는 데 쓰이며, 12장은 전체를 다시 묶는 장입니다. 로드맵이 권한 "직접 적어 돌려 보기"는 이 교재가 다루지 않으므로 로드맵의 실습 과제를 따로 하면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>숫자와 출처에 대해</h2>
+    <ul class="plain">
+      <li>손계산 예의 숫자는 모두 분수 정밀도로 다시 계산해 확인했습니다. 이 교재를 만든 환경에는 LP·MIP 솔버가 없어서, 작은 LP는 모든 기저를 열거하는 프로그램으로, 정수 문제는 전수 탐색으로 확인했습니다.</li>
+      <li>가이드에서 가져온 숫자(트럭 예의 분지한계 표, tryAgain 모형의 크기, 공개 연습 문제 통계 등)는 가이드를 출처로 적었고, 그중 교재 예제로 쓴 것은 다시 계산했습니다.</li>
+      <li>「더 읽을 자료」의 링크는 2026년 11월 18일에 실제로 열어 본 것만 실었습니다. 열리지 않은 것은 빼거나 "확인하지 못함"이라고 적었습니다. 책의 장 번호는 출판사나 저자 페이지의 목차로 확인한 것만 적고, 목차에 번호가 없어 순서로 센 경우와 확인하지 못한 경우는 그렇게 밝혔습니다.</li>
+      <li>tryAgain의 실제 실행 로그는 가이드에도 이 교재에도 없습니다. 솔버 설정의 효과에 대한 설명은 이론과 공식 문서에 근거한 것이고, 측정한 것이 아닙니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>시작 전 점검</h2>
+    <p>다음 질문에 바로 답할 수 있다면 그 장은 훑어 읽어도 됩니다. 답은 펼쳐 볼 수 있습니다(인쇄본에서는 펼쳐져 있습니다).</p>
+    <details>
+      <summary>연립방정식 6x<sub>1</sub> + 4x<sub>2</sub> = 24, x<sub>1</sub> + 2x<sub>2</sub> = 6의 해는?</summary>
+      <p>(3, 3/2). 바로 풀리면 2장 1부는 훑어도 됩니다. 행렬식과 크라메르 공식(2장)은 10장에서 쓰이니 그 절은 읽으세요.</p>
+    </details>
+    <details>
+      <summary>BFS로 구한 거리가 최단거리인 이유를 한 문장으로 말할 수 있나요?</summary>
+      <p>층 k에는 정확히 거리 k인 노드가 들어가기 때문입니다(귀납법). 이 증명과 "간선은 같은 층이나 이웃 층만 잇는다"가 3장의 출발점입니다. 3장 3~4부(DAG, 이분 그래프)는 가이드 5·6장의 핵심이니 이 질문에 답할 수 있어도 읽으세요.</p>
+    </details>
+    <details>
+      <summary>LP의 최적해가 꼭짓점에 있다는 것은 알지만 「기저」가 무엇인지는 모른다면?</summary>
+      <p>4장 3부부터 읽으세요. 기저는 5장(심플렉스), 6장(쌍대 심플렉스), 7장(크로스오버), 10장(Gomory 절단)에서 계속 쓰입니다.</p>
+    </details>
+    <details>
+      <summary>"LP 완화의 최적값은 원래 문제의 하한이다"가 왜 참인지 설명할 수 있나요?</summary>
+      <p>조건을 지우면 고를 수 있는 해가 늘어나고, 선택지가 늘면 최솟값은 나빠질 수 없기 때문입니다. 이것이 9장의 정리 하나이고, 9장은 이것을 출발점으로 분지한계법 전체를 세웁니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>이 교재 전체의 주요 참고서</h2>
+    <ul>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — LP 이론의 표준 교과서. 출판사 목차 페이지의 순서로 세면 2장 기하(이 교재 4장), 3장 심플렉스(5장), 4장 쌍대성(6장), 6장 대규모 최적화·열 생성(11장), 7장 네트워크 흐름(8장), 9장 내부점법(7장), 10~11장 정수계획(8~10장)입니다. 목차 페이지에는 장 번호가 적혀 있지 않습니다.</li>
+      <li><span class="tagc">교과서</span><a href="https://www.wiley.com/en-us/Integer+Programming%2C+2nd+Edition-p-9781119606536">L. A. Wolsey, <em>Integer Programming</em>, 2판 (Wiley, 2020)</a> — 정수계획의 표준 교과서. 출판사 목차 PDF로 확인한 장: 1 Formulations(이 교재 8장), 2 Optimality, Relaxation, and Bounds(9장), 3 Well-Solved Problems(완전 단모듈, 10장), 7 Branch and Bound(9장), 8 Cutting Plane Algorithms와 9 Strong Valid Inequalities(10장), 10 Lagrangian Duality와 11 Column (and Row) Generation Algorithms(11장), 13 Primal Heuristics(9장).</li>
+      <li><span class="tagc">교과서</span><a href="https://link.springer.com/book/10.1007/978-3-319-11008-0">M. Conforti, G. Cornuéjols, G. Zambelli, <em>Integer Programming</em> (Springer GTM 271, 2014)</a> — 대학원 수준. 4장 Perfect Formulations(완전 단모듈 포함), 5장 Split and Gomory Inequalities, 8장 Reformulations and Relaxations(라그랑지, 열 생성). Wolsey 다음에 읽습니다.</li>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/~boyd/cvxbook/">S. Boyd, L. Vandenberghe, <em>Convex Optimization</em></a> — 저자 페이지에 전체 PDF 공개. 2장 볼록 집합, 3장 볼록 함수, 5장 쌍대성, 11장 내부점법.</li>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판)</a> — CC BY 무료 교재. 3판 기준 4장 심플렉스, 5장 쌍대성, 8장 정수-선형 최적화. 이 링크의 PDF는 앞부분(목차)만 들어 있고, 전체는 저자의 GitHub 저장소에 있습니다(5장 「더 읽을 자료」에 링크).</li>
+      <li><span class="tagc">무료</span><a href="https://jeffe.cs.illinois.edu/teaching/algorithms/">J. Erickson, <em>Algorithms</em></a> — 무료 알고리듬 교재. 그래프 탐색, DAG, 최단 경로(이 교재 3장).</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/">MIT OCW 6.251J / 15.081J Introduction to Mathematical Programming (2009)</a> — Bertsimas–Tsitsiklis를 교재로 쓰는 강의. 강의 노트 25개.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1390032">KOCW 「선형계획의 대수적 해법과 쌍대문제」 (한국공학대 허재석)</a> — 1~8강 심플렉스(표준형, 기저가능해, 단체표, 2단계법), 9~13강 쌍대문제. 이 교재 4~6장의 한국어 강의입니다.</li>
+      <li><span class="tagc">가이드</span>가이드 「OGC 2025 1등 해법 해설」 (<span class="mono">guide/ogc2025-tryagain-guide.pdf</span>) — 이 교재가 배경을 대는 대상. 특히 3·4장(MIP 기초)과 10장(학습 로드맵).</li>
+    </ul>
+  </section>
+
+  <div class="pager"><span></span><a href="#ch2">다음: 2장 수학 준비 →</a></div>
+</article>
