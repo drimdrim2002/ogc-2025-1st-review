@@ -1,0 +1,305 @@
+<article class="chapter" id="ch16">
+  <header>
+    <div class="kicker">16 / 16</div>
+    <h1>종합: tryAgain 모형을 이론으로 다시 읽기</h1>
+  </header>
+
+  <section>
+    <p class="lead">앞의 열다섯 장에서 모은 도구를 한자리에 모아, OGC 2025 1등 팀의 <strong>tryAgain 모형</strong>과 솔버 설정을 이론의 언어로 다시 읽습니다. 이 장에는 새로운 정리가 없습니다. 대신 가이드를 읽으며 만났던 설계와 숫자들이 "어느 장의 어떤 성질 때문에 그렇게 작동했는가"를 한 장의 지도 위에 연결합니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 1장부터 15장 전체. 특히 5장(높이와 이분 그래프), 8~10장(심플렉스, 쌍대성, 내부점법과 크로스오버), 12장(tryAgain 모형), 13~15장(분지한계법, 정식화 강도, 분해 기법)이 한꺼번에 모입니다.</li>
+      <li><strong>이 장을 읽고 나면.</strong> tryAgain 모형의 제약 ①~⑥과 솔버 설정을 모두 이론의 근거로 설명할 수 있고, 택배 트럭 경로 문제와의 차이도 한눈에 비교할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>1~15장 이론이 모이는 지도</h2>
+    <p>tryAgain 풀이는 "직접 탐색 코드를 짜는 대신, 문제를 작고 강한 정수계획 모형으로 적어서 솔버에 맡긴다"는 한 줄로 요약됩니다. 그 한 줄을 받치고 있는 세 기둥을 그림으로 봅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 326" role="img" aria-label="왼쪽의 세 이론 기둥인 그래프와 높이(4~5장), 정수 모델링과 정식화 강도(11~12, 14장), LP와 분지한계와 분해(6~10, 13, 15장)가 오른쪽의 제약 5번과 6번, 제약 1~4번, 솔버 설정과 다음 갈래로 각각 이어지는 종합 지도">
+        <defs>
+          <marker id="ar16" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker>
+        </defs>
+        <g stroke-width="1.3">
+          <rect x="18" y="18" width="256" height="84" rx="7" class="f-hull" opacity=".28"/>
+          <rect x="18" y="18" width="256" height="84" rx="7" fill="none" class="s-ok"/>
+          <rect x="18" y="121" width="256" height="84" rx="7" class="f-steel" opacity=".28"/>
+          <rect x="18" y="121" width="256" height="84" rx="7" fill="none" class="s-steel"/>
+          <rect x="18" y="224" width="256" height="84" rx="7" class="f-crane" opacity=".28"/>
+          <rect x="18" y="224" width="256" height="84" rx="7" fill="none" class="s-crane"/>
+
+          <rect x="358" y="18" width="344" height="84" rx="7" class="f-bay" stroke="currentColor"/>
+          <rect x="358" y="121" width="344" height="84" rx="7" class="f-bay" stroke="currentColor"/>
+          <rect x="358" y="224" width="344" height="84" rx="7" class="f-bay" stroke="currentColor"/>
+        </g>
+        <g class="s-line" stroke-width="1.5">
+          <line x1="276" y1="60" x2="352" y2="60" marker-end="url(#ar16)"/>
+          <line x1="276" y1="163" x2="352" y2="163" marker-end="url(#ar16)"/>
+          <line x1="276" y1="266" x2="352" y2="266" marker-end="url(#ar16)"/>
+        </g>
+        <g font-size="13" text-anchor="middle">
+          <text x="146" y="42" font-weight="700">그래프 · 높이 · 이분 그래프 (4~5장)</text>
+          <text x="146" y="64" font-size="11.5" class="t-muted">BFS 방문 순번 h(i), 아래 이웃 pred(i)</text>
+          <text x="146" y="84" font-size="11.5" class="t-muted">DAG 위상 순서, 홀수 순환 유무</text>
+
+          <text x="146" y="145" font-weight="700">모델링 · 정식화 강도 (11~12, 14장)</text>
+          <text x="146" y="167" font-size="11.5" class="t-muted">0/1 논리, 흐름 보존, 집합 포장</text>
+          <text x="146" y="187" font-size="11.5" class="t-muted">클릭 부등식, 구간 행렬(TU), big-M 없음</text>
+
+          <text x="146" y="248" font-weight="700">LP · 분지한계 · 분해 (6~10, 13, 15장)</text>
+          <text x="146" y="270" font-size="11.5" class="t-muted">심플렉스 · 배리어 · 크로스오버, k의 배수</text>
+          <text x="146" y="290" font-size="11.5" class="t-muted">상한 · 하한 · gap, 라그랑지 · 열 생성</text>
+
+          <text x="530" y="42" font-weight="700">⑤⑥ 접근 가능성과 비용 정확성</text>
+          <text x="530" y="64" font-size="11.5" class="t-muted">순서 변수를 없애고 yₚᵢ ≤ Σ yₚⱼ로 경로 보장</text>
+          <text x="530" y="84" font-size="11.5" class="t-muted">이분 그래프이면 모형 비용 = 실제 비용</text>
+
+          <text x="530" y="145" font-weight="700">목적함수와 ①~④ 모형 뼈대</text>
+          <text x="530" y="167" font-size="11.5" class="t-muted">① 흐름 보존(z), ② 구간 행렬(TU) 포장</text>
+          <text x="530" y="187" font-size="11.5" class="t-muted">③④ 계수 1로 모은 배타 식(클릭)</text>
+
+          <text x="530" y="248" font-weight="700">솔버 설정과 다음 갈래</text>
+          <text x="530" y="270" font-size="11.5" class="t-muted">MIPGapAbs = 2−0.001, Method = 2 / Crossover</text>
+          <text x="530" y="290" font-size="11.5" class="t-muted">Heuristics, NoRel, 라그랑지 · 분지가격법</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>책 전체의 종합 지도. 왼쪽의 세 이론 묶음이 오른쪽의 모형, 솔버 설정, 발전 방향으로 그대로 연결됩니다.</figcaption>
+    </figure>
+  </section>
+
+  <div class="part">1부 · 제약 ①~⑥을 이론으로 다시 읽기</div>
+
+  <section>
+    <h2>모형 한 번 더</h2>
+    <p>12장에서 배운 tryAgain 모형을 다시 적어 두고 한 줄씩 이론을 대어 봅니다. p &lt; q &lt; r은 항구, i, j는 배 안의 노드입니다. x<sub>pqi</sub> ∈ {0, 1}은 "항구 p에서 칸 i에 실려 q에서 내리는 구간이 있으면 1", y<sub>pi</sub> ∈ {0, 1}은 "중간 항구 p에서 노드 i가 접근 가능하면 1", z<sub>pqr</sub> ≥ 0 정수는 "p에서 r로 가는 차 중 q에서 잠깐 내렸다 다시 실어 구간을 둘로 쪼갠 대수"입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화 Σ<sub>p&lt;q</sub> Σ<sub>i</sub> 2(F + dist(i)) x<sub>pqi</sub></span><span class="tag">목적</span></div>
+      <div class="row"><span>Σ<sub>i</sub> x<sub>pqi</sub> = d<sub>pq</sub> − Σ<sub>p&lt;r&lt;q</sub> z<sub>prq</sub> + Σ<sub>r&gt;q</sub> z<sub>pqr</sub> + Σ<sub>r&lt;p</sub> z<sub>rpq</sub></span><span class="tag">①</span></div>
+      <div class="row"><span>Σ<sub>p&lt;q</sub> Σ<sub>r&gt;q</sub> x<sub>pri</sub> ≤ 1 − y<sub>qi</sub></span><span class="tag">②</span></div>
+      <div class="row"><span>Σ<sub>p&lt;q</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub>,&nbsp;&nbsp; Σ<sub>q&gt;p</sub> x<sub>pqi</sub> ≤ y<sub>pi</sub></span><span class="tag">③④</span></div>
+      <div class="row"><span>y<sub>pi</sub> ≤ Σ<sub>j∈pred(i)</sub> y<sub>pj</sub>,&nbsp;&nbsp; y<sub>p0</sub> = 1</span><span class="tag">⑤⑥</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>제약마다 어느 이론인가</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>식</th><th>모델링 관용구 (11~12장)</th><th>이론적 성격</th><th>근거가 되는 장</th></tr></thead>
+      <tbody>
+        <tr><td>목적</td><td>이진변수 × 짝수 비용의 합</td><td>모든 가능해 값이 2의 배수. 이분 그래프면 실제 비용과 일치</td><td>2장, 5장, 13장 「k의 배수」</td></tr>
+        <tr><td>①</td><td>흐름 보존 (수량 보존)</td><td>쪼개기 z가 긴 구간을 없애고 짧은 구간 둘을 만드는 장부 식</td><td>12장 「흐름 보존」</td></tr>
+        <tr><td>②</td><td>집합 포장 + 스위치</td><td>칸 하나만 떼면 연속 1 성질을 가진 구간 행렬 → 완전 단모듈(TU) 블록</td><td>12장, 14장 「연속된 1」</td></tr>
+        <tr><td>③④</td><td>서로 배타적인 x들을 계수 1로 모은 식</td><td>클릭 부등식과 같은 강한 꼴. x마다 따로 적는 것보다 LP 영역이 좁음</td><td>11장, 14장 「모은 식」</td></tr>
+        <tr><td>⑤⑥</td><td>한 방향 함의 + 전파 규칙</td><td>높이 h(i)가 만든 DAG 위에서 이웃만 보고 경로 존재를 보장</td><td>4장, 5장, 12장 「연결성」</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>하나씩 짚어 봅니다.</p>
+    <p><strong>①은 흐름 보존입니다.</strong> 항구 쌍 (p, q)를 한 지점으로, z<sub>prq</sub>를 "구간 (p, q) 하나를 받아 (p, r)과 (r, q) 둘로 쪼개 내보내는 흐름"으로 읽으면, ①은 12장에서 본 "들어온 양 − 나간 양 = 원래 수요" 식 그대로입니다. 덕분에 원래 수요인지 임시 하역 뒤 다시 실은 토막인지 구별하지 않고 x<sub>pqi</sub> 하나로 다룹니다.</p>
+    <p><strong>②는 칸 하나의 구간 포장입니다.</strong> 칸 i 하나를 고정하면 왼쪽 Σ<sub>p&lt;q&lt;r</sub> x<sub>pri</sub>는 "항구 q에서 칸 i에 머무는 차의 수"입니다. 행을 중간 항구 q, 열을 구간 (p, r)로 놓으면 각 열은 p+1부터 r−1까지 연속된 행에만 1이 놓입니다. 14장에서 본 <strong>구간 행렬</strong>이므로 칸 하나의 ② 블록은 완전 단모듈(TU)입니다. 다만 이것은 칸 하나, ②만 떼어 본 성질입니다. ①과 ⑤가 여러 칸을 묶으면 전체 모형은 TU가 아니게 됩니다.</p>
+    <p><strong>③④는 「계수 1로 모은 식」이라서 강합니다.</strong> 11장에서 본 창고 예의 Σx<sub>j</sub> ≤ 10y는 고객 10명을 동시에 받을 수 있어 y 앞에 10(big-M)이 붙은 약한 식이었습니다. 반면 ③의 Σ<sub>p&lt;q</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub>는 한 항구 q에서 한 칸 i로부터 내리는 차가 많아야 한 대뿐이라 x들이 <strong>서로 배타적</strong>입니다(한 칸에 두 대가 동시에 머물 수 없다는 것을 ②④와 함께 막습니다). 14장에서 확인했듯이 서로 배타적인 변수들을 계수 1로 모은 식은 클릭 부등식과 같아서, x<sub>pqi</sub> ≤ y<sub>qi</sub>를 따로따로 적는 것보다 LP 영역이 좁습니다. 예를 들어 x<sub>1</sub> = x<sub>2</sub> = y = 0.5는 따로 적은 식은 통과하지만 모은 식(0.5 + 0.5 ≤ 0.5)은 통과하지 못합니다.</p>
+    <p><strong>⑤⑥은 연결성을 적는 세 번째 방법입니다.</strong> 12장에서 "출입구까지 길이 있다"를 적는 세 가지 방법(순번+big-M인 MTZ, 보조 흐름, 미리 정한 순서)을 비교했습니다. tryAgain은 BFS로 높이 h(i)를 미리 고정해 그래프를 DAG로 만들고(5장), ⑤⑥처럼 아래 이웃 pred(i)만 보는 규칙을 썼습니다. 12장의 택배 트럭 경로 문제 3첨자 모형이 순서 변수와 시각 변수, big-M을 다 넣어야 했던 것과 달리, tryAgain 모형에는 순서 변수가 하나도 없습니다.</p>
+  </section>
+
+  <div class="part">2부 · 강한 곳, 약한 곳, 포기한 것</div>
+
+  <section>
+    <h2>정식화의 강도와 약점</h2>
+    <p>14장의 눈(볼록 껍질에 얼마나 가까운가)으로 tryAgain 모형의 장단점을 나란히 놓습니다.</p>
+    <ul class="plain">
+      <li><strong>강한 곳 1 — big-M이 전혀 없습니다.</strong> 모든 계수가 0, 1, −1이고 오른쪽 수도 0, 1, d<sub>pq</sub> 같은 작은 정수뿐입니다. 스위치가 1/M만 켜져도 제약이 풀려 버리는 big-M의 약점(11장, 14장)이 없습니다.</li>
+      <li><strong>강한 곳 2 — ②③④가 단단한 블록을 이룹니다.</strong> ②는 칸마다 구간 행렬(TU)이고 ③④는 계수 1로 모은 배타 식입니다. 14장에서 확인한 대로 항구 5개일 때 칸 하나의 ②③④만 모은 블록도 소수 꼭짓점을 만들지 않았습니다.</li>
+      <li><strong>약한 곳 — 칸들이 묶일 때 「반반 쪼개진」 LP 해가 나옵니다.</strong> 14장에서 공식 예시(일렬 배, N = 5, P = 5)의 LP 완화를 풀었을 때 값이 145였습니다. 모형의 정수 최적값 190, 대회 LB 137과 견주면 gap이 45나 됩니다. LP 해는 칸마다 차를 ½대씩 싣고 y도 ½로 두어, 반쯤 막힌 칸에 다른 차를 반씩 드나들게 만들어 재배치(z)를 피해 버렸습니다. 반면 가지가 있는 배(N = 8, P = 4)에서는 LP 완화 값 202가 정수 최적값 202와 곧바로 같았습니다.</li>
+      <li><strong>⑤ 혼자만의 잘못은 아닙니다.</strong> 3×3 격자 배에서 칸 1과 2가 ½씩 차 있을 때 ⑤가 y<sub>4</sub> = 1을 허용하는 것은 사실 "1이 비고 2가 찬 해"와 "2가 비고 1이 찬 해"의 평균이라 정당한 볼록 껍질 안의 점입니다(14장). 약점은 ②가 허용하는 반반 상태가 ①과 ⑤를 거쳐 여러 칸으로 한꺼번에 퍼질 때 나타납니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>이분 그래프와 비용의 정확성, 그리고 포기한 두 가지</h2>
+    <p>tryAgain 모형은 목적함수에 경로 길이를 dist(i)로 적어 넣습니다. 5장에서 배운 대로 배 그래프가 <strong>이분 그래프</strong>(홀수 순환이 없음)이면 높이를 따라 내려가는 경로의 길이가 정확히 dist(i)와 같습니다. 따라서 실제 해 복원 경로의 길이도 dist(i)가 되어 <strong>모형의 비용 = 실제 총비용</strong>이 됩니다. 만약 배에 홀수 순환이 있으면 돌아가는 경로가 더 길어져 모형 비용이 실제 비용보다 작을 수 있습니다.</p>
+    <p>또 이 모형이 작고 단순한 대신 스스로 포기한 원래 문제의 해가 두 가지 있습니다.</p>
+    <ul class="plain">
+      <li><strong>위치변경 포기.</strong> 막는 차를 배 안의 빈 칸으로 바로 옮기는(위치변경) 대신, 반드시 부두에 잠깐 내렸다가 다시 싣는(임시 하역 후 재적재, z) 움직임만 허용합니다. 빈 칸이 넉넉한 배에서는 비용을 더 내게 됩니다.</li>
+      <li><strong>높이를 거스르는 길 포기.</strong> 높이 h(i)를 미리 고정해 순서를 없앴기 때문에, 높이가 높아지는 쪽으로 돌아 나오는 길은 아예 금지됩니다.</li>
+    </ul>
+    <p>이 두 포기는 실수가 아니라, 변수 수와 제약 수를 크게 줄이고 big-M을 없애 솔버가 시간 안에 풀 수 있게 만든 의도적인 거래였습니다.</p>
+  </section>
+
+  <div class="part">3부 · 솔버 설정과 다음 갈래를 이론으로</div>
+
+  <section>
+    <h2>솔버 설정 여덟 가지가 건드리는 이론</h2>
+    <p>tryAgain 코드가 Gurobi에 건 설정 여덟 가지는 모두 8장~15장에서 배운 이론을 그대로 겨냥합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>솔버 설정</th><th>건드리는 이론</th><th>근거가 되는 장</th></tr></thead>
+      <tbody>
+        <tr><td><code>MIPGapAbs = 2 − 0.001</code></td><td>목적함수가 항상 짝수이므로 gap &lt; 2이면 더 좋은 짝수 값이 없음 → 일찍 종료 (0.001은 소수 오차 대비)</td><td>2장, 13장 「k의 배수」</td></tr>
+        <tr><td><code>MIPGap</code> (기본 0.0001)</td><td>상한이 2만을 넘으면 상대 기준(0.0001 × UB &gt; 2)이 먼저 걸려, 짝수 값 몇 개가 배제되기 전에 멈출 수 있음</td><td>13장 「멈춤 기준 둘」</td></tr>
+        <tr><td><code>Heuristics = 0.15</code></td><td>탐색 시간 중 원시 휴리스틱(상한 내리기) 비중을 기본 5%에서 15%로 높임. 대회는 상한만 채점</td><td>13장 「원시 휴리스틱」</td></tr>
+        <tr><td><code>Method = 2</code></td><td>뿌리 LP를 내부점법(배리어)으로 풉니다. 큰 LP에서 병렬 처리에 유리</td><td>10장 「내부점법」</td></tr>
+        <tr><td><code>Crossover = 0</code></td><td>배리어의 답을 꼭짓점(기저)으로 바꾸는 후처리를 끄려 함. 그러나 가지들을 심플렉스로 이어 풀려면 기저가 필요 → 가지 방법도 배리어로 바꾸지 않으면 무시됨</td><td>8장 이어 풀기, 9장 쌍대 심플렉스, 10장 크로스오버, 13장</td></tr>
+        <tr><td><code>NoRelHeurTime</code> (큰 문제)</td><td><code>N·P(P−1)/2 &gt; 10,000</code>일 때 LP 완화 없이 휴리스틱만 돌림 → 하한(LB)과 gap이 생기지 않음</td><td>13장 「LP를 풀지 않는 휴리스틱」</td></tr>
+        <tr><td><code>PoolSolutions = 1</code>, <code>OutputFlag = 0</code></td><td>보관할 해 개수 1개, 로그 끄기 (탐색 원리에는 영향 없음)</td><td>—</td></tr>
+        <tr><td><code>TimeLimit</code></td><td>남은 시간 − 2초. 시간이 다 되면 그때의 현재 최선해(incumbent)를 답으로 사용</td><td>13장</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>가장 이론적인 대목은 <code>Crossover = 0</code>입니다. 13장에서 본 대로 분지한계법의 각 가지는 부모의 답에서 쌍대 심플렉스(9장)로 몇 걸음만 이어 풉니다. 그런데 이어 풀기는 출발점이 <strong>꼭짓점(기저)</strong>이어야 시작할 수 있습니다(8장, 10장). 내부점법은 최적면의 안쪽 점을 내므로 크로스오버로 꼭짓점을 만들어 주지 않으면 심플렉스로 이어 풀 수 없습니다. 그래서 가지 풀이 방법까지 배리어로 바꾸지 않는 한 솔버는 크로스오버를 끄지 않습니다.</p>
+    <p>또 <code>NoRelHeurTime</code>이 켜지는 큰 문제에서는 뿌리 LP조차 풀지 않으므로, 14장에서 따진 LP 완화의 강도는 작동할 틈이 없습니다. 그쪽에서는 변수가 적고 제약이 단순할수록 LP 없는 휴리스틱이 빠르게 움직이기 쉽다는 점이 유리하게 작용합니다.</p>
+  </section>
+
+  <section>
+    <h2>다음 갈래: 대규모 문제를 쪼개는 법</h2>
+    <p>가이드에서 소개하는 팀의 개선 방향 세 갈래도 13장과 15장의 말로 정확히 분류됩니다.</p>
+    <ul class="plain">
+      <li><strong>중간 항구의 배치를 먼저 정해서 둘로 가르기.</strong> 어떤 중간 항구의 배치를 고정하면 문제가 그 앞과 뒤로 갈라져 크기가 크게 줄어듭니다. 이는 13장의 「일부를 고정하고 풀기」 휴리스틱에 해당하며, 하한을 주지 않으므로 최적성 증명은 없습니다.</li>
+      <li><strong>라그랑지 완화.</strong> x와 y를 잇는 제약 ②③④를 벌금 승수 λ와 함께 목적함수로 옮기면, 칸 배정 부분과 접근 가능성 부분이 따로 풀립니다. 15장의 관계 <code>z<sub>LP</sub> ≤ LD ≤ z*</code>에 따라 하한이 LP 완화 이상이 되지만, 남은 부분 문제가 정수성 성질을 가지면 LP와 같아집니다.</li>
+      <li><strong>분지가격법.</strong> "칸 하나가 항해 전체 동안 받는 구간들의 일정"을 열(덩어리) 하나로 삼고, 주 문제는 수요를 맞추는 식으로 적는 설계입니다. 칸 안에서 구간이 겹치지 않는 조건 ②는 열 안에 들어가지만, 접근 가능성 ⑤가 이웃한 여러 칸을 묶으므로 가격 문제를 칸별로 나누기 어렵다는 점이 설계의 관건입니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">4부 · 택배 트럭 경로 문제와 나란히</div>
+
+  <section>
+    <h2>순서가 들어 있는 문제를 적는 세 가지 길</h2>
+    <p>12장에서 소개한 <strong>택배 트럭 경로 문제</strong>(학술 이름 CVRPTW)와 RORO 문제는 둘 다 "순서"가 해의 핵심입니다. 이 책 전체에서 본 세 가지 정식화를 한 표에 올려놓고 비교해 봅니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>비교 항목</th><th>택배 트럭 경로 · 3첨자 모형 (12장)</th><th>택배 트럭 경로 · 집합 분할 + 열 생성 (15장)</th><th>tryAgain의 RORO 모형 (12장)</th></tr></thead>
+      <tbody>
+        <tr><td>변수 하나의 뜻</td><td>트럭 k가 i 다음 j로 감, 도착 시각 t</td><td>유효한 경로 하나 전체를 쓰는가</td><td>항구 p~q 동안 칸 i에 머무는가 (x)</td></tr>
+        <tr><td>순서를 어디에 두나</td><td>변수와 big-M 시간 제약 안에 직접 적음</td><td>열(경로) 안에 숨기고 가격 문제가 다룸</td><td>미리 고정한 높이 h(i)(DAG)로 저절로 정해짐</td></tr>
+        <tr><td>부분 순환 막기</td><td>MTZ 꼴 시각 제약 (12장)</td><td>열마다 하나의 경로라 생길 수 없음</td><td>⑤의 전파가 DAG 위라 「서로 받쳐 주는 섬」 불가</td></tr>
+        <tr><td>big-M 유무</td><td>있음 (시간창 제약)</td><td>없음</td><td>없음</td></tr>
+        <tr><td>변수의 수</td><td>고객² × 트럭 (금방 수십만 개)</td><td>천문학적 → 필요한 열만 생성</td><td>노드 × 항구² (수백 ~ 수만 개)</td></tr>
+        <tr><td>LP 완화 강도</td><td>약함 (big-M 때문에 느슨)</td><td>강함 (경로 조건이 열 안에 정수로 들어 있음)</td><td>big-M은 없으나 여러 칸이 묶일 때 반반 해 발생 (공식 예시 145 / 190)</td></tr>
+        <tr><td>잃는 해가 있나</td><td>없음 (정확한 정식화)</td><td>없음 (정확한 정식화)</td><td>위치변경, 높이를 거스르는 길 포기</td></tr>
+        <tr><td>주로 푸는 법</td><td>작은 문제만 범용 MIP 솔버로</td><td>분지가격법 (15장)</td><td>범용 MIP 솔버 그대로 (크면 NoRel)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 표가 16장 전체의 결론입니다. 문제를 있는 그대로 다 적으면(첫째 열) big-M 때문에 LP 완화가 약해지고, 열 생성으로 완벽하게 쪼개면(둘째 열) 전용 알고리듬을 직접 짜야 합니다. tryAgain은 규칙 두 개(높이 순서와 임시 하역만 쓰기)로 해 집합을 살짝 좁히는 대신, big-M 없는 작은 모형을 만들어(셋째 열) 범용 솔버의 힘을 그대로 끌어냈습니다.</p>
+  </section>
+
+  <div class="part">5부 · 책 전체 용어 찾아보기</div>
+
+  <section>
+    <h2>용어 찾아보기</h2>
+    <p>1장부터 15장까지 나온 핵심 용어를 분야별로 모았습니다. 오른쪽 끝 숫자는 그 용어를 처음 정의하거나 자세히 다룬 장입니다.</p>
+    <div class="scroll">
+    <table class="long">
+      <thead><tr><th>용어</th><th>뜻</th><th class="num">장</th></tr></thead>
+      <tbody>
+        <tr><td>최적화 문제</td><td>지켜야 할 조건 안에서 내가 정하는 수를 골라 어떤 값을 가장 작게(또는 크게) 만드는 문제</td><td class="num">2</td></tr>
+        <tr><td>결정변수</td><td>내가 정하는 수 (예: 트럭 대수 x, y)</td><td class="num">2</td></tr>
+        <tr><td>제약</td><td>결정변수가 지켜야 하는 조건 (등식이나 부등식)</td><td class="num">2</td></tr>
+        <tr><td>목적함수</td><td>좋고 나쁨을 재는 식. 이 값을 최소화하거나 최대화</td><td class="num">2</td></tr>
+        <tr><td>가능해, 가능 영역</td><td>제약을 모두 지키는 변수 값 한 벌, 그리고 가능해를 전부 모은 집합</td><td class="num">2</td></tr>
+        <tr><td>최적해, 최적값</td><td>가능해 중 목적함수 값이 가장 좋은 것, 그리고 그때의 값</td><td class="num">2</td></tr>
+        <tr><td>불능, 비유계</td><td>가능해가 하나도 없는 상태(불능), 목적함수가 끝없이 좋아질 수 있는 상태(비유계)</td><td class="num">6</td></tr>
+        <tr><td>전수 탐색, 휴리스틱</td><td>후보를 빠짐없이 다 해 보는 방법(전수 탐색), 최적 보장은 없지만 빨리 괜찮은 답을 찾는 방법(휴리스틱)</td><td class="num">2</td></tr>
+        <tr><td>선형계획 (LP)</td><td>변수가 실수이고, 목적함수와 제약이 모두 1차식인 최적화 문제</td><td class="num">2, 6</td></tr>
+        <tr><td>정수계획 (IP), 혼합정수계획 (MIP)</td><td>LP에 「모든 변수는 정수」(IP) 또는 「일부만 정수」(MIP)를 더한 문제</td><td class="num">2, 11</td></tr>
+        <tr><td>솔버</td><td>LP나 MIP를 풀어 주는 프로그램 (예: Gurobi)</td><td class="num">2</td></tr>
+        <tr><td>모형, 정식화</td><td>문제를 변수·제약·목적함수의 식으로 적은 것. 같은 문제도 정식화가 여럿일 수 있음</td><td class="num">2, 14</td></tr>
+        <tr><td>바닥 ⌊a⌋, 천장 ⌈a⌉</td><td>a 이하의 가장 큰 정수(바닥), a 이상의 가장 작은 정수(천장)</td><td class="num">2</td></tr>
+        <tr><td>벡터, 내적</td><td>수 여러 개를 순서대로 묶은 것, 두 벡터를 자리마다 곱해서 더한 수 a·x</td><td class="num">3</td></tr>
+        <tr><td>행렬, 행렬식, 소거법</td><td>수를 가로(행)와 세로(열)로 놓은 표, 정사각 행렬에 붙는 수(2×2면 ad−bc), 가감법으로 미지수를 없애는 풀이</td><td class="num">3</td></tr>
+        <tr><td>그래프, 노드, 간선, 이웃</td><td>점(노드)과 점 둘을 잇는 선(간선)의 그림, 간선 하나로 이어진 노드</td><td class="num">4</td></tr>
+        <tr><td>경로, 순환, 최단거리 dist</td><td>노드 나열, 출발점으로 돌아오는 경로, 두 노드 사이 최소 간선 수</td><td class="num">4</td></tr>
+        <tr><td>너비 우선 탐색 (BFS), 층, 부모</td><td>출발점에서 가까운 순으로 한 층씩 퍼져 나가는 탐색, 같은 거리 묶음, 처음 발견해 준 노드</td><td class="num">4</td></tr>
+        <tr><td>방향 그래프, DAG</td><td>화살표가 있는 그래프, 화살표만 따라가 제자리로 돌아올 수 없는 방향 그래프</td><td class="num">5</td></tr>
+        <tr><td>높이 h, 아래 이웃 pred(i)</td><td>노드마다 붙인 BFS 방문 순번(출입구 0), 이웃 중 높이가 더 낮은 칸들의 집합</td><td class="num">5</td></tr>
+        <tr><td>이분 그래프, 홀수 순환</td><td>모든 간선이 두 편 사이만 잇도록 나눌 수 있는 그래프, 간선 수가 홀수인 순환(이분 그래프엔 없음)</td><td class="num">5</td></tr>
+        <tr><td>도해법, 같은 값 직선</td><td>변수 둘인 LP를 좌표평면에 그려 푸는 법, 목적함수 값이 같은 점들을 이은 직선</td><td class="num">6</td></tr>
+        <tr><td>볼록, 꼭짓점</td><td>영역 안 두 점을 이은 선분이 영역 안에 들어가는 성질, 영역의 모퉁이 점</td><td class="num">6</td></tr>
+        <tr><td>여유·잉여 변수, 표준형</td><td>≤ 제약의 남는 양, ≥ 제약의 넘치는 양을 나타내는 0 이상 변수, 모두 등식이고 ≥ 0인 LP</td><td class="num">7</td></tr>
+        <tr><td>기저, 기저가능해, 축퇴</td><td>등식 수만큼 고른 변수 묶음, 비기저를 0으로 두고 푼 ≥ 0인 해(= 꼭짓점), 한 꼭짓점에 기저가 여럿인 경우</td><td class="num">7</td></tr>
+        <tr><td>심플렉스법, 사전, 피벗</td><td>꼭짓점을 옮겨 가며 LP를 푸는 법, 기저 변수를 비기저 식으로 풀어 쓴 표, 기저·비기저 맞바꿈</td><td class="num">8</td></tr>
+        <tr><td>진입·탈출 변수, 최소비 검사</td><td>피벗으로 들어오고 나가는 변수, 가장 먼저 0이 되는 기저 변수를 찾는 계산</td><td class="num">8</td></tr>
+        <tr><td>감소 비용, 이어 풀기</td><td>비기저 변수를 1 올릴 때 목적함수 변화량, 조금 바뀐 문제를 이전 기저에서 다시 풀기</td><td class="num">8</td></tr>
+        <tr><td>쌍대 문제, 쌍대 변수(승수)</td><td>제약에 수를 곱해 더해 가장 좋은 하한(상한)을 찾는 짝 LP, 제약마다 곱하는 수</td><td class="num">9</td></tr>
+        <tr><td>약쌍대, 강쌍대</td><td>쌍대 값은 언제나 원래 값의 한계(약쌍대), LP에서는 두 최적값이 정확히 같음(강쌍대)</td><td class="num">9</td></tr>
+        <tr><td>상보 여유성, 그림자 가격</td><td>최적일 때 「여유 × 가격 = 0」, 제약 오른쪽 수를 1 늘릴 때 최적값 변화량(= 쌍대 값)</td><td class="num">9</td></tr>
+        <tr><td>쌍대 심플렉스</td><td>최적 판정을 유지한 채 깨진 가능성을 고쳐 가는 심플렉스의 짝 방법</td><td class="num">9</td></tr>
+        <tr><td>내부점법(배리어), 중심 경로, 크로스오버</td><td>영역 안쪽을 가로지르는 LP 풀이법, 따라가는 곡선, 답을 같은 값의 꼭짓점으로 바꾸는 마무리</td><td class="num">10</td></tr>
+        <tr><td>이진변수, big-M</td><td>0 아니면 1만 되는 변수, 스위치가 꺼질 때 제약이 저절로 풀리게 넣는 큰 상수 M</td><td class="num">11</td></tr>
+        <tr><td>흐름 보존, 부분 순환, 대칭성</td><td>들어온 양과 나간 양을 맞추는 식, 전체 대신 작은 고리로 나뉜 것, 이름표만 바꾼 같은 해들</td><td class="num">12</td></tr>
+        <tr><td>tryAgain 모형 (x, y, z, ①~⑥)</td><td>구간(x), 접근 가능(y), 쪼개기(z) 변수와 수요·포장·접근·전파를 적은 1등 팀의 MIP 모형</td><td class="num">12</td></tr>
+        <tr><td>완화, LP 완화</td><td>조건 일부를 지워 후보를 늘린 쉬운 문제, 정수 조건만 지운 LP</td><td class="num">13</td></tr>
+        <tr><td>상한(UB), 하한(LB), gap</td><td>가장 좋은 가능해(현재 최선해)의 값, 증명된 한계(최선 하한), 둘의 차이</td><td class="num">13</td></tr>
+        <tr><td>분지한계법, 가지, 뿌리, 가지치기</td><td>문제를 나누고(분지) 불능·정수·한계로 가망 없는 가지를 버리며(가지치기) 최적해를 찾는 방법</td><td class="num">13</td></tr>
+        <tr><td>전처리, 원시 휴리스틱</td><td>풀기 전 모형 다듬기, 탐색 중 가능해(상한)를 빨리 찾아 주는 장치</td><td class="num">13</td></tr>
+        <tr><td>볼록 껍질, 강한·이상적 정식화</td><td>정수점들을 품는 가장 작은 볼록 영역, LP 영역이 더 좁은 정식화, 볼록 껍질 그 자체인 정식화</td><td class="num">14</td></tr>
+        <tr><td>완전 단모듈 (TU)</td><td>모든 정사각 부분행렬의 행렬식이 0, ±1뿐이어서 LP만 풀어도 정수가 나오는 행렬 성질</td><td class="num">14</td></tr>
+        <tr><td>유효 부등식, 절단평면, 분지절단법</td><td>모든 정수해가 지키는 부등식, 소수 해만 잘라 내는 유효 부등식, 분지한계법 + 절단평면</td><td class="num">14</td></tr>
+        <tr><td>라그랑지 완화, 부분 기울기법</td><td>어려운 제약을 어긴 양 × 승수 λ 벌금으로 떼는 완화, 어긴 양 방향으로 승수를 고쳐 오르는 법</td><td class="num">15</td></tr>
+        <tr><td>열 생성, 주 문제·가격 문제, 분지가격법</td><td>필요한 덩어리 열만 그때그때 만들어 넣는 법, 열을 모으는 LP와 새 열을 찾는 문제, 열 생성 + 분지한계</td><td class="num">15</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>이제 가이드를 다시 펼치면 모든 설명이 하나의 그림으로 읽힙니다. 가이드의 「모형 한 줄씩」에 나오는 제약 ①~⑥은 이 책 12장과 이 장 1부의 관용구·강도 이론이고, 「높이 매기기」는 4~5장의 BFS와 DAG, 「솔버 설정과 시간 관리」의 파라미터 여덟 가지는 이 장 3부의 이론입니다.</p></div>
+    <div class="gref"><p>가이드의 「결과·한계·개선 방향」에서 다룬 진 문제의 가설(위치변경 포기, 높이를 거스르는 길 포기, 상대 gap이 먼저 걸림, 시간 부족)과 발표자료가 꼽은 다음 갈래(중간 항구 고정, 라그랑지 완화, 분지가격법)는 각각 이 장 2부와 3부의 이론으로 이어집니다. 직접 코드를 돌려 보려면 가이드의 「학습 로드맵」에서 안내하는 예제 파일부터 따라가면 됩니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>tryAgain 모형은 ① 흐름 보존, ② 구간 행렬(TU) 포장, ③④ 계수 1 모은 배타 식, ⑤⑥ DAG 전파 규칙으로 이루어져 있고 big-M이 없습니다.</li>
+        <li>칸 하나만 보면 단단하지만 ①과 ⑤로 칸이 묶이면 LP 완화에 반반 쪼개진 소수 해가 생길 수 있습니다(공식 예시 LP 145 / 최적 190).</li>
+        <li>이분 그래프이면 모형 비용이 실제 비용과 같고, 위치변경과 높이를 거스르는 길을 포기해 모형을 작고 강하게 만들었습니다.</li>
+        <li>솔버 설정 <code>MIPGapAbs = 2−0.001</code>(짝수 목적함수), <code>Method = 2</code>(배리어), <code>Crossover = 0</code>(가지 심플렉스 때문에 무시), <code>Heuristics</code>, <code>NoRelHeurTime</code>은 모두 8~14장 이론의 직접적인 응용입니다.</li>
+        <li>택배 트럭 경로 문제와 견주어 보면, 문제를 살짝 좁히는 대신 범용 MIP 솔버가 잘 풀 수 있는 강한 정식화를 만든 전략이 tryAgain의 핵심입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>칸 i를 고정하고 항구가 5개(0~4)일 때, 제약 ②의 행 q = 1, 2, 3과 구간 변수 x<sub>02i</sub>, x<sub>03i</sub>, x<sub>04i</sub>, x<sub>13i</sub>, x<sub>14i</sub>, x<sub>24i</sub>의 0·1 행렬을 적고 연속 1 성질을 확인하세요.</summary>
+      <p>구간 (p, r)은 p &lt; q &lt; r인 중간 항구 q의 행에만 1이 있습니다. 따라서 각 열의 1 위치는 x<sub>02</sub>: 1행, x<sub>03</sub>: 1·2행, x<sub>04</sub>: 1·2·3행, x<sub>13</sub>: 2행, x<sub>14</sub>: 2·3행, x<sub>24</sub>: 3행입니다. 행렬(행 q = 1, 2, 3)은 [[1, 1, 1, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 0, 1, 0, 1, 1]]입니다. 어느 열이든 1이 끊어지지 않고 연속된 행에만 모여 있어 구간 행렬(TU)입니다.</p>
+    </details>
+    <details>
+      <summary>제약 ③ Σ<sub>p&lt;q</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub>를 각 p마다 따로 적은 x<sub>pqi</sub> ≤ y<sub>qi</sub>로 바꾸면 정수해 집합은 달라지나요? LP 완화는요?</summary>
+      <p>정수해 집합은 그대로입니다. 같은 항구 q에서 내리는 두 구간 (p<sub>1</sub>, q)와 (p<sub>2</sub>, q)(p<sub>1</sub> &lt; p<sub>2</sub>)는 항구 p<sub>2</sub>에서 앞 차가 머무는 중이라 ②와 ④가 충돌하므로 원래 동시에 1이 될 수 없습니다. 달라지는 것은 LP 완화뿐입니다. 계수 1로 모은 ③은 x<sub>1</sub> = x<sub>2</sub> = y = 0.5 같은 소수 해를 잘라 내므로 LP 영역이 더 좁고 강합니다.</p>
+    </details>
+    <details>
+      <summary>최소화 문제에서 정수 최적값 z*, LP 완화 값 z<sub>LP</sub>, 라그랑지 쌍대 최적값 LD, 그리고 NoRel 휴리스틱만 돌려서 얻은 해의 값 z<sub>NoRel</sub> 사이에 항상 성립하는 대소 관계를 적으세요.</summary>
+      <p>z<sub>LP</sub> ≤ LD ≤ z* ≤ z<sub>NoRel</sub>입니다. 앞의 두 부등호는 15장 세 하한의 관계이고, 마지막 부등호는 NoRel이 찾은 해가 어떤 가능해 하나(상한)이므로 최적값 z*보다 작을 수 없기 때문입니다. NoRel은 하한을 주지 않으므로 z<sub>NoRel</sub>이 z*에 얼마나 가까운지는 알 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>홀수 순환이 있는 배에서 tryAgain 모형의 최적해를 구했습니다. 이 해가 위치변경을 쓰지 않는 배치들 가운데에서도 실제 비용이 가장 작다고 보장할 수 있나요?</summary>
+      <p>보장할 수 없습니다. 홀수 순환이 있으면 높이를 따라 내려가는 길이 최단거리 dist(i)보다 길 수 있습니다(5장). 모형이 dist(i)로 더 싸게 계산한 배치가 실제로 차를 뺄 때는 더 먼 길을 돌아 나와야 할 수 있으므로, 해의 유효성은 맞지만 실제 비용에 대한 최적성은 보장되지 않습니다.</p>
+    </details>
+    <details>
+      <summary><code>Method = 2, Crossover = 0</code>만 주면 왜 솔버가 <code>Crossover = 0</code>을 무시하는지, 「기저」와 「쌍대 심플렉스」라는 말을 써서 설명하세요.</summary>
+      <p>분지한계법은 각 가지에서 부모 LP에 제약 하나를 더한 뒤 부모의 최적 <strong>기저</strong>(꼭짓점)에서 출발해 <strong>쌍대 심플렉스</strong>로 이어 풉니다. 내부점법(배리어)은 기저가 없는 안쪽 점을 내놓으므로, 가지들을 심플렉스로 푸는 한 뿌리에서 크로스오버로 기저를 만드는 과정을 건너뛸 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>택배 트럭 경로 문제의 3첨자 모형과 열 생성(집합 분할) 모형 가운데 LP 완화가 더 강한 쪽은 어느 것이고, 그 이유는 무엇인가요?</summary>
+      <p>열 생성(집합 분할) 모형입니다. 트럭 한 대의 용량, 시간창, 부분 순환 금지 조건이 모두 유효한 경로 열 하나 안에 정수로 들어가 있고, 3첨자 모형에서 LP를 느슨하게 만들던 big-M 시간 제약이 사라지기 때문입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">이 책</span>가이드의 「모형 한 줄씩」, 「솔버 설정과 시간 관리」, 「결과·한계·개선 방향」, 「학습 로드맵」 — 이 장이 이론으로 다시 읽은 대상입니다.</li>
+      <li><span class="tagc">무료</span><a href="https://dspace.mit.edu/handle/1721.1/96480">J. P. Vielma, "Mixed Integer Linear Programming Formulation Techniques", SIAM Review (2015)</a> — 같은 논리를 적는 여러 정식화의 강도를 비교하는 개관 논문(대학원 수준).</li>
+      <li><span class="tagc">무료</span><a href="https://scipbook.readthedocs.io/en/latest/routing.html">Kubo 외, 「Routing problems」 (scipbook)</a> — 외판원 문제와 택배 트럭 경로 문제의 여러 정식화를 비교합니다.</li>
+      <li><span class="tagc">교과서</span><a href="https://www.wiley.com/en-us/Integer+Programming%2C+2nd+Edition-p-9781119606536">L. A. Wolsey, <em>Integer Programming</em>, 2판</a> — 정수계획 전반과 11장 Column Generation.</li>
+      <li><span class="tagc">교과서</span><a href="https://link.springer.com/book/10.1007/b135457">G. Desaulniers, J. Desrosiers, M. M. Solomon (편), <em>Column Generation</em> (Springer, 2005)</a> — 열 생성과 택배 트럭 경로 문제의 분지가격법.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch15">← 이전: 15장 분해 기법: 라그랑지 완화와 열 생성</a><span></span></div>
+</article>

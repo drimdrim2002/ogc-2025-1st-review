@@ -1,0 +1,521 @@
+<article class="chapter" id="ch6">
+  <header>
+    <div class="kicker">6 / 12</div>
+    <h1>높이 매기기: 그래프와 너비 우선 탐색</h1>
+  </header>
+
+  <section>
+    <p class="lead">1장과 2장에서는 배 안을 "칸과, 칸 사이를 잇는 통로"로 봤습니다. 이 장은 그 그림에 <strong>그래프</strong>라는 이름을 붙이고, 출입구에서 가까운 칸부터 차례로 번호를 매기는 방법인 <strong>너비 우선 탐색</strong>을 손과 Python으로 익힙니다. 이렇게 매긴 번호가 7장부터 계속 쓰는 <strong>「높이」</strong>입니다.</p>
+    <p>이 장에는 최적화 이야기가 없습니다. 번호를 매기는 절차 하나만 배웁니다. 그 대신 그 절차를 종이 위에서 직접 따라 할 수 있을 만큼 천천히 갑니다. tryAgain의 풀이에서 이 절차는 두 번 쓰입니다. 모형을 적기 전에 한 번(이 장), 솔버가 답을 낸 뒤 경로를 만들 때 한 번(9장)입니다.</p>
+  </section>
+
+  <div class="part">1부 · 그래프의 말</div>
+
+  <section>
+    <h2>점과 선으로 그린 배</h2>
+    <p>수학 시간의 그래프는 y = x² 같은 함수를 좌표평면에 그린 곡선입니다. 여기서 말하는 그래프는 그것과 이름만 같은 다른 것입니다. <strong>점 몇 개와, 점 둘을 잇는 선 몇 개</strong>로 된 그림입니다. 지하철 노선도를 떠올리면 됩니다. 역이 점이고, 이웃한 두 역 사이의 선로가 선입니다. 노선도에서 중요한 것은 "어느 역과 어느 역이 이어져 있는가"뿐이고, 종이 위에서 역을 어디에 찍었는지는 중요하지 않습니다.</p>
+    <p>아래는 칸이 다섯 개인 작은 배입니다. 앞으로 <strong>작은 격자 배</strong>라고 부르겠습니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 270" role="img" aria-label="작은 격자 배. 노드 0부터 5가 가로 2개, 세로 3개로 놓여 있고 간선 일곱 개로 이어져 있다. 경로 5, 4, 2, 0이 굵게 표시되어 있다">
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <line x1="110" y1="220" x2="110" y2="60"/><line x1="230" y1="220" x2="230" y2="60"/>
+            <line x1="110" y1="220" x2="230" y2="220"/><line x1="110" y1="140" x2="230" y2="140"/><line x1="110" y1="60" x2="230" y2="60"/>
+          </g>
+          <g class="s-ok" stroke-width="5" stroke-linecap="round" opacity=".55">
+            <line x1="230" y1="60" x2="230" y2="220"/><line x1="230" y1="220" x2="110" y2="220"/>
+          </g>
+          <circle cx="110" cy="220" r="17" class="f-crane"/><text x="110" y="225">0</text>
+          <circle cx="230" cy="220" r="17" class="f-bay"/><text x="230" y="225">2</text>
+          <circle cx="110" cy="140" r="17" class="f-bay"/><text x="110" y="145">1</text>
+          <circle cx="230" cy="140" r="17" class="f-bay"/><text x="230" y="145">4</text>
+          <circle cx="110" cy="60" r="17" class="f-bay"/><text x="110" y="65">3</text>
+          <circle cx="230" cy="60" r="17" class="f-bay"/><text x="230" y="65">5</text>
+          <text x="58" y="225" font-size="12.5" class="t-crane" text-anchor="end">출입구</text>
+          <g font-size="13" text-anchor="start">
+            <text x="330" y="52"><tspan font-weight="500">노드</tspan> 6개: 출입구 0, 칸 1, 2, 3, 4, 5</text>
+            <text x="330" y="82"><tspan font-weight="500">간선</tspan> 7개: 0-1, 0-2, 1-3, 1-4, 2-4, 3-5, 4-5</text>
+            <text x="330" y="112"><tspan font-weight="500">이웃</tspan>: 노드 4의 이웃은 1, 2, 5</text>
+            <text x="330" y="142"><tspan font-weight="500">경로</tspan>의 예: 5 → 4 → 2 → 0 (굵은 선, 간선 3개)</text>
+            <text x="330" y="172"><tspan font-weight="500">순환</tspan>의 예: 0 → 1 → 4 → 2 → 0</text>
+            <text x="330" y="202"><tspan font-weight="500">거리</tspan>: 0에서 5까지는 3</text>
+            <text x="330" y="236" class="t-muted" font-size="12.5">5에서 0까지 가는 경로는 여러 개지만</text>
+            <text x="330" y="254" class="t-muted" font-size="12.5">간선 3개보다 짧은 것은 없습니다.</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>작은 격자 배. 원 하나가 차 한 대를 세우는 칸이고, 선은 두 칸 사이를 차가 지나다닐 수 있다는 뜻입니다. 주황색 원이 출입구입니다.</figcaption>
+    </figure>
+    <p>그림 오른쪽의 말들을 하나씩 정리합니다. 뒤의 장에서 계속 쓰는 말입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>말</th><th>뜻</th><th>작은 격자 배에서</th></tr></thead>
+      <tbody>
+        <tr><td>노드(node)</td><td>그래프의 점. 이 문제에서는 출입구(노드 0)와 칸(노드 1, 2, …)</td><td>0, 1, 2, 3, 4, 5</td></tr>
+        <tr><td>간선(edge)</td><td>노드 둘을 잇는 선. 방향이 없어서 양쪽으로 다닐 수 있고, 길이는 모두 1로 칩니다</td><td>0-1, 0-2 등 7개</td></tr>
+        <tr><td>이웃(neighbor)</td><td>간선 하나로 바로 이어진 노드</td><td>4의 이웃은 1, 2, 5. 3과 4는 이웃이 아님</td></tr>
+        <tr><td>경로(path)</td><td>간선을 따라 이어 간 노드의 나열. 같은 노드를 두 번 지나지 않습니다</td><td>5 → 4 → 2 → 0</td></tr>
+        <tr><td>순환(cycle)</td><td>출발한 노드로 돌아오는 경로</td><td>0 → 1 → 4 → 2 → 0</td></tr>
+        <tr><td>거리</td><td>두 노드를 잇는 경로 가운데 간선이 가장 적은 것의 간선 수. 「최단거리」라고도 합니다</td><td>0과 5 사이는 3</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 문서에서 거리는 거의 언제나 <strong>출입구에서 그 칸까지의 거리</strong>를 뜻하고, 칸 i의 거리를 <strong>dist(i)</strong>라고 적습니다. 2장에서 본 대로 경로 하나의 비용은 F + (간선 수)이므로, 칸 i에 차를 싣는 가장 싼 경로의 비용은 F + dist(i)입니다.</p>
+    <p>1장의 일렬 배는 순환이 없고 길이 하나뿐이라, 어느 칸이 안쪽이고 어느 칸이 바깥쪽인지가 뻔했습니다. 작은 격자 배처럼 순환이 있으면 사정이 달라집니다. 칸 5에서 출입구로 나오는 길이 세 가지나 되고, 칸 3과 칸 4 중 어느 쪽이 "더 안쪽"인지도 분명하지 않습니다. 이럴 때 기준을 세워 주는 것이 다음 절의 방법입니다.</p>
+    <div class="gref">
+      <p>그래프의 말을 더 차근차근 보려면 교재 4장 「그래프와 너비 우선 탐색」의 앞부분을 보세요. 이 장에 필요한 만큼은 위 표가 전부입니다.</p>
+    </div>
+  </section>
+
+  <div class="part">2부 · 너비 우선 탐색</div>
+
+  <section>
+    <h2>물결처럼 한 겹씩</h2>
+    <p>잔잔한 연못에 돌을 던지면 물결이 동그랗게 퍼져 나갑니다. 돌이 떨어진 곳에서 가까운 곳에 먼저 닿고, 먼 곳에는 나중에 닿습니다. <strong>너비 우선 탐색</strong>(breadth-first search, 줄여서 BFS)은 그래프 위에서 이 물결을 흉내 내는 방법입니다. 출입구에 돌을 던졌다고 생각하면 됩니다.</p>
+    <ol class="plain">
+      <li>출입구를 방문합니다. 이것이 <strong>층 0</strong>입니다.</li>
+      <li>층 0의 이웃 가운데 아직 발견하지 못한 노드를 모두 모읍니다. 이것이 <strong>층 1</strong>입니다. 출입구에서 한 칸 거리인 노드들입니다.</li>
+      <li>층 1의 노드를 차례로 방문하면서, 그 이웃 가운데 아직 발견하지 못한 노드를 모읍니다. 이것이 <strong>층 2</strong>입니다.</li>
+      <li>새로 모인 노드가 하나도 없을 때까지 같은 일을 되풀이합니다.</li>
+    </ol>
+    <p>여기서 말을 둘로 나눠 씁니다. 어떤 노드가 다음 층에 들어가도록 처음 눈에 띄는 것을 <strong>발견</strong>, 자기 차례가 되어 그 노드의 이웃을 살펴보는 것을 <strong>방문</strong>이라고 하겠습니다. 한 번 발견한 노드는 다시 모으지 않습니다. 이 규칙 하나 때문에 모든 노드는 정확히 한 번씩만 방문됩니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 270" role="img" aria-label="작은 격자 배의 노드를 층별로 색칠한 그림. 층 0은 노드 0, 층 1은 노드 1과 2, 층 2는 노드 3과 4, 층 3은 노드 5">
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <line x1="110" y1="220" x2="110" y2="60"/><line x1="230" y1="220" x2="230" y2="60"/>
+            <line x1="110" y1="220" x2="230" y2="220"/><line x1="110" y1="140" x2="230" y2="140"/><line x1="110" y1="60" x2="230" y2="60"/>
+          </g>
+          <g class="s-muted" stroke-width="1.2" stroke-dasharray="5 4">
+            <line x1="200" y1="240" x2="80" y2="160"/><line x1="275" y1="210" x2="80" y2="80"/><line x1="275" y1="130" x2="125" y2="30"/>
+          </g>
+          <circle cx="110" cy="220" r="17" class="f-crane"/><text x="110" y="225">0</text>
+          <circle cx="230" cy="220" r="17" class="f-steel"/><text x="230" y="225">2</text>
+          <circle cx="110" cy="140" r="17" class="f-steel"/><text x="110" y="145">1</text>
+          <circle cx="230" cy="140" r="17" class="f-hull"/><text x="230" y="145">4</text>
+          <circle cx="110" cy="60" r="17" class="f-hull"/><text x="110" y="65">3</text>
+          <circle cx="230" cy="60" r="17" class="f-bay"/><text x="230" y="65">5</text>
+          <text x="58" y="225" font-size="12.5" class="t-crane" text-anchor="end">출입구</text>
+          <g font-size="13" text-anchor="start">
+            <rect x="340" y="46" width="16" height="16" rx="3" class="f-crane"/><text x="366" y="59">층 0 (거리 0): 노드 0</text>
+            <rect x="340" y="78" width="16" height="16" rx="3" class="f-steel"/><text x="366" y="91">층 1 (거리 1): 노드 1, 2</text>
+            <rect x="340" y="110" width="16" height="16" rx="3" class="f-hull"/><text x="366" y="123">층 2 (거리 2): 노드 3, 4</text>
+            <rect x="340" y="142" width="16" height="16" rx="3" class="f-bay"/><text x="366" y="155">층 3 (거리 3): 노드 5</text>
+            <text x="340" y="196" class="t-muted" font-size="12.5">점선은 물결의 앞머리입니다. 물결이 한 번 나아갈 때마다</text>
+            <text x="340" y="214" class="t-muted" font-size="12.5">층이 하나 늘어납니다.</text>
+            <text x="340" y="240" class="t-muted" font-size="12.5">방문 순서: 0, 1, 2, 3, 4, 5</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>작은 격자 배에서 출입구부터 너비 우선 탐색을 한 결과입니다. 같은 색의 노드가 한 층이고, 층의 번호가 곧 출입구에서의 거리입니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>손으로 따라가기</h2>
+    <p>작은 격자 배에서 한 걸음씩 따라가 봅니다. 준비물은 노드마다의 이웃 목록입니다. 이웃을 적는 순서는 문제에 간선이 적힌 순서(0-1, 0-2, 1-3, 1-4, 2-4, 3-5, 4-5)를 따릅니다.</p>
+    <div class="eq">
+      <div class="row"><span>0의 이웃: 1, 2</span><span>1의 이웃: 0, 3, 4</span><span>2의 이웃: 0, 4</span></div>
+      <div class="row"><span>3의 이웃: 1, 5</span><span>4의 이웃: 1, 2, 5</span><span>5의 이웃: 3, 4</span></div>
+    </div>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>지금 층</th><th>방문하는 노드</th><th>방문 순번</th><th>그 이웃을 차례로 보면</th><th>다음 층에 모인 것</th></tr></thead>
+      <tbody>
+        <tr><td>층 0: [0]</td><td>0</td><td class="num">0</td><td>1 처음 봄, 2 처음 봄</td><td>[1, 2]</td></tr>
+        <tr><td rowspan="2">층 1: [1, 2]</td><td>1</td><td class="num">1</td><td>0 이미 발견, 3 처음 봄, 4 처음 봄</td><td>[3, 4]</td></tr>
+        <tr><td>2</td><td class="num">2</td><td>0 이미 발견, 4 이미 발견</td><td>[3, 4]</td></tr>
+        <tr><td rowspan="2">층 2: [3, 4]</td><td>3</td><td class="num">3</td><td>1 이미 발견, 5 처음 봄</td><td>[5]</td></tr>
+        <tr><td>4</td><td class="num">4</td><td>1, 2, 5 모두 이미 발견</td><td>[5]</td></tr>
+        <tr><td>층 3: [5]</td><td>5</td><td class="num">5</td><td>3, 4 이미 발견</td><td>[ ] 비었으므로 끝</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>표에서 세 가지를 읽어 둡니다.</p>
+    <ul class="plain">
+      <li><strong>층 번호 = 거리.</strong> 층 2의 노드 3과 4는 출입구에서 간선 2개 거리입니다. 층 k의 노드는 층 k−1의 노드 옆에서 처음 발견되었으니 k걸음으로 닿을 수 있고, 그보다 짧게 닿을 수 있었다면 더 앞 층에서 이미 발견되었을 것입니다.</li>
+      <li><strong>노드 4는 노드 1이 발견했습니다.</strong> 4는 1의 이웃이기도 하고 2의 이웃이기도 한데, 1이 먼저 방문되어 4를 먼저 봤습니다. 어떤 노드를 처음 발견해 준 노드를 그 노드의 <strong>부모</strong>라고 부릅니다. 4의 부모는 1, 5의 부모는 3입니다.</li>
+      <li><strong>부모를 거슬러 올라가면 최단 경로가 나옵니다.</strong> 5의 부모는 3, 3의 부모는 1, 1의 부모는 0이므로 5 → 3 → 1 → 0. 간선 3개이고, 5의 거리가 3이니 이보다 짧은 길은 없습니다.</li>
+    </ul>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 250" role="img" aria-label="가지가 있는 배. 노드 0, 1, 2가 일렬이고 2에서 3과 4로 갈라지며, 4 위에 5, 5의 양옆에 6과 7이 있다">
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <line x1="170" y1="222" x2="170" y2="182"/><line x1="170" y1="182" x2="170" y2="142"/>
+            <line x1="170" y1="142" x2="240" y2="142"/><line x1="170" y1="142" x2="170" y2="96"/>
+            <line x1="170" y1="96" x2="170" y2="50"/><line x1="170" y1="50" x2="100" y2="50"/><line x1="170" y1="50" x2="240" y2="50"/>
+          </g>
+          <circle cx="170" cy="222" r="16" class="f-crane"/><text x="170" y="227">0</text>
+          <circle cx="170" cy="182" r="16" class="f-bay"/><text x="170" y="187">1</text>
+          <circle cx="170" cy="142" r="16" class="f-bay"/><text x="170" y="147">2</text>
+          <circle cx="240" cy="142" r="16" class="f-bay"/><text x="240" y="147">3</text>
+          <circle cx="170" cy="96" r="16" class="f-bay"/><text x="170" y="101">4</text>
+          <circle cx="170" cy="50" r="16" class="f-bay"/><text x="170" y="55">5</text>
+          <circle cx="100" cy="50" r="16" class="f-bay"/><text x="100" y="55">6</text>
+          <circle cx="240" cy="50" r="16" class="f-bay"/><text x="240" y="55">7</text>
+          <text x="120" y="227" class="t-crane" font-size="12.5">출입구</text>
+          <g font-size="13" text-anchor="start">
+            <text x="340" y="70">간선이 적힌 순서:</text>
+            <text x="340" y="94" class="mono">0-1, 1-2, 2-3, 2-4, 4-5, 5-6, 5-7</text>
+            <text x="340" y="134" class="t-muted" font-size="12.5">2장에서 본 「가지가 있는 배」입니다.</text>
+            <text x="340" y="152" class="t-muted" font-size="12.5">순환이 없고, 노드 2에서 길이 둘로 갈라집니다.</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>아래 「직접 해 보기」에 쓰는 배입니다.</figcaption>
+    </figure>
+    <div class="hand">
+      <p>위 그림의 가지가 있는 배에서 출입구부터 너비 우선 탐색을 해 보세요. 층을 차례로 적고, 방문 순서와 칸마다의 거리를 구합니다.</p>
+      <p><strong>답.</strong> 층 0 [0], 층 1 [1], 층 2 [2], 층 3 [3, 4], 층 4 [5], 층 5 [6, 7]. 방문 순서는 0, 1, 2, 3, 4, 5, 6, 7이고, 칸 1부터 7까지의 거리는 차례로 1, 2, 3, 3, 4, 5, 5입니다. 노드 2를 방문할 때 이웃이 3, 4 순서로 적혀 있어서 3이 4보다 먼저 방문됩니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Python으로 옮기기</h2>
+    <p>방금 손으로 한 일을 그대로 코드로 적습니다. "지금 층"과 "다음 층"을 리스트 두 개로 들고 다니는 것이 전부입니다.</p>
+    <pre class="py">
+def bfs(N, E):
+    nbr = []
+    for i in range(N):
+        nbr.append([])
+    for e in E:
+        nbr[e[0]].append(e[1])
+        nbr[e[1]].append(e[0])
+    dist = [-1] * N
+    parent = [-1] * N
+    order = []
+    dist[0] = 0
+    layer = [0]
+    while len(layer) &gt; 0:
+        next_layer = []
+        for i in layer:
+            order.append(i)
+            for j in nbr[i]:
+                if dist[j] == -1:
+                    dist[j] = dist[i] + 1
+                    parent[j] = i
+                    next_layer.append(j)
+        layer = next_layer
+    return order, dist, parent, nbr
+
+E = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 4], [3, 5], [4, 5]]
+order, dist, parent, nbr = bfs(6, E)
+print("방문 순서:", order)
+print("거리:", dist)
+print("부모:", parent)
+</pre>
+    <ul class="code">
+      <li><b>1</b> <code>N</code>은 노드의 수, <code>E</code>는 간선의 목록입니다. 2장에서 본 입력의 <code>N</code>, <code>E</code>와 같은 모양입니다.</li>
+      <li><b>2~7</b> 이웃 목록을 만듭니다. <code>nbr[i]</code>가 노드 i의 이웃 리스트입니다. 간선 <code>[u, v]</code> 하나마다 u의 이웃에 v를, v의 이웃에 u를 적습니다. 간선에 방향이 없기 때문에 양쪽에 다 적습니다.</li>
+      <li><b>8~9</b> <code>dist[i]</code>는 노드 i의 거리, <code>parent[i]</code>는 부모입니다. 처음에는 전부 −1로 채워 두고 "아직 발견하지 못했다"는 표시로 씁니다.</li>
+      <li><b>10~12</b> 방문 순서를 적을 빈 리스트를 만들고, 출입구(노드 0)의 거리를 0으로 둔 뒤, 출입구 하나만 든 층 0에서 시작합니다.</li>
+      <li><b>13</b> 지금 층에 노드가 남아 있는 동안 되풀이합니다.</li>
+      <li><b>15~16</b> 지금 층의 노드를 앞에서부터 하나씩 방문하고, 방문한 순서대로 <code>order</code>에 적습니다.</li>
+      <li><b>17~21</b> 방문한 노드의 이웃을 차례로 봅니다. 거리가 아직 −1이면 처음 보는 노드이므로 거리(나보다 1 큼)와 부모(나)를 적고 다음 층에 넣습니다. 이미 발견한 노드는 지나칩니다.</li>
+      <li><b>22</b> 다음 층이 지금 층이 됩니다. 다음 층이 비어 있으면 13번 줄의 조건이 거짓이 되어 끝납니다.</li>
+      <li><b>23</b> 함수는 값 네 개를 한꺼번에 돌려줍니다. 받는 쪽(26번 줄)도 변수 네 개로 받습니다.</li>
+    </ul>
+    <pre class="out">
+방문 순서: [0, 1, 2, 3, 4, 5]
+거리: [0, 1, 1, 2, 2, 3]
+부모: [-1, 0, 0, 1, 1, 3]
+</pre>
+    <p>손으로 만든 표와 같습니다. 출입구의 부모는 없으므로 −1 그대로입니다. 이 코드는 문서와 함께 있는 <code>examples/bfs_simple.py</code>에 들어 있고, 위의 가지가 있는 배를 넣으면 「직접 해 보기」의 답이 나옵니다.</p>
+    <div class="aside">
+      <p>알고리즘 책에서는 너비 우선 탐색을 보통 큐(queue, 먼저 넣은 것을 먼저 꺼내는 줄 서기 방식의 자료 구조)로 적습니다. 위 코드처럼 층을 리스트 두 개로 나눠 드는 방식과 방문 순서가 같습니다. 팀의 코드도 층 두 개 방식입니다.</p>
+    </div>
+  </section>
+
+  <div class="part">3부 · 높이와 아래 이웃</div>
+
+  <section>
+    <h2>높이 = 방문 순번</h2>
+    <p>tryAgain은 너비 우선 탐색에서 노드를 방문한 순번을 그 노드의 <strong>높이</strong>라고 부릅니다. 출입구가 0이고, 그다음 방문한 노드가 1, 그다음이 2입니다. 이 문서에서는 노드 i의 높이를 <strong>h(i)</strong>라고 적습니다. (팀의 코드에서는 <code>_position</code>, 발표자료에서는 pos(i)라는 이름입니다. 같은 것입니다.)</p>
+    <p>물이 높은 곳에서 낮은 곳으로 흐르듯, 내리는 차는 높이가 가장 낮은 출입구 쪽으로 내려간다고 생각하면 됩니다. 7장에서 이 비유를 규칙으로 만듭니다.</p>
+    <p>높이와 거리는 비슷하지만 다릅니다. 작은 격자 배에서 비교해 봅니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>노드</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+      <tbody>
+        <tr><td>거리 dist(i)</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">3</td></tr>
+        <tr><td>높이 h(i)</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <ul class="plain">
+      <li><strong>거리는 겹칩니다.</strong> 노드 1과 2는 둘 다 거리 1, 노드 3과 4는 둘 다 거리 2입니다.</li>
+      <li><strong>높이는 겹치지 않습니다.</strong> 방문 순번이므로 노드마다 다릅니다. 거리가 같은 노드들 사이에도 먼저와 나중이 정해집니다.</li>
+      <li><strong>높이가 낮으면 거리도 작거나 같습니다.</strong> 가까운 층부터 방문하기 때문입니다. 그래서 높이가 낮을수록 출입구에 가깝다고 말할 수 있습니다.</li>
+    </ul>
+    <p>이 배는 노드 번호와 높이가 우연히 같습니다. 일부러 그렇게 번호를 붙여 둔 것이고, 일반적으로는 다릅니다. 바로 아래에서 다른 경우를 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>같은 층 안의 순서는 간선이 적힌 순서가 정한다</h2>
+    <p>층 1의 노드 1과 2 중 어느 쪽을 먼저 방문할까요? 코드는 출입구의 이웃 목록에 적힌 순서대로 방문하고, 이웃 목록은 입력 <code>E</code>에 간선이 적힌 순서대로 만들어집니다. 그래서 같은 배라도 간선을 적는 순서가 다르면 높이가 달라집니다. 맨 앞의 두 간선만 바꿔 적어 실행해 봅니다.</p>
+    <pre class="py">
+E2 = [[0, 2], [0, 1], [1, 3], [1, 4], [2, 4], [3, 5], [4, 5]]
+order2, dist2, parent2, nbr2 = bfs(6, E2)
+print("방문 순서:", order2)
+print("거리:", dist2)
+</pre>
+    <pre class="out">
+방문 순서: [0, 2, 1, 4, 3, 5]
+거리: [0, 1, 1, 2, 2, 3]
+</pre>
+    <p>거리는 그대로이고 방문 순서만 바뀌었습니다. 이제 노드 2의 높이가 1, 노드 1의 높이가 2, 노드 4의 높이가 3, 노드 3의 높이가 4입니다. 층은 같고, 층 안에서의 순번만 달라진 것입니다.</p>
+    <p>어느 쪽이 "맞는" 높이일까요? 둘 다 됩니다. 7장에서 볼 풀이의 논리는 높이가 너비 우선 탐색의 방문 순번이기만 하면 성립합니다. 다만 높이가 달라지면 모형이 조금 달라지므로, 솔버가 내놓는 해는 달라질 수 있습니다. 팀의 코드는 입력에 적힌 순서를 그대로 씁니다.</p>
+  </section>
+
+  <section>
+    <h2>아래 이웃 pred(i)와 화살표</h2>
+    <p>높이가 정해지면 간선마다 "높은 쪽"과 "낮은 쪽"이 생깁니다. 두 끝 노드의 높이가 서로 다르기 때문입니다. 그래서 모든 간선에 높은 쪽에서 낮은 쪽으로 화살표를 하나씩 그릴 수 있습니다.</p>
+    <p>기호를 하나 정합니다. 노드 i의 이웃 가운데 <strong>높이가 i보다 낮은 노드들</strong>의 모임을 <strong>pred(i)</strong>라고 적고 <strong>「아래 이웃」</strong>이라고 부릅니다(pred는 predecessor, 앞선 것이라는 뜻). i에서 나가는 화살표가 가리키는 노드들입니다. 앞에서 구한 <code>order</code>와 <code>nbr</code>로 높이와 아래 이웃을 계산합니다.</p>
+    <pre class="py">
+height = [0] * 6
+for k in range(len(order)):
+    height[order[k]] = k
+for i in range(1, 6):
+    below = []
+    for j in nbr[i]:
+        if height[j] &lt; height[i]:
+            below.append(j)
+    print("pred(%d) = %s" % (i, below))
+</pre>
+    <ul class="code">
+      <li><b>1~3</b> k번째로 방문한 노드 <code>order[k]</code>의 높이는 k입니다.</li>
+      <li><b>4~9</b> 칸마다 이웃을 훑어, 높이가 더 낮은 이웃만 모아 출력합니다. <code>%d</code>와 <code>%s</code>는 그 자리에 뒤의 값을 끼워 넣으라는 표시입니다.</li>
+    </ul>
+    <pre class="out">
+pred(1) = [0]
+pred(2) = [0]
+pred(3) = [1]
+pred(4) = [1, 2]
+pred(5) = [3, 4]
+</pre>
+    <p>조금 더 큰 배로 봅니다. 가로세로 3칸씩인 <strong>격자 배</strong>입니다(교재의 「격자 배」와 번호가 같은 배입니다). 간선을 0-1, 0-2, 1-3, 1-4, 2-4, 2-5, 3-6, 4-6, 4-7, 5-7, 6-8, 7-8 순서로 적으면 방문 순서가 0, 1, 2, …, 8이 되어, 이 배도 노드 번호가 곧 높이입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="3 곱하기 3 격자 배에 너비 우선 탐색 방문 순서로 높이 0부터 8까지를 매긴 그림. 각 간선에는 높이가 낮은 쪽을 가리키는 화살표가 있다">
+        <defs>
+          <marker id="ah6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="f-fg"/></marker>
+        </defs>
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.4" marker-end="url(#ah6)">
+            <line x1="120" y1="188" x2="120" y2="234"/><line x1="182" y1="250" x2="138" y2="250"/>
+            <line x1="120" y1="108" x2="120" y2="154"/><line x1="182" y1="170" x2="138" y2="170"/><line x1="200" y1="188" x2="200" y2="234"/>
+            <line x1="262" y1="250" x2="218" y2="250"/>
+            <line x1="182" y1="90" x2="138" y2="90"/><line x1="200" y1="108" x2="200" y2="154"/>
+            <line x1="262" y1="170" x2="218" y2="170"/><line x1="280" y1="188" x2="280" y2="234"/>
+            <line x1="262" y1="90" x2="218" y2="90"/><line x1="280" y1="108" x2="280" y2="154"/>
+          </g>
+          <circle cx="120" cy="250" r="17" class="f-crane"/><text x="120" y="255">0</text>
+          <circle cx="200" cy="250" r="17" class="f-bay"/><text x="200" y="255">2</text>
+          <circle cx="280" cy="250" r="17" class="f-bay"/><text x="280" y="255">5</text>
+          <circle cx="120" cy="170" r="17" class="f-bay"/><text x="120" y="175">1</text>
+          <circle cx="200" cy="170" r="17" class="f-bay"/><text x="200" y="175">4</text>
+          <circle cx="280" cy="170" r="17" class="f-bay"/><text x="280" y="175">7</text>
+          <circle cx="120" cy="90" r="17" class="f-bay"/><text x="120" y="95">3</text>
+          <circle cx="200" cy="90" r="17" class="f-bay"/><text x="200" y="95">6</text>
+          <circle cx="280" cy="90" r="17" class="f-bay"/><text x="280" y="95">8</text>
+          <text x="120" y="288" class="t-crane" font-size="12.5">출입구</text>
+          <text x="200" y="40" class="t-muted" font-size="13">숫자 = 노드 번호 = 높이 h</text>
+          <g font-size="13" text-anchor="start">
+            <text x="380" y="62" class="t-muted">노드 i의 아래 이웃 pred(i)</text>
+            <text x="380" y="90">1 → {0}</text><text x="520" y="90">2 → {0}</text>
+            <text x="380" y="116">3 → {1}</text><text x="520" y="116">4 → {1, 2}</text>
+            <text x="380" y="142">5 → {2}</text><text x="520" y="142">6 → {3, 4}</text>
+            <text x="380" y="168">7 → {4, 5}</text><text x="520" y="168">8 → {6, 7}</text>
+            <text x="380" y="206" class="t-muted" font-size="12.5">층: {0}, {1, 2}, {3, 4, 5}, {6, 7}, {8}</text>
+            <text x="380" y="226" class="t-muted" font-size="12.5">화살표는 높이가 낮아지는 방향입니다.</text>
+            <text x="380" y="254" class="t-crane" font-size="12.5">8 → 7 → 4 → 6 → 3 → 1 → 0 은 화살표를 거스릅니다:</text>
+            <text x="380" y="272" class="t-crane" font-size="12.5">4에서 6으로 갈 때 높이가 커집니다.</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>격자 배. 발표자료 3쪽의 두 번째 그림을 다시 그린 것입니다. 노드 4의 이웃은 1, 2, 6, 7이고 그중 높이가 4보다 낮은 것은 1과 2이므로 pred(4) = {1, 2}입니다.</figcaption>
+    </figure>
+    <p>화살표가 그려진 그림에서 뒤의 장에 쓰이는 성질 네 가지를 확인해 둡니다.</p>
+    <ol class="plain">
+      <li><strong>화살표만 따라서는 제자리로 돌아올 수 없습니다.</strong> 격자 배에는 1-3-6-4-1 같은 순환이 있습니다. 그래도 화살표를 한 번 따라갈 때마다 높이가 줄어들기 때문에, 화살표만 따라가서 출발한 노드로 돌아오는 일은 없습니다. 돌아왔다면 높이가 줄어들기만 하다가 처음 값으로 되돌아온 것이 되어 말이 안 됩니다.</li>
+      <li><strong>출입구가 아닌 모든 노드는 아래 이웃이 적어도 하나 있습니다.</strong> 자기를 처음 발견해 준 부모가 있고, 부모는 자기보다 먼저 방문되었으므로 높이가 더 낮습니다. 그러니 부모는 언제나 pred(i)에 들어 있습니다.</li>
+      <li><strong>어느 칸에서든 화살표만 따라 출입구에 닿습니다.</strong> 성질 2에 의해 출입구가 아닌 곳에서는 항상 따라갈 화살표가 있고, 성질 1에 의해 같은 곳을 맴돌지 않으므로, 높이가 계속 줄어들다가 높이 0인 출입구에서 멈춥니다. (차가 하나도 없는 배에서의 이야기입니다. 차가 길을 막는 경우는 7장에서 다룹니다.)</li>
+      <li><strong>부모만 따라가면 그 길이 최단 경로입니다.</strong> 2부에서 본 대로입니다. 다른 아래 이웃을 골라도 출입구에는 닿지만, 그 길이 가장 짧다는 보장은 없습니다. 격자 배에서는 아래 이웃이 모두 한 층 아래에 있어서 어느 화살표를 따라가도 최단 경로가 됩니다. 그렇지 않은 배의 예는 8장에서 나옵니다.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>왜 거리를 그대로 높이로 쓰지 않는가</h2>
+    <p>거리 dist(i)를 그냥 높이로 쓰면 더 간단해 보입니다. 굳이 서로 다른 번호를 붙이는 데에는 이유가 있습니다. 거리가 같은 두 노드가 이웃인 배가 있기 때문입니다.</p>
+    <p>노드 다섯 개가 0-1-2-3-4-0으로 둥글게 이어진 <strong>5칸 고리</strong>를 생각합니다(노드가 5개라는 뜻이고, 칸은 1~4의 네 개입니다). 출입구의 이웃은 1과 4이고, 그 너머의 2와 3은 둘 다 거리 2이면서 서로 이웃입니다. 간선 2-3에는 어느 쪽으로 화살표를 그려야 할까요?</p>
+    <ul class="plain">
+      <li>"거리가 같거나 작은 이웃으로 갈 수 있다"고 정하면, 2에서 3으로도 3에서 2로도 갈 수 있습니다. 그러면 2 → 3 → 2 → 3 … 하고 제자리를 맴돌 수 있게 되어 위의 성질 1이 깨집니다.</li>
+      <li>"거리가 더 작은 이웃으로만 갈 수 있다"고 정하면, 간선 2-3은 어느 방향으로도 쓸 수 없는 죽은 간선이 됩니다.</li>
+    </ul>
+    <p>방문 순번을 높이로 쓰면 이 문제가 없습니다. 5칸 고리를 0-1, 1-2, 2-3, 3-4, 4-0 순서로 적으면 방문 순서가 0, 1, 4, 2, 3이 되어 h(2) = 3, h(3) = 4입니다. 간선 2-3에는 3에서 2로 가는 화살표가 그려지고, 맴도는 일도 없습니다. 이 화살표가 어떤 효과를 내는지는 8장에서 다시 봅니다.</p>
+    <div class="gref">
+      <p>높이로 간선에 방향을 주는 일, 화살표만 따라서는 돌아올 수 없는 그래프(DAG라고 부릅니다), 5칸 고리처럼 길이가 홀수인 순환이 있는 배의 성질은 교재 5장 「높이, 방향, 이분 그래프」에서 자세히 다룹니다.</p>
+    </div>
+  </section>
+
+  <div class="part">4부 · 팀의 코드</div>
+
+  <section>
+    <h2>노드 하나가 들고 있는 것</h2>
+    <p>팀의 코드는 C++로 쓰여 있습니다. C++ 문법은 3장의 「C++ 읽는 법」 표를 참고하면 되고, 여기서는 한 줄씩 Python 코드와 짝지어 읽습니다. 먼저 노드 하나의 정보를 담는 묶음입니다. C++에서는 이런 묶음을 클래스(class)라고 부릅니다.</p>
+    <div class="lbl">C++ 원본 · Graph.hpp</div>
+    <pre>
+class Node
+{
+public:
+    bool _accessible;            // 탐색이 이 노드를 지나가도 되는가 (처음에는 모두 true)
+    NodeId _position;            // 높이 = 방문 순번
+    NodeId _pred;                // 이 노드를 처음 발견한 노드 (부모)
+    Distance _dist;              // 출입구에서의 거리 (간선 수)
+    vector&lt;NodeId&gt; _neighborVec; // 이웃 노드 목록
+};
+</pre>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>C++의 이름</th><th>앞의 Python 코드에서</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td><code>_neighborVec</code></td><td><code>nbr[i]</code></td><td>이웃 목록</td></tr>
+        <tr><td><code>_dist</code></td><td><code>dist[i]</code></td><td>출입구에서의 거리</td></tr>
+        <tr><td><code>_pred</code></td><td><code>parent[i]</code></td><td>부모. 노드 하나입니다</td></tr>
+        <tr><td><code>_position</code></td><td><code>height[i]</code></td><td>높이 h(i)</td></tr>
+        <tr><td><code>_accessible</code></td><td>(없음)</td><td>참·거짓 값. 거짓이면 탐색이 이 노드를 건너뜁니다</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><code>NodeId</code>와 <code>Distance</code>는 정수형 <code>int</code>에 붙인 다른 이름입니다. 이름이 헷갈리기 쉬운 곳이 하나 있습니다. 코드의 <code>_pred</code>는 <strong>부모 하나</strong>이고, 이 문서의 pred(i)는 <strong>아래 이웃 전부의 모임</strong>입니다. 부모는 아래 이웃 중 하나입니다. 모임 pred(i)는 코드에 따로 저장되어 있지 않고, 모형을 적을 때 이웃 목록에서 높이를 비교해 그때그때 만듭니다(8장).</p>
+  </section>
+
+  <section>
+    <h2>getBFSOrientation: 높이를 매기는 함수</h2>
+    <p>함수 이름의 orientation은 "간선에 방향을 준다"는 뜻입니다. 주석은 이 문서에서 한국어로 바꿔 달았습니다.</p>
+    <div class="lbl">C++ 원본 · function.cpp 7~41줄</div>
+    <pre>
+void getBFSOrientation(vector&lt;Node&gt;&amp; nodeVec, vector&lt;NodeId&gt;&amp; positionVec)
+{
+    positionVec.clear();
+    for (Node&amp; node : nodeVec)                       // (가) 모든 노드를 "아직 모름"으로
+    {
+        node._pred = INF;  node._position = INF;  node._dist = INF;
+    }
+
+    vector&lt;NodeId&gt; search(1, 0);                     // (나) 지금 층. 출입구 하나로 시작
+    NodeId position = 0;
+    nodeVec[0]._dist = 0;
+    nodeVec[0]._pred = -1;
+    while (!search.empty())                          // (다) 지금 층이 비지 않은 동안
+    {
+        vector&lt;NodeId&gt; nextSearch;                   //      다음 층
+        for (NodeId id : search)
+        {
+            positionVec.push_back(id);               // (라) 방문 순서대로 노드 번호를 기록
+            nodeVec[id]._position = position++;      // (마) 높이를 매기고 순번을 1 늘림
+            for (NodeId nbr : nodeVec[id]._neighborVec)
+            {
+                // (바) 지나가도 되고, 아직 발견하지 못한 이웃이면
+                if (nodeVec[nbr]._accessible &amp;&amp; nodeVec[nbr]._pred == INF)
+                {
+                    nodeVec[nbr]._pred = id;                      // 부모
+                    nodeVec[nbr]._dist = nodeVec[id]._dist + 1;   // 거리
+                    nextSearch.push_back(nbr);                    // 다음 층에 넣음
+                }
+            }
+        }
+        search.swap(nextSearch);                     // (사) 다음 층을 지금 층으로
+    }
+}
+</pre>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>표시</th><th>C++가 하는 일</th><th>Python 코드의 줄</th></tr></thead>
+      <tbody>
+        <tr><td>(가)</td><td>모든 노드의 부모, 높이, 거리에 <code>INF</code>를 넣습니다. <code>INF</code>는 <code>int</code>가 담을 수 있는 가장 큰 수(약 21억)이고, "아직 정해지지 않음"이라는 표시입니다. Python 코드의 −1과 같은 역할입니다.</td><td>8~9</td></tr>
+        <tr><td>(나)</td><td><code>search</code>가 지금 층입니다. <code>search(1, 0)</code>은 "0이 한 개 든 목록"을 만듭니다. 출입구의 거리는 0, 부모는 −1(없음)로 둡니다.</td><td>11~12</td></tr>
+        <tr><td>(다)</td><td><code>!search.empty()</code>는 "search가 비어 있지 않다"입니다.</td><td>13</td></tr>
+        <tr><td>(라)</td><td><code>positionVec</code>에 방문한 노드 번호를 차례로 붙입니다. <code>push_back</code>은 Python의 <code>append</code>입니다.</td><td>16 (<code>order</code>)</td></tr>
+        <tr><td>(마)</td><td><code>position++</code>는 지금 값을 쓰고 나서 1을 더합니다. 그래서 방문할 때마다 0, 1, 2, …가 차례로 높이로 들어갑니다.</td><td>높이 계산 코드의 1~3</td></tr>
+        <tr><td>(바)</td><td><code>&amp;&amp;</code>는 "그리고"입니다. 아직 부모가 없는(<code>_pred == INF</code>) 이웃만 새로 발견한 것으로 칩니다. 조건이 하나 더 있습니다. <code>_accessible</code>이 참이어야 합니다.</td><td>18~21</td></tr>
+        <tr><td>(사)</td><td>두 목록의 내용을 맞바꿉니다. 다음 층이 지금 층이 됩니다.</td><td>22</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Python 코드와 다른 곳은 두 군데입니다.</p>
+    <ul class="plain">
+      <li><strong>결과를 두 방향으로 다 적어 둡니다.</strong> <code>positionVec</code>은 "높이 → 노드 번호"의 표이고(<code>positionVec[3]</code>은 높이가 3인 노드), <code>_position</code>은 "노드 번호 → 높이"입니다. 앞의 Python 코드에서는 <code>order</code>와 <code>height</code>에 해당합니다.</li>
+      <li><strong><code>_accessible</code>이 거짓인 노드는 건너뜁니다.</strong> 발견하지도 않고 지나가지도 않으므로, 그 노드가 배에 없는 것처럼 탐색합니다. 모형을 만들 때는 모든 노드가 참이라서 배 전체를 훑습니다. 이 조건은 9장에서 쓰입니다. 그때는 어떤 칸들을 거짓으로 바꿔 놓고 이 함수를 다시 부릅니다. 같은 함수가 두 가지 용도로 쓰이는 것입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>대회 문제에서는 번호와 높이가 얼마나 다른가</h2>
+    <p>대회 문제의 노드 번호는 출입구에서 가까운 순으로 미리 정렬되어 있다고 합니다(대회 사이트 「문제 생성 방법」: "gate 기준 최단거리로 정렬해 노드 ID를 부여"). 그렇다고 높이가 노드 번호와 같지는 않습니다. 거리가 같은 노드끼리의 순서가 다를 수 있기 때문입니다. 대회가 참가자에게 공개한 연습 문제 20개에 이 탐색을 직접 돌려 보니, 높이와 노드 번호가 일치하는 노드는 문제에 따라 전체의 15%에서 72%였습니다. 팀의 코드는 노드 번호의 순서에 기대지 않고 탐색을 직접 합니다.</p>
+    <div class="warn">
+      <p>15%~72%라는 숫자는 이 문서의 원본을 만들 때 계산한 값을 옮긴 것입니다. 연습 문제 파일은 이 문서와 함께 배포되지 않으므로 독자가 바로 다시 계산해 볼 수는 없습니다. 실제 순위를 매긴 평가 문제에서 어땠는지는 확인하지 못했습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>(손으로) 노드 여섯 개가 0-1-2-3-4-5-0으로 둥글게 이어진 「6칸 고리」가 있습니다. 간선이 0-1, 1-2, 2-3, 3-4, 4-5, 5-0 순서로 적혀 있을 때 방문 순서와 각 노드의 거리, 높이를 구해 보세요.</summary>
+      <p>출입구의 이웃 목록은 [1, 5]입니다(간선 0-1이 먼저, 5-0이 나중에 적혀 있으므로). 층 0 [0], 층 1 [1, 5], 층 2 [2, 4], 층 3 [3]. 방문 순서는 0, 1, 5, 2, 4, 3입니다. 거리는 노드 1과 5가 1, 노드 2와 4가 2, 노드 3이 3입니다. 높이는 h(1) = 1, h(5) = 2, h(2) = 3, h(4) = 4, h(3) = 5입니다. 노드 번호와 높이가 다르다는 점을 눈여겨보세요. 이 고리는 7장에서 다시 나옵니다.</p>
+    </details>
+    <details>
+      <summary>(손으로) 위 6칸 고리에서 pred(2), pred(3), pred(4)를 구해 보세요.</summary>
+      <p>pred(2) = {1}: 2의 이웃은 1과 3인데 h(1) = 1 &lt; h(2) = 3이고 h(3) = 5는 더 높습니다. pred(4) = {5}: 4의 이웃 3과 5 중 h(5) = 2만 h(4) = 4보다 낮습니다. pred(3) = {2, 4}: 3은 가장 높으므로 두 이웃이 모두 아래 이웃입니다.</p>
+    </details>
+    <details>
+      <summary>작은 격자 배에서 칸 5의 차가 화살표만 따라 출입구로 나오는 길을 모두 적어 보세요.</summary>
+      <p>pred(5) = {3, 4}, pred(3) = {1}, pred(4) = {1, 2}이므로 5 → 3 → 1 → 0, 5 → 4 → 1 → 0, 5 → 4 → 2 → 0 세 가지입니다. 셋 다 간선 3개이고, 칸 5의 거리가 3이니 모두 최단 경로입니다.</p>
+    </details>
+    <details>
+      <summary>격자 배에서 노드 8의 부모는 누구인가요? pred(8)과는 어떻게 다른가요?</summary>
+      <p>부모는 6입니다. 8의 이웃은 6과 7인데, 6이 먼저 방문되어 8을 처음 발견합니다. pred(8)은 {6, 7}입니다. 7도 8보다 높이가 낮은 이웃이므로 아래 이웃이지만, 8을 처음 발견한 노드는 아니므로 부모는 아닙니다.</p>
+    </details>
+    <details>
+      <summary>높이가 같은 노드가 둘 있을 수 있나요? 거리는요?</summary>
+      <p>높이는 방문 순번이라 노드마다 다릅니다. 거리는 같을 수 있습니다. 한 층에 노드가 여럿이면 그 노드들의 거리는 모두 같습니다.</p>
+    </details>
+    <details>
+      <summary>Python 코드의 18번 줄(<code>if dist[j] == -1:</code>)을 지우고 그 아래 세 줄을 항상 실행하게 하면 어떤 일이 생기나요?</summary>
+      <p>이미 발견한 노드도 다시 다음 층에 들어갑니다. 출입구를 방문하면 1이 다음 층에 들어가고, 1을 방문하면 이웃인 출입구가 다시 다음 층에 들어가는 식으로, 다음 층이 영영 비지 않아 프로그램이 끝나지 않습니다. "한 번 발견한 노드는 다시 모으지 않는다"가 탐색을 끝나게 해 주는 규칙입니다.</p>
+    </details>
+    <details>
+      <summary>간선을 적는 순서를 바꾸면 달라지는 것과 달라지지 않는 것을 구별해 보세요.</summary>
+      <p>달라지지 않는 것은 각 노드의 거리와, 어느 노드가 어느 층에 속하는가입니다. 달라질 수 있는 것은 같은 층 안에서의 방문 순서, 따라서 높이입니다. 높이가 달라지면 부모나 아래 이웃도 달라질 수 있습니다.</p>
+    </details>
+  </section>
+
+  <div class="sum">
+    <ul>
+      <li>배 안은 그래프입니다. 칸과 출입구가 노드, 지나다닐 수 있는 통로가 간선입니다. dist(i)는 출입구에서 칸 i까지의 최단거리입니다.</li>
+      <li>너비 우선 탐색은 출입구에서 가까운 노드부터 한 층씩 방문합니다. 층 번호가 거리이고, 부모를 거슬러 올라가면 최단 경로가 나옵니다.</li>
+      <li>높이 h(i)는 방문 순번입니다. 노드마다 다르고, 낮을수록 출입구에 가깝습니다. 같은 층 안의 순서는 간선이 적힌 순서로 정해집니다.</li>
+      <li>아래 이웃 pred(i)는 이웃 중 높이가 더 낮은 노드들입니다. 출입구가 아닌 노드는 pred(i)가 비지 않고, 아래 이웃으로만 내려가면 맴돌지 않고 출입구에 닿습니다.</li>
+      <li>팀의 <code>getBFSOrientation</code>이 이 일을 합니다. <code>_accessible</code>이 거짓인 노드를 건너뛰는 기능이 있어서 9장에서 다시 쓰입니다.</li>
+    </ul>
+  </div>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">교재</span>4장 「그래프와 너비 우선 탐색」, 5장 「높이, 방향, 이분 그래프」 — 이 장의 내용을 더 많은 예와 함께 다룹니다.</li>
+      <li><span class="tagc">실습</span><span class="mono">examples/bfs_simple.py</span> — 이 장의 Python 코드. 이 장에 나온 배 일곱 개의 방문 순서, 거리, 높이, 아래 이웃을 출력합니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/%EB%84%88%EB%B9%84_%EC%9A%B0%EC%84%A0_%ED%83%90%EC%83%89">위키백과 「너비 우선 탐색」</a> — 큐를 쓰는 표준적인 설명과 움직이는 그림.</li>
+      <li><span class="tagc">무료</span><a href="https://visualgo.net/en/dfsbfs">VisuAlgo 「Graph Traversal」</a> — 그래프를 직접 그리고 너비 우선 탐색(BFS)이 한 걸음씩 진행되는 모습을 볼 수 있는 사이트. 설명은 영어지만 그림만 봐도 됩니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/">OGC 2025 대회 사이트</a>의 「문제 생성 방법」 — 대회 문제의 배가 어떤 모양으로 만들어졌고 노드 번호가 어떻게 붙었는지.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch5">← 이전: 5장 솔버가 푸는 법</a><a href="#ch7">다음: 7장 풀이의 아이디어 →</a></div>
+</article>

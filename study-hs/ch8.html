@@ -1,0 +1,367 @@
+<article class="chapter" id="ch8">
+  <header>
+    <div class="kicker">8 / 16</div>
+    <h1>심플렉스법</h1>
+  </header>
+
+  <section>
+    <p class="lead">7장에서 꼭짓점이 기저가능해와 같다는 것을 배웠습니다. 하지만 변수가 100개만 되어도 기저의 개수가 10<sup>29</sup>개를 넘어, 모든 기저를 다 풀어 볼 수는 없습니다. <strong>심플렉스법(simplex method)</strong>은 한 꼭짓점에서 출발해 더 좋은 이웃 꼭짓점으로 옮겨 다니며, 모든 기저를 보지 않고도 순식간에 최적해에 닿는 알고리듬입니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 3장(연립방정식과 소거법), 6장(도해법, 불능·비유계, 「동네 최고 = 전체 최고」), 7장(표준형, 여유·잉여 변수, 기저, 기저가능해, 축퇴).</li>
+      <li><strong>이 장을 읽고 나면.</strong> 공방 예를 사전과 단체표로 끝까지 풀 수 있고, 감소 비용의 뜻과 최적·비유계 판정을 설명할 수 있으며, 2단계법·제자리걸음·이어 풀기(warm start)가 무엇인지 말할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 사전과 피벗: 꼭짓점 건너뛰기</div>
+
+  <section>
+    <h2>사전: 지금 어느 꼭짓점에 서 있는가</h2>
+    <p>공방 예를 다시 가져옵니다. 여유 변수 s<sub>1</sub>, s<sub>2</sub> ≥ 0을 붙인 등식과 최대화할 이익 z는 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp; z = 5x<sub>1</sub> + 4x<sub>2</sub></span><span class="all">이익</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp;&nbsp; 6x<sub>1</sub> + 4x<sub>2</sub> + s<sub>1</sub> = 24,&nbsp;&nbsp; x<sub>1</sub> + 2x<sub>2</sub> + s<sub>2</sub> = 6,&nbsp;&nbsp; x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub> ≥ 0</span></div>
+    </div>
+    <p>출발할 꼭짓점이 하나 필요합니다. 모든 제약이 "≤, 오른쪽 ≥ 0"이면 원점 (0, 0)이 언제나 가능해이므로, 처음 기저로 여유 변수 묶음 <strong>{s<sub>1</sub>, s<sub>2</sub>}</strong>를 고릅니다. 기저 변수 s<sub>1</sub>, s<sub>2</sub>를 왼쪽에, 비기저 변수 x<sub>1</sub>, x<sub>2</sub>를 오른쪽에 두고 식을 정리하면 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>s<sub>1</sub> = 24 − 6x<sub>1</sub> − 4x<sub>2</sub></span><span class="all">목재 여유</span></div>
+      <div class="row"><span>s<sub>2</sub> = &nbsp;6 − &nbsp;x<sub>1</sub> − 2x<sub>2</sub></span><span class="all">시간 여유</span></div>
+      <div class="row"><span>z&nbsp; = &nbsp;0 + 5x<sub>1</sub> + 4x<sub>2</sub></span><span class="all">이익</span></div>
+    </div>
+    <div class="defn"><b>정의</b> 기저 변수들과 목적함수를 모두 비기저 변수만의 식으로 풀어 적은 식 묶음을 <strong>사전(dictionary)</strong>이라고 합니다.</div>
+    <p>사전 한 장에는 지금 상태에서 필요한 정보가 모두 들어 있습니다. 세 가지를 읽어 봅니다.</p>
+    <ol class="plain">
+      <li><strong>현재 점과 값.</strong> 비기저 변수는 0이므로 x<sub>1</sub> = 0, x<sub>2</sub> = 0입니다. 따라서 오른쪽의 상수항이 그대로 기저 변수의 값입니다: s<sub>1</sub> = 24, s<sub>2</sub> = 6, 이익 z = 0. 꼭짓점 (0, 0)입니다.</li>
+      <li><strong>어느 쪽으로 움직일까 (진입 변수).</strong> z 줄을 봅니다. x<sub>1</sub>의 계수가 +5, x<sub>2</sub>의 계수가 +4입니다. 비기저 변수를 0에서 1만큼 키우면 이익이 각각 5, 4만큼 늘어납니다. 둘 다 좋지만 더 크게 오르는 x<sub>1</sub>을 0에서 키워 보기로 합니다. 이렇게 기저 안으로 새로 들어올 변수를 <strong>진입 변수(entering variable)</strong>라고 합니다.</li>
+      <li><strong>얼마나 멀리 갈 수 있나 (최소비 검사).</strong> x<sub>2</sub> = 0을 유지한 채 x<sub>1</sub>을 0에서 점점 키웁니다. 그러면 s<sub>1</sub> = 24 − 6x<sub>1</sub>과 s<sub>2</sub> = 6 − x<sub>1</sub>이 함께 줄어듭니다. 두 변수 모두 0 이상이어야 하므로:
+        <ul>
+          <li>s<sub>1</sub> ≥ 0 때문에 24 − 6x<sub>1</sub> ≥ 0 → x<sub>1</sub> ≤ 24/6 = <strong>4</strong></li>
+          <li>s<sub>2</sub> ≥ 0 때문에 6 − x<sub>1</sub> ≥ 0 → x<sub>1</sub> ≤ 6/1 = <strong>6</strong></li>
+        </ul>
+      둘 다 지켜야 하므로 더 작은 쪽인 <strong>x<sub>1</sub> = 4</strong>까지만 갈 수 있습니다. (만약 6까지 가면 s<sub>1</sub> = −12가 되어 영역 밖으로 나갑니다.) 이 나눗셈 비교를 <strong>최소비 검사(ratio test)</strong>라고 합니다. x<sub>1</sub> = 4에 닿는 순간 s<sub>1</sub>이 가장 먼저 0이 되어 비기저로 물러납니다. 이렇게 기저에서 나가는 변수를 <strong>탈출 변수(leaving variable)</strong>라고 합니다.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>한 걸음: 피벗으로 (0, 0) → (4, 0) → (3, 3/2)</h2>
+    <div class="defn"><b>정의</b> 기저에서 탈출 변수를 빼고 진입 변수를 넣어 새 사전을 만드는 한 걸음을 <strong>피벗(pivot)</strong>이라고 합니다.</div>
+    <p><strong>첫째 피벗 (x<sub>1</sub> 진입, s<sub>1</sub> 탈출).</strong> 탈출 변수 s<sub>1</sub>의 식 s<sub>1</sub> = 24 − 6x<sub>1</sub> − 4x<sub>2</sub>를 진입 변수 x<sub>1</sub>에 대해 풀어 적습니다.</p>
+    <div class="formula">x<sub>1</sub> = 4 − (2/3)x<sub>2</sub> − (1/6)s<sub>1</sub></div>
+    <p>이제 나머지 두 식(s<sub>2</sub>와 z)의 x<sub>1</sub> 자리에 이 식을 대입해 x<sub>1</sub>을 없앱니다. 중학교의 대입법 그대로입니다.</p>
+    <div class="eq">
+      <div class="row"><span>x<sub>1</sub> = 4 − (2/3)x<sub>2</sub> − (1/6)s<sub>1</sub></span></div>
+      <div class="row"><span>s<sub>2</sub> = 6 − [4 − (2/3)x<sub>2</sub> − (1/6)s<sub>1</sub>] − 2x<sub>2</sub> = 2 − (4/3)x<sub>2</sub> + (1/6)s<sub>1</sub></span></div>
+      <div class="row"><span>z&nbsp; = 5[4 − (2/3)x<sub>2</sub> − (1/6)s<sub>1</sub>] + 4x<sub>2</sub> = 20 + (2/3)x<sub>2</sub> − (5/6)s<sub>1</sub></span></div>
+    </div>
+    <p>새 기저는 <strong>{x<sub>1</sub>, s<sub>2</sub>}</strong>입니다. 비기저 변수 x<sub>2</sub> = s<sub>1</sub> = 0을 넣으면 현재 점은 <strong>(4, 0)</strong>, 이익은 <strong>z = 20</strong>입니다. 한 걸음에 (0, 0)에서 (4, 0)으로 옮겼고 이익이 0에서 20으로 뛰었습니다.</p>
+    <p>아직 끝이 아닙니다. z 줄에서 x<sub>2</sub>의 계수가 +2/3으로 양수입니다. s<sub>1</sub>의 계수 −5/6은 음수이니 s<sub>1</sub>을 키우면 이익이 줄어듭니다. 따라서 <strong>x<sub>2</sub>를 진입 변수</strong>로 고릅니다.</p>
+    <p><strong>둘째 피벗 (x<sub>2</sub> 진입, s<sub>2</sub> 탈출).</strong> 최소비 검사를 합니다.</p>
+    <ul class="plain">
+      <li>x<sub>1</sub> 줄: 4 ÷ (2/3) = <strong>6</strong></li>
+      <li>s<sub>2</sub> 줄: 2 ÷ (4/3) = <strong>3/2 = 1.5</strong></li>
+    </ul>
+    <p>더 작은 쪽은 3/2이므로 <strong>s<sub>2</sub>가 탈출 변수</strong>입니다. s<sub>2</sub> = 2 − (4/3)x<sub>2</sub> + (1/6)s<sub>1</sub>을 x<sub>2</sub>에 대해 풀면 x<sub>2</sub> = 3/2 + (1/8)s<sub>1</sub> − (3/4)s<sub>2</sub>입니다. 이것을 x<sub>1</sub> 줄과 z 줄에 대입합니다.</p>
+    <div class="eq">
+      <div class="row"><span>x<sub>2</sub> = 3/2 + (1/8)s<sub>1</sub> − (3/4)s<sub>2</sub></span></div>
+      <div class="row"><span>x<sub>1</sub> = 3 &nbsp;&nbsp;− (1/4)s<sub>1</sub> + (1/2)s<sub>2</sub></span></div>
+      <div class="row"><span>z&nbsp; = 21 &nbsp;− (3/4)s<sub>1</sub> − (1/2)s<sub>2</sub></span></div>
+    </div>
+    <p>새 기저는 <strong>{x<sub>1</sub>, x<sub>2</sub>}</strong>이고 현재 점은 <strong>(3, 3/2)</strong>, 이익은 <strong>z = 21</strong>입니다. z 줄을 보세요. 비기저 변수 s<sub>1</sub>, s<sub>2</sub>의 계수가 모두 음수(−3/4, −1/2)입니다. s<sub>1</sub>이나 s<sub>2</sub>는 0 이상이어야 하므로(원료를 남기거나 시간을 남기면), 어느 쪽을 올려도 21에서 값이 깎이기만 합니다. 따라서 <strong>(3, 3/2), 이익 21이 최적</strong>입니다!</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="공방 예의 가능 영역 위에서 심플렉스법이 지나간 길. (0,0)에서 시작해 첫 피벗으로 (4,0)에 가고, 둘째 피벗으로 최적점 (3,1.5)에 도착한다">
+        <defs><marker id="ar8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <polygon class="f-steel" opacity=".46" points="80,260 300,260 245,177.5 80,95"/>
+        <g class="s-line" stroke-width="1.2"><line x1="80" y1="260" x2="430" y2="260"/><line x1="80" y1="260" x2="80" y2="35"/></g>
+        <g class="s-muted" stroke-width="1.2">
+          <line x1="171.7" y1="67.5" x2="300" y2="260"/>
+          <line x1="80" y1="95" x2="410" y2="260"/>
+        </g>
+        <line x1="157" y1="67.5" x2="311" y2="260" class="s-muted" stroke-width="1.3" stroke-dasharray="5 4"/>
+        <g class="s-crane" stroke-width="3">
+          <line x1="80" y1="260" x2="293" y2="260" marker-end="url(#ar8)"/>
+          <line x1="300" y1="260" x2="249" y2="183.5" marker-end="url(#ar8)"/>
+        </g>
+        <circle cx="80" cy="260" r="5" class="f-fg"/>
+        <circle cx="300" cy="260" r="5" class="f-fg"/>
+        <circle cx="245" cy="177.5" r="6" class="f-crane"/>
+        <circle cx="80" cy="95" r="4" class="f-bay" stroke-width="1.4"/>
+        <g font-size="11.5" text-anchor="middle" class="t-muted">
+          <text x="80" y="278">0</text><text x="135" y="278">1</text><text x="190" y="278">2</text><text x="245" y="278">3</text><text x="300" y="278">4</text><text x="355" y="278">5</text><text x="410" y="278">6</text>
+          <text x="66" y="209">1</text><text x="66" y="154">2</text><text x="66" y="99">3</text>
+        </g>
+        <g font-size="12">
+          <text x="436" y="264">x<sub>1</sub></text><text x="86" y="28">x<sub>2</sub></text>
+          <text x="88" y="246">① (0, 0) z = 0</text>
+          <text x="308" y="248">② (4, 0) z = 20</text>
+          <text x="257" y="173" class="t-crane" font-weight="500">③ (3, 3/2) z = 21 ★</text>
+          <text x="90" y="88" class="t-muted">(0, 3) 들르지 않음</text>
+          <text x="152" y="60" class="t-muted">z = 21 등고선</text>
+        </g>
+        <g font-size="12.5">
+          <rect x="458" y="48" width="240" height="198" rx="6" class="f-bay" stroke-width="1"/>
+          <text x="474" y="76" font-weight="500">피벗마다 모서리를 한 칸 이동</text>
+          <text x="474" y="106">시작: {s<sub>1</sub>, s<sub>2</sub>} → (0, 0), z = 0</text>
+          <text x="474" y="132" class="t-crane">↓ x<sub>1</sub> 진입, s<sub>1</sub> 탈출</text>
+          <text x="474" y="158">1회: {x<sub>1</sub>, s<sub>2</sub>} → (4, 0), z = 20</text>
+          <text x="474" y="184" class="t-crane">↓ x<sub>2</sub> 진입, s<sub>2</sub> 탈출</text>
+          <text x="474" y="210">2회: {x<sub>1</sub>, x<sub>2</sub>} → (3, 3/2), z = 21</text>
+          <text x="474" y="234" class="t-muted" font-size="11.5">꼭짓점 (0, 3)은 거치지 않고 끝!</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>심플렉스법의 경로. 피벗 한 번은 다각형의 모서리 하나를 따라 이웃 꼭짓점으로 옮겨 가는 일입니다. 더 좋은 방향이 없으면 멈춥니다.</figcaption>
+    </figure>
+    <p>그림에서 보듯 꼭짓점 (0, 3)은 아예 들르지도 않고 두 걸음 만에 끝났습니다. 오른쪽 그림처럼 최소비 검사는 "앞으로 나아가다가 어느 제약 벽에 가장 먼저 부딪히는가"를 재는 자입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 210" role="img" aria-label="최소비 검사의 의미. 왼쪽은 x1을 0에서 키울 때 x1=4에서 목재 벽에 먼저 부딪히고 x1=6의 시간 벽은 더 멀리 있어 4에서 멈춰야 함을 보여준다. 오른쪽은 두 벽이 x1=1에서 동시에 겹쳐 비가 0이 되는 축퇴를 보여준다">
+        <g class="s-muted" stroke-width=".8"><line x1="360" y1="14" x2="360" y2="196"/></g>
+        <text x="180" y="24" font-size="13.5" text-anchor="middle" font-weight="500">최소비 검사: 먼저 만나는 벽에서 멈춘다</text>
+        <g class="s-line" stroke-width="1.2"><line x1="40" y1="155" x2="320" y2="155"/><line x1="40" y1="155" x2="40" y2="42"/></g>
+        <line x1="150" y1="48" x2="210" y2="155" class="s-crane" stroke-width="1.8"/>
+        <line x1="140" y1="68" x2="290" y2="155" class="s-steel" stroke-width="1.8"/>
+        <line x1="40" y1="155" x2="206" y2="155" class="s-ok" stroke-width="3"/>
+        <circle cx="40" cy="155" r="4" class="f-fg"/>
+        <circle cx="210" cy="155" r="5" class="f-crane"/>
+        <circle cx="290" cy="155" r="4" class="f-bay" stroke-width="1.4"/>
+        <g font-size="11.5" text-anchor="middle">
+          <text x="40" y="174">0</text><text x="210" y="174" class="t-crane" font-weight="500">4 (멈춤)</text><text x="290" y="174" class="t-muted">6 (넘치면 s<sub>1</sub> &lt; 0)</text>
+          <text x="175" y="44" class="t-crane">s<sub>1</sub> = 0 벽</text><text x="295" y="138" class="t-steel">s<sub>2</sub> = 0 벽</text>
+        </g>
+
+        <text x="540" y="24" font-size="13.5" text-anchor="middle" font-weight="500">축퇴: 두 벽이 같은 자리에 겹칠 때</text>
+        <g class="s-line" stroke-width="1.2"><line x1="400" y1="155" x2="680" y2="155"/><line x1="400" y1="155" x2="400" y2="42"/></g>
+        <polygon class="f-steel" opacity=".45" points="400,155 520,155 400,65"/>
+        <line x1="520" y1="50" x2="520" y2="155" class="s-crane" stroke-width="1.8"/>
+        <line x1="400" y1="65" x2="580" y2="200" class="s-steel" stroke-width="1.8"/>
+        <circle cx="520" cy="155" r="5" class="f-crane"/>
+        <g font-size="11.5">
+          <text x="400" y="174" text-anchor="middle">0</text>
+          <text x="520" y="174" text-anchor="middle" class="t-crane" font-weight="500">1 (두 벽 동시)</text>
+          <text x="528" y="65" class="t-crane">s<sub>1</sub> = 0 벽</text>
+          <text x="582" y="182" class="t-steel">s<sub>2</sub> = 0 벽</text>
+          <text x="540" y="122" class="t-muted">여기서 다음 피벗은 비 = 0</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>왼쪽: x<sub>1</sub>을 키우면 x<sub>1</sub> = 4에서 s<sub>1</sub> = 0 벽에 먼저 부딪히므로 6까지 갈 수 없습니다. 오른쪽: 두 벽이 (1, 0)에서 같이 만나면 다음 변수로 옮길 때 비가 0이 되어 제자리걸음이 생깁니다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>같은 계산을 표로: 단체표</h2>
+    <p>사전을 매번 문자로 길게 대입하는 대신, 3장의 소거법 표처럼 숫자만 칸에 맞춰 적은 것이 <strong>단체표(simplex tableau)</strong>입니다.</p>
+    <p>목적함수 z = 5x<sub>1</sub> + 4x<sub>2</sub>는 z − 5x<sub>1</sub> − 4x<sub>2</sub> = 0으로 한쪽으로 몰아 마지막 줄에 적습니다. 그래서 <strong>사전의 z 줄과 부호가 반대</strong>입니다. 최대화 문제에서는 마지막 줄에 <em>음수</em>가 남아 있으면 아직 이익을 더 키울 수 있다는 뜻이고, 모두 0 이상이 되면 최적입니다. 색칠한 줄이 그 단계에서 빠져나갈 탈출 변수의 줄(피벗 줄)입니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>표 0 · 기저</th><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>s<sub>1</sub></th><th>s<sub>2</sub></th><th>오른쪽</th><th>비 (x<sub>1</sub> 진입)</th></tr></thead>
+      <tbody>
+        <tr class="piv"><td>s<sub>1</sub></td><td>6</td><td>4</td><td>1</td><td>0</td><td>24</td><td>24 ÷ 6 = 4 (최소)</td></tr>
+        <tr><td>s<sub>2</sub></td><td>1</td><td>2</td><td>0</td><td>1</td><td>6</td><td>6 ÷ 1 = 6</td></tr>
+        <tr><td>z</td><td>−5</td><td>−4</td><td>0</td><td>0</td><td>0</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>표 0에서 표 1로 넘어가는 계산은 3장의 소거법 그대로입니다. 피벗 줄(s<sub>1</sub> 줄)을 피벗 자리의 수 6으로 나눠 x<sub>1</sub> 계수를 1로 만듭니다. 그다음 s<sub>2</sub> 줄에서는 새 x<sub>1</sub> 줄의 1배를 빼고, z 줄에는 새 x<sub>1</sub> 줄의 5배를 더해서 x<sub>1</sub> 열의 다른 수를 전부 0으로 만듭니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>표 1 · 기저</th><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>s<sub>1</sub></th><th>s<sub>2</sub></th><th>오른쪽</th><th>비 (x<sub>2</sub> 진입)</th></tr></thead>
+      <tbody>
+        <tr><td>x<sub>1</sub></td><td>1</td><td>2/3</td><td>1/6</td><td>0</td><td>4</td><td>4 ÷ (2/3) = 6</td></tr>
+        <tr class="piv"><td>s<sub>2</sub></td><td>0</td><td>4/3</td><td>−1/6</td><td>1</td><td>2</td><td>2 ÷ (4/3) = 3/2 (최소)</td></tr>
+        <tr><td>z</td><td>0</td><td>−2/3</td><td>5/6</td><td>0</td><td>20</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이번에는 x<sub>2</sub> 열의 z 줄이 −2/3으로 음수이고, 비는 s<sub>2</sub> 줄이 3/2로 더 작습니다. s<sub>2</sub> 줄을 4/3로 나눈 뒤, x<sub>1</sub> 줄과 z 줄에서 x<sub>2</sub> 열을 0으로 만들면 표 2가 됩니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>표 2 · 기저</th><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>s<sub>1</sub></th><th>s<sub>2</sub></th><th>오른쪽</th><th>판정</th></tr></thead>
+      <tbody>
+        <tr><td>x<sub>1</sub></td><td>1</td><td>0</td><td>1/4</td><td>−1/2</td><td>3</td><td></td></tr>
+        <tr><td>x<sub>2</sub></td><td>0</td><td>1</td><td>−1/8</td><td>3/4</td><td>3/2</td><td></td></tr>
+        <tr><td>z</td><td>0</td><td>0</td><td>3/4</td><td>1/2</td><td>21</td><td>모두 ≥ 0, 최적!</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>각 표는 같은 연립방정식을 기저만 바꿔 다시 정리한 것이므로 해의 집합은 바뀌지 않습니다. 표 2의 마지막 줄에 나온 3/4와 1/2에는 아주 재미있는 뜻이 숨어 있습니다(목재나 시간을 1만큼 더 주면 이익이 얼마나 느는가). 이것은 9장 「쌍대성」의 핵심 주인공으로 다시 등장합니다.</p>
+  </section>
+
+  <div class="part">2부 · 감소 비용, 최적 판정, 세 결말</div>
+
+  <section>
+    <h2>감소 비용과 최적 판정</h2>
+    <p>방금 본 공방 예의 사전 z 줄에는 비기저 변수마다 계수가 붙었습니다. 이 계수에 특별한 이름을 붙입니다. 이제부터는 표준형(최소화 문제)을 기준으로 이야기해 봅니다.</p>
+    <p>최소화 문제의 사전에서 비용 z가 다음과 같이 적혔다고 합시다.</p>
+    <div class="formula">z = (현재 비용) + c̄<sub>1</sub>x<sub>1</sub> + c̄<sub>2</sub>x<sub>2</sub> + …</div>
+    <p>(여기서 오른쪽의 x<sub>1</sub>, x<sub>2</sub>, …는 현재의 비기저 변수들입니다.) 비기저 변수 x<sub>j</sub>를 0에서 1만큼 올리고, 기저 변수들이 등식을 지키도록 따라 움직이게 두면, 총비용 z는 <strong>c̄<sub>j</sub></strong>만큼 변합니다.</p>
+    <div class="defn"><b>정의</b> 현재 기저에 대해 비기저 변수 하나를 0에서 1만큼 올릴 때 목적함수가 변하는 양(사전 목적함수 줄의 계수)을 그 변수의 <strong>감소 비용(reduced cost)</strong>이라고 합니다. 기저 변수의 감소 비용은 0입니다.</div>
+    <p>왜 이름이 「감소 비용」일까요? 어떤 제품(변수 x<sub>j</sub>)을 한 단위 새로 만들면 직접 비용이 들지만, 그만큼 자원을 써야 하므로 기존 기저 변수들이 비켜 주면서 아끼는 비용이 생깁니다. 둘을 상계하고 남은 <strong>순수한 비용 변화</strong>라서 감소 비용이라고 부릅니다. (최소화에서 감소 비용이 음수이면 비용이 줄어드니 넣는 쪽이 이득이고, 최대화에서는 사전 계수가 양수인 쪽이 이익이 느니 이득입니다.)</p>
+    <div class="thm"><b>핵심 사실 (최적 판정)</b> 최소화 문제의 기저가능해에서 모든 비기저 변수의 감소 비용이 0 이상이면, 그 해는 전체 가능 영역에서 최적해입니다. (최대화 사전에서는 모든 계수가 0 이하이면 최적입니다.)</div>
+    <div class="why"><p>왜 "이웃 꼭짓점"만이 아니라 <em>모든</em> 가능해보다 좋다고 확신할 수 있을까요? 사전의 목적함수 식 한 줄이 그 이유입니다. 예를 들어 공방 예의 마지막 사전은 <code>z = 21 − (3/4)s<sub>1</sub> − (1/2)s<sub>2</sub></code>입니다. 어떤 가능해를 가져오든 s<sub>1</sub> ≥ 0이고 s<sub>2</sub> ≥ 0이어야 합니다. 0 이상인 수에 3/4과 1/2을 곱해 21에서 빼면, 결과는 언제나 21 이하입니다! 즉 이 식 하나가 "이웃 꼭짓점뿐 아니라 가능 영역 전체의 어떤 점도 21을 넘을 수 없다"는 증명서 역할을 합니다.</p></div>
+    <p><strong>트럭 LP</strong>로 숫자를 확인해 봅니다. 7장에서 트럭 LP의 표준형은 최소화 10x + 7y, 제약 9x + 5y − s = 30 (x, y, s ≥ 0)이었습니다. 기저 {x}를 골라 x에 대해 풀면 <code>x = 10/3 − (5/9)y + (1/9)s</code>이고, 비용에 넣으면 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>x = 10/3 − (5/9)y + (1/9)s</span></div>
+      <div class="row"><span>비용 = 10(10/3 − (5/9)y + (1/9)s) + 7y = 100/3 + (13/9)y + (10/9)s</span></div>
+    </div>
+    <p>작은 트럭 y의 감소 비용은 <strong>+13/9</strong>, 잉여 변수 s의 감소 비용은 <strong>+10/9</strong>입니다. 실제로 작은 트럭 y를 1대 부르면 7만 원이 들지만 대신 큰 트럭을 5/9대 덜 불러도 되므로 50/9만 원을 아껴서, 순비용 변화가 7 − 50/9 = 13/9만 원이 됩니다. 두 감소 비용이 모두 양수(0 이상)이므로 (10/3, 0), 비용 100/3 ≈ 33.33이 최적해입니다.</p>
+  </section>
+
+  <section>
+    <h2>비유계와 불능은 어떻게 알아채나</h2>
+    <p>6장에서 LP의 세 결말(최적·불능·비유계)을 배웠습니다. 심플렉스법은 셋을 모두 정확히 판정합니다.</p>
+    <p><strong>비유계 판정.</strong> 예를 들어 <code>최대화 z = x<sub>1</sub> + x<sub>2</sub>, 제약 x<sub>1</sub> − x<sub>2</sub> ≤ 1, x<sub>1</sub>, x<sub>2</sub> ≥ 0</code>을 사전으로 적어 봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>s = 1 − x<sub>1</sub> + x<sub>2</sub></span></div>
+      <div class="row"><span>z = 0 + x<sub>1</sub> + x<sub>2</sub></span></div>
+    </div>
+    <p>x<sub>2</sub>를 진입 변수로 골라 0에서 키워 봅니다. 그런데 s 식을 보니 x<sub>2</sub> 앞의 부호가 <strong>+1</strong>입니다. x<sub>2</sub>를 키울수록 s = 1 + x<sub>2</sub>도 같이 커지기만 하고, s가 0이 되어 막아 주는 일이 결코 일어나지 않습니다. 최소비 검사에 걸리는 기저 변수가 하나도 없는 것입니다. 따라서 x<sub>2</sub>를 끝없이 키우면 z도 끝없이 커지며, 심플렉스법은 즉시 <strong>비유계(unbounded)</strong>를 선언하고 멈춥니다.</p>
+    <p><strong>처음 꼭짓점 찾기: 2단계법과 불능 판정.</strong> 그렇다면 트럭 예(<code>9x + 5y − s = 30</code>)처럼 여유·잉여 변수 기저 {s}를 잡으면 <code>s = −30 &lt; 0</code>이 되어 처음부터 가능하지 않을 때는 어떻게 출발할까요? <strong>2단계법(two-phase method)</strong>을 씁니다.</p>
+    <ul class="plain">
+      <li><strong>1단계: 가능해 하나 찾기.</strong> 먼저 모든 등식의 오른쪽이 0 이상이 되도록 맞추고(필요하면 양변에 −1 곱하기), 각 식에 0 이상의 <strong>인공 변수(artificial variable)</strong> r<sub>i</sub>를 더합니다. 트럭 예에서는 <code>9x + 5y − s + r = 30</code>입니다. 이제 기저 {r}을 잡으면 r = 30 ≥ 0이라 바로 출발할 수 있습니다! 목적함수로 "인공 변수의 합 최소화"(w = r)를 풀어서 r을 0으로 줄입니다.</li>
+      <li><strong>결과 읽기.</strong> 1단계의 최적값이 0보다 크면, 인공 변수를 0으로 만들 방법이 없다는 뜻이므로 원래 LP는 <strong>불능(infeasible)</strong>입니다. (예: x + y ≥ 3, x + y ≤ 1은 1단계에서 r ≥ 2가 나와 불능으로 끝납니다.) 반대로 1단계 최적값이 0이면 인공 변수를 버리고, 지금 손에 쥔 기저가능해에서 <strong>2단계</strong>(원래 목적함수)를 이어 갑니다.</li>
+    </ul>
+    <p>트럭 예의 1단계를 한 번에 확인합니다. <code>r = 30 − 9x − 5y + s</code>, <code>w = 30 − 9x − 5y + s</code>에서 x의 계수가 −9(최소화이므로 유리한 쪽)입니다. x를 진입시키고 최소비 30/9 = 10/3으로 r을 탈출시키면 <code>x = 10/3 − (5/9)y + (1/9)s − (1/9)r</code>, <code>w = 0 + r</code>이 됩니다. 1단계 최적값이 0이므로 r을 지우고 2단계로 넘어가면, 바로 앞에서 구한 트럭 LP의 최적 사전에 도착합니다.</p>
+  </section>
+
+  <div class="part">3부 · 제자리걸음, 속도, 이어 풀기</div>
+
+  <section>
+    <h2>제자리걸음(축퇴와 순환), 그리고 피벗 횟수</h2>
+    <p>7장에서 기저 변수 가운데 값이 0인 것이 있는 상태를 <strong>축퇴</strong>라고 불렀습니다. 심플렉스법에서 축퇴는 최소비 검사에서 최솟값이 <strong>0</strong>이 되는 모습으로 나타납니다.</p>
+    <p>작은 예를 봅니다. <code>최대화 z = x<sub>1</sub> + x<sub>2</sub>, 제약 x<sub>1</sub> ≤ 1, x<sub>1</sub> + x<sub>2</sub> ≤ 1, x<sub>1</sub>, x<sub>2</sub> ≥ 0</code>.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>단계</th><th>사전</th><th>점과 z</th></tr></thead>
+      <tbody>
+        <tr><td>시작 {s<sub>1</sub>, s<sub>2</sub>}</td><td>s<sub>1</sub> = 1 − x<sub>1</sub>,&nbsp; s<sub>2</sub> = 1 − x<sub>1</sub> − x<sub>2</sub>,&nbsp; z = x<sub>1</sub> + x<sub>2</sub></td><td>(0, 0), z = 0</td></tr>
+        <tr><td>① x<sub>1</sub> 진입, 비 1 동률 → s<sub>1</sub> 탈출</td><td>x<sub>1</sub> = 1 − s<sub>1</sub>,&nbsp; s<sub>2</sub> = <strong>0</strong> + s<sub>1</sub> − x<sub>2</sub>,&nbsp; z = 1 − s<sub>1</sub> + x<sub>2</sub></td><td>(1, 0), z = 1</td></tr>
+        <tr><td>② x<sub>2</sub> 진입, 비 0/1 = 0 → s<sub>2</sub> 탈출</td><td>x<sub>2</sub> = 0 + s<sub>1</sub> − s<sub>2</sub>,&nbsp; x<sub>1</sub> = 1 − s<sub>1</sub>,&nbsp; z = 1 − s<sub>2</sub></td><td>(1, 0), z = 1 (그대로)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>②에서 기저는 {x<sub>1</sub>, s<sub>2</sub>}에서 {x<sub>1</sub>, x<sub>2</sub>}로 바뀌었지만 점은 (1, 0) 그대로이고 z도 1 그대로입니다. 이렇게 값은 안 움직이고 기저 이름표만 바뀌는 피벗을 <strong>제자리걸음(축퇴 피벗)</strong>이라고 합니다. 그래도 ② 덕분에 z 줄 계수가 모두 0 이하(s<sub>2</sub>가 −1, s<sub>1</sub>이 0)가 되어 최적임을 판정할 수 있었습니다.</p>
+    <div class="warn"><p>제자리걸음이 여러 번 이어지면, 자칫 이전에 지나온 기저로 되돌아와 똑같은 기저들을 빙빙 돌며 끝나지 않는 <strong>순환(cycling)</strong>이 생길 수 있습니다. 이를 막는 간단한 약속이 <strong>Bland 규칙</strong>입니다: 진입 변수나 탈출 변수 후보가 여럿일 때, 변수 번호가 가장 작은 것을 고르면 순환이 절대 일어나지 않고 심플렉스법은 반드시 유한 번 만에 끝납니다.</p></div>
+    <p>그러면 심플렉스법은 보통 몇 번이나 피벗할까요? 이론적으로 최악을 억지로 만들어 내면(Klee–Minty 예처럼 찌그러진 상자 모양의 문제), 꼭짓점을 거의 다 들러 지수적으로 많은 피벗이 걸리는 경우도 있습니다. 하지만 현실의 대부분 문제에서는 <strong>제약 수 m의 몇 배 정도</strong>(보통 2m~3m번 안팎)의 피벗만으로 최적에 닿아 매우 빠릅니다.</p>
+  </section>
+
+  <section>
+    <h2>이어 풀기 (warm start)</h2>
+    <p>심플렉스법이 정수계획 솔버에서 특히 사랑받는 큰 이유가 하나 더 있습니다. 바로 <strong>이어 풀기(warm start)</strong>입니다.</p>
+    <p>문제 하나를 다 풀었을 때의 마지막 기저를 기억해 둡니다. 그다음 문제가 조금 바뀌었을 때, 처음 (0, 0)부터 다시 시작하지 않고 <strong>방금 저장한 기저에서 출발</strong>하면 이미 최적 근처라 피벗 몇 번 만에 새 답이 나옵니다.</p>
+    <ul class="plain">
+      <li><strong>목적함수의 계수만 바뀐 경우.</strong> 제약은 그대로이므로 이전 최적 기저는 여전히 기저<em>가능</em>해입니다. 감소 비용만 다시 계산해 양수(최대화 기준)인 변수가 있으면 거기서부터 바로 피벗을 이어 가면 됩니다.</li>
+      <li><strong>제약이 하나 추가된 경우.</strong> 예를 들어 트럭 LP를 풀어 x = 10/3을 얻은 뒤, "큰 트럭은 3대 이하: x ≤ 3"이라는 제약을 하나 덧붙인다고 합시다. 이전 답 (10/3, 0)은 새 제약을 어기므로 이 장의 방법으로는 바로 이어 갈 수 없습니다. 그런데 이때 감소 비용은 여전히 "최적 기준(0 이상)"을 지키고 있습니다! 이처럼 <strong>최적 판정은 유지된 채 깨진 가능성만 고쳐 가는 짝 방법</strong>을 <strong>쌍대 심플렉스(dual simplex)</strong>라고 하며, 9장에서 바로 이 예로 살펴봅니다.</li>
+    </ul>
+    <p>13장에서 배울 분지한계법은 문제를 풀다가 소수 답(예: x = 10/3)이 나오면 x ≤ 3과 x ≥ 4라는 제약 하나씩을 덧붙인 작은 문제들을 계속 풉니다. 그때마다 부모 문제의 최적 기저에서 쌍대 심플렉스로 이어 풀기 때문에, 수만 개의 작은 LP를 순식간에 해치울 수 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>Python으로 공방 예 단체표 돌리기</h2>
+    <p>공방 예의 표 0에서 출발해 최적에 닿을 때까지 피벗을 되풀이하는 전체 과정을 Python으로 적어 봅니다.</p>
+<pre class="py">
+tab = [[6, 4, 1, 0, 24], [1, 2, 0, 1, 6], [-5, -4, 0, 0, 0]]
+basis = [2, 3]
+names = ["x1", "x2", "s1", "s2"]
+while True:
+    enter = -1
+    for j in range(4):
+        if tab[2][j] &lt; 0:
+            enter = j
+            break
+    if enter == -1:
+        break
+    leave = -1
+    best_r = 10**9
+    for i in range(2):
+        if tab[i][enter] &gt; 0:
+            r = tab[i][4] / tab[i][enter]
+            if r &lt; best_r:
+                best_r = r
+                leave = i
+    piv = tab[leave][enter]
+    for j in range(5):
+        tab[leave][j] = tab[leave][j] / piv
+    for i in range(3):
+        if i != leave:
+            f = tab[i][enter]
+            for j in range(5):
+                tab[i][j] = tab[i][j] - f * tab[leave][j]
+    basis[leave] = enter
+    print(names[basis[0]], names[basis[1]], "-&gt; 값:", tab[2][4])
+</pre>
+<pre class="out">
+x1 s2 -> 값: 20.0
+x1 x2 -> 값: 21.0
+</pre>
+    <ul class="code">
+      <li><b>1~3행</b> 표 0의 숫자(마지막 열이 오른쪽 값), 처음 기저 <code>[2, 3]</code>(s<sub>1</sub>, s<sub>2</sub>), 변수 이름 목록입니다.</li>
+      <li><b>5~11행</b> 진입 변수 찾기입니다. 마지막 줄(<code>tab[2]</code>)에서 0보다 작은 첫 번째 열을 찾습니다. 모두 0 이상이면 최적(<code>enter == -1</code>)이므로 멈춥니다. (일반적인 큰 문제에서는 소수 계산 오차 때문에 <code>&lt; 0</code> 대신 <code>&lt; -0.000001</code>처럼 아주 작은 음수 기준을 씁니다.)</li>
+      <li><b>12~19행</b> 최소비 검사입니다. 진입 열의 계수가 양수인 행마다 <code>오른쪽 ÷ 계수</code>를 구해 가장 작은 행(<code>leave</code>)을 고릅니다. <code>10**9</code>는 최솟값을 구하기 위해 처음에 넣어 둔 큰 수입니다.</li>
+      <li><b>20~27행</b> 3장의 소거법 그대로 피벗을 실행합니다. 피벗 행을 <code>piv</code>로 나누고, 나머지 두 행에서는 진입 열의 계수 <code>f</code>배만큼 빼서 그 열을 0으로 만듭니다.</li>
+      <li><b>28~29행</b> 기저 목록을 바꾸고 현재 기저와 목적함수 값 <code>tab[2][4]</code>를 출력합니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드의 「심플렉스와 배리어」 절은 "심플렉스는 가능 영역의 꼭짓점에서 이웃 꼭짓점으로 옮겨 다니며 좋아지는 방향으로 갑니다", "조건이 하나 추가된 문제를 이전 답의 기저에서 이어서 풀 수 있어(warm start)"라고 설명합니다. 전자가 이 장의 피벗이고, 후자가 3부의 이어 풀기입니다.</p></div>
+    <div class="gref"><p>가이드가 「솔버 로그 읽기」에서 설명하는 <code>It/Node</code> 열("가지 하나당 평균 심플렉스 반복 횟수")의 반복 1회가 바로 이 장의 피벗 1회입니다. 그 숫자가 수십 안팎으로 작게 나오는 이유는 이어 풀기 덕분에 몇십 번의 피벗만으로 새 최적해에 닿기 때문입니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>심플렉스법은 사전을 따라 한 번에 기저 변수 하나와 비기저 변수 하나를 맞바꾸며(피벗) 이웃 꼭짓점으로 이동합니다.</li>
+        <li>진입 변수는 목적함수를 좋게 하는 비기저 변수, 탈출 변수는 최소비 검사에서 가장 먼저 0이 되는 기저 변수입니다.</li>
+        <li>단체표는 사전의 계수만 모아 소거법으로 피벗하는 표입니다.</li>
+        <li>모든 비기저 변수의 감소 비용이 최적 조건(최소화에서는 0 이상)을 만족하면, 가능 영역 전체에서의 최적해입니다.</li>
+        <li>최소비 검사에 후보가 없으면 비유계, 2단계법의 1단계 최적값이 0보다 크면 불능입니다.</li>
+        <li>축퇴가 있으면 점은 그대로고 기저만 바뀌는 제자리걸음이 생기며, 기저를 기억해 두면 문제가 조금 바뀌었을 때 이어 풀기(warm start)가 가능합니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>공방 예의 표 0에서 첫 진입 변수로 x<sub>1</sub> 대신 x<sub>2</sub>를 골랐다면 피벗이 어떻게 진행되나요? 어느 꼭짓점들을 지나 몇 번 만에 끝나나요?</summary>
+      <p>x<sub>2</sub> 진입: 최소비는 s<sub>1</sub> 줄 24/4 = 6, s<sub>2</sub> 줄 6/2 = 3이므로 s<sub>2</sub> 탈출. x<sub>2</sub> = 3 − (1/2)x<sub>1</sub> − (1/2)s<sub>2</sub>, s<sub>1</sub> = 12 − 4x<sub>1</sub> + 2s<sub>2</sub>, z = 12 + 3x<sub>1</sub> − 2s<sub>2</sub>가 되어 꼭짓점 (0, 3), z = 12로 갑니다. 다음에는 x<sub>1</sub> 진입(계수 +3): 최소비는 x<sub>2</sub> 줄 3 ÷ (1/2) = 6, s<sub>1</sub> 줄 12/4 = 3이므로 s<sub>1</sub> 탈출. x<sub>1</sub> = 3 − (1/4)s<sub>1</sub> + (1/2)s<sub>2</sub>를 대입하면 x<sub>2</sub> = 3/2 + (1/8)s<sub>1</sub> − (3/4)s<sub>2</sub>, z = 21 − (3/4)s<sub>1</sub> − (1/2)s<sub>2</sub>로 최적입니다. 경로는 (0, 0) → (0, 3) → (3, 3/2)이며 똑같이 두 번 만에 끝납니다.</p>
+    </details>
+    <details>
+      <summary>7장 연습문제의 LP(최대화 z = 3x<sub>1</sub> + 2x<sub>2</sub>, 제약 2x<sub>1</sub> + x<sub>2</sub> + s<sub>1</sub> = 8, x<sub>1</sub> + x<sub>2</sub> + s<sub>2</sub> = 5, 모두 ≥ 0)를 사전이나 단체표로 풀고 (0, 0) → (4, 0) → (3, 2)로 이동하는 과정을 적으세요.</summary>
+      <p>시작 기저 {s<sub>1</sub>, s<sub>2</sub>}: s<sub>1</sub> = 8 − 2x<sub>1</sub> − x<sub>2</sub>, s<sub>2</sub> = 5 − x<sub>1</sub> − x<sub>2</sub>, z = 3x<sub>1</sub> + 2x<sub>2</sub>. x<sub>1</sub> 진입, 비 8/2 = 4 &lt; 5/1 = 5이므로 s<sub>1</sub> 탈출. 첫 피벗 뒤: x<sub>1</sub> = 4 − (1/2)x<sub>2</sub> − (1/2)s<sub>1</sub>, s<sub>2</sub> = 1 − (1/2)x<sub>2</sub> + (1/2)s<sub>1</sub>, z = 12 + (1/2)x<sub>2</sub> − (3/2)s<sub>1</sub> (점 (4, 0), z = 12). 다음 x<sub>2</sub> 진입, 비 4 ÷ (1/2) = 8, 1 ÷ (1/2) = 2이므로 s<sub>2</sub> 탈출. 둘째 피벗 뒤: x<sub>2</sub> = 2 + s<sub>1</sub> − 2s<sub>2</sub>, x<sub>1</sub> = 3 − s<sub>1</sub> + s<sub>2</sub>, z = 13 − s<sub>1</sub> − s<sub>2</sub>. 계수가 모두 음수이므로 (3, 2), z = 13이 최적입니다.</p>
+    </details>
+    <details>
+      <summary>최대화 x<sub>1</sub> + 2x<sub>2</sub>, 제약 −x<sub>1</sub> + x<sub>2</sub> ≤ 2, x<sub>1</sub>, x<sub>2</sub> ≥ 0에 심플렉스법을 적용해, 비유계 판정이 어떻게 나오는지 사전을 적어 보이세요.</summary>
+      <p>여유 변수 s ≥ 0을 넣으면 사전은 s = 2 + x<sub>1</sub> − x<sub>2</sub>, z = x<sub>1</sub> + 2x<sub>2</sub>입니다. 만약 x<sub>1</sub>을 진입시키면 s 식의 x<sub>1</sub> 계수가 +1이라 s가 줄지 않고 늘기만 하므로 최소비 검사 후보가 없어 곧바로 비유계입니다. (x<sub>2</sub>부터 진입시키면 비 2/1 = 2로 s가 탈출해 x<sub>2</sub> = 2 + x<sub>1</sub> − s, z = 4 + 3x<sub>1</sub> − 2s가 되는데, 이어서 x<sub>1</sub>을 진입시키면 x<sub>2</sub> 식의 x<sub>1</sub> 계수가 +1이라 역시 막는 줄이 없어 비유계로 끝납니다.)</p>
+    </details>
+    <details>
+      <summary>제약 x + y ≥ 3과 x + y ≤ 1 (x, y ≥ 0)을 함께 가진 LP에 2단계법을 쓰면 1단계는 어떻게 끝나나요?</summary>
+      <p>등식으로 적으면 x + y − s<sub>1</sub> = 3, x + y + s<sub>2</sub> = 1입니다. 둘째 식은 s<sub>2</sub>가 기저가 될 수 있으므로 첫째 식에만 인공 변수 r ≥ 0을 더해 x + y − s<sub>1</sub> + r = 3으로 두고 w = r을 최소화합니다. 그런데 둘째 식에서 x + y = 1 − s<sub>2</sub> ≤ 1이므로 r = 3 − (x + y) + s<sub>1</sub> ≥ 2 + s<sub>1</sub> ≥ 2입니다. 따라서 1단계 최적값은 2 &gt; 0이 되고, 원래 문제는 불능으로 판정됩니다.</p>
+    </details>
+    <details>
+      <summary>본문의 제자리걸음 예(x<sub>1</sub> ≤ 1, x<sub>1</sub> + x<sub>2</sub> ≤ 1)의 ①단계에서 비가 1로 동률이었을 때, s<sub>1</sub> 대신 s<sub>2</sub>를 탈출시켰다면 다음 사전이 어떻게 달라지나요?</summary>
+      <p>x<sub>1</sub> = 1 − x<sub>2</sub> − s<sub>2</sub>를 s<sub>1</sub>과 z에 넣으면 s<sub>1</sub> = 0 + x<sub>2</sub> + s<sub>2</sub>, z = 1 − s<sub>2</sub>가 됩니다. z 줄에 x<sub>2</sub>의 계수가 0, s<sub>2</sub>의 계수가 −1이므로 제자리걸음 피벗을 한 번 더 하지 않고도 곧바로 최적 판정이 납니다. (단, x<sub>2</sub> 계수가 0이므로 (1, 0) 외에 (0, 1) 등 다른 최적해도 존재합니다.)</p>
+    </details>
+    <details>
+      <summary>본문의 Python 코드에서 진입 변수를 고를 때 "음수 중 첫 번째" 대신 "절댓값이 가장 큰 음수"를 고르면 첫 피벗이 달라질까요? 만약 <code>tab[2]</code>의 초기값이 <code>[-4, -5, 0, 0, 0]</code>이었다면 어떻게 될까요?</summary>
+      <p>공방 예에서는 −5가 이미 첫 번째 음수이고 절댓값도 가장 크므로 첫 피벗이 같습니다. 만약 <code>[-4, -5, 0, 0, 0]</code>(이익 4x<sub>1</sub> + 5x<sub>2</sub>)이었다면 본문 코드는 여전히 0번 열 x<sub>1</sub>부터 진입시키지만, 가장 작은 음수(절댓값이 가장 큰 음수)를 고르면 1번 열 x<sub>2</sub>부터 진입시킵니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1390032">KOCW 「선형계획의 대수적 해법과 쌍대문제」 (한국공학대 허재석, 2021)</a> — 3~8강이 심플렉스표, 최적성 조건, 인공 변수와 2단계법입니다. 이 장의 한국어 동영상 강의입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/단체법_(알고리즘)">위키백과 「단체법 (알고리즘)」</a> — 심플렉스법의 우리말 용어 확인용.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 영어, 대학 수준. 4~5강 Simplex, 9강 여유 변수와 인공 변수.</li>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판)</a> — 영어, 무료 교재. 4장 The Simplex Algorithm(링크의 PDF는 목차 부분 포함, 최신판은 저자 <a href="https://github.com/jon77lee/JLee_LinearOptimizationBook">GitHub 저장소</a>).</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — 영어, 대학 수준. 3장 The simplex method.</li>
+      <li><span class="tagc">교과서</span><a href="https://www.abebooks.com/9780716715870/Linear-Programming-Chvatal-V-0716715872/plp">V. Chvátal, <em>Linear Programming</em> (W. H. Freeman, 1983)</a> — 이 장의 「사전」 설명 방식의 출처인 고전 교과서.</li>
+      <li><span class="tagc">무료</span><a href="https://en.wikipedia.org/wiki/Simplex_algorithm">Wikipedia 「Simplex algorithm」</a> — 심플렉스법 전반과 계산량 요약.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch7">← 이전: 7장 선형계획 ②: 꼭짓점을 계산으로</a><a href="#ch9">다음: 9장 쌍대성 →</a></div>
+</article>

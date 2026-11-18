@@ -1,0 +1,294 @@
+<article class="chapter" id="ch6">
+  <header>
+    <div class="kicker">6 / 16</div>
+    <h1>선형계획 ①: 그림으로 풀기</h1>
+  </header>
+
+  <section>
+    <p class="lead">2장에서 변수가 실수이고 식이 모두 1차식인 최적화 문제를 선형계획(LP)이라고 불렀습니다. 변수가 정수여야 하는 문제와 달리, 소수 답을 허용하면 문제를 그림으로 풀 수 있고 아주 커져도 빠르게 풀 수 있습니다. 이 장에서는 변수가 둘인 LP를 좌표평면에 그려서 푸는 법을 배우고, 왜 LP에서는 "모퉁이만 살피면 되는지"와 "동네 최고가 왜 전체 최고인지"를 이해합니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 2장(결정변수, 제약, 목적함수, 가능해, 가능 영역, 최적해, 트럭 예와 공방 예), 고등학교의 직선의 방정식, 연립일차방정식, 부등식의 영역. (3장의 벡터와 행렬은 쓰지 않습니다.)</li>
+      <li><strong>이 장을 읽고 나면.</strong> 변수가 둘인 LP의 가능 영역과 같은 값 직선(등고선)을 그려 최적해를 찾을 수 있고, LP의 세 결말(최적·불능·비유계)과 볼록의 뜻을 설명할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 그림으로 풀기: 도해법</div>
+
+  <section>
+    <h2>부등식의 영역과 선형계획</h2>
+    <p>2장에서 만난 <strong>공방 예</strong>를 다시 꺼냅니다. 책상 x<sub>1</sub>개와 의자 x<sub>2</sub>개를 만들어 이익을 가장 크게 하려 합니다. 단, 여기서는 1.5개처럼 소수 개수도 만들 수 있다고 둡니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp; 5x<sub>1</sub> + 4x<sub>2</sub></span><span class="all">목적함수: 이익(만 원)</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp;&nbsp; 6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24</span><span class="all">목재 제한</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>1</sub> + 2x<sub>2</sub> ≤ 6</span><span class="all">작업 시간 제한</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>1</sub> ≥ 0,&nbsp; x<sub>2</sub> ≥ 0</span><span class="all">개수는 0 이상</span></div>
+    </div>
+    <div class="defn"><b>정의</b> <strong>선형계획(linear programming, LP)</strong>은 결정변수가 실수이고, 목적함수와 제약이 모두 1차식(1차 등식 또는 1차 부등식)인 최적화 문제입니다.</div>
+    <p>변수가 x<sub>1</sub>과 x<sub>2</sub> 둘뿐이므로, 제약을 모두 지키는 점 (x<sub>1</sub>, x<sub>2</sub>)를 좌표평면에 색칠해 볼 수 있습니다.</p>
+    <div class="recall"><p>좌표평면에서 직선 ax + by = c는 평면을 두 반쪽으로 나눕니다. 한쪽이 ax + by ≤ c의 영역이고, 반대쪽이 ax + by ≥ c의 영역입니다. 어느 쪽인지는 직선 밖의 쉬운 점 하나(예: 원점 (0, 0))를 대입해 보면 바로 알 수 있습니다.</p></div>
+    <p>공방 예의 부등식 넷을 하나씩 그려 겹치는 곳을 찾습니다. 원점 (0, 0)을 넣으면 6·0 + 4·0 = 0 ≤ 24이고 0 + 2·0 = 0 ≤ 6이므로, 두 직선 모두 원점이 있는 쪽입니다. x<sub>1</sub> ≥ 0, x<sub>2</sub> ≥ 0까지 합치면 1사분면 안에 사각형이 생깁니다. 이것이 공방 예의 <strong>가능 영역</strong>입니다.</p>
+  </section>
+
+  <section>
+    <h2>같은 값 직선(등고선)을 밀어 올리기</h2>
+    <p>가능 영역 안의 점은 무한히 많습니다. 그중 이익 z = 5x<sub>1</sub> + 4x<sub>2</sub>가 가장 큰 점은 어디일까요? 이익이 같은 점들을 모아 직선으로 그려 봅니다.</p>
+    <p>예를 들어 이익이 딱 10만 원이 되는 점들을 모으면 5x<sub>1</sub> + 4x<sub>2</sub> = 10입니다. (2, 0), (1, 5/4), (0, 5/2)처럼 이 직선 위의 점은 어느 것이나 이익이 10입니다. 지도에서 높이가 같은 곳을 이은 선을 등고선이라고 부르듯, 목적함수 값이 같은 점들을 이은 직선을 <strong>같은 값 직선</strong> 또는 <strong>등고선(level line)</strong>이라고 부릅니다.</p>
+    <p>z를 10에서 15, 20, 21로 키우면 직선 5x<sub>1</sub> + 4x<sub>2</sub> = z는 어떻게 움직일까요? x<sub>2</sub> = −(5/4)x<sub>1</sub> + z/4이므로 기울기는 −5/4로 변하지 않고, y절편 z/4만 커집니다. 즉, <strong>등고선은 기울기를 유지한 채 오른쪽 위로 평행 이동</strong>합니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="공방 예의 가능 영역 사각형과 등고선. 네 꼭짓점 (0,0), (4,0), (3,1.5), (0,3)이 있고, 등고선 5x1+4x2=z를 오른쪽 위로 밀면 z=21일 때 꼭짓점 (3,1.5)에서 마지막으로 만난다">
+        <defs><marker id="ar6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <polygon class="f-steel" opacity=".48" points="80,260 280,260 230,185 80,110"/>
+        <g class="s-line" stroke-width="1.2"><line x1="80" y1="260" x2="405" y2="260"/><line x1="80" y1="260" x2="80" y2="35"/></g>
+        <g class="s-muted" stroke-width="1.2">
+          <line x1="146.7" y1="60" x2="280" y2="260"/>
+          <line x1="80" y1="110" x2="380" y2="260"/>
+        </g>
+        <line x1="80" y1="135" x2="180" y2="260" class="s-ok" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <line x1="130" y1="60" x2="290" y2="260" class="s-crane" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="140" y1="210" x2="178" y2="179.6" class="s-line" stroke-width="1.5" marker-end="url(#ar6)"/>
+        <g class="f-fg"><circle cx="80" cy="260" r="4"/><circle cx="280" cy="260" r="4"/><circle cx="80" cy="110" r="4"/></g>
+        <circle cx="230" cy="185" r="5.5" class="f-crane"/>
+        <g font-size="11.5" text-anchor="middle" class="t-muted">
+          <text x="80" y="278">0</text><text x="130" y="278">1</text><text x="180" y="278">2</text><text x="230" y="278">3</text><text x="280" y="278">4</text><text x="330" y="278">5</text><text x="380" y="278">6</text>
+          <text x="66" y="214">1</text><text x="66" y="164">2</text><text x="66" y="114">3</text><text x="66" y="64">4</text>
+        </g>
+        <g font-size="12.5">
+          <text x="412" y="264">x<sub>1</sub> (책상)</text><text x="86" y="28">x<sub>2</sub> (의자)</text>
+          <text x="154" y="54" class="t-muted">6x<sub>1</sub> + 4x<sub>2</sub> = 24</text>
+          <text x="320" y="220" class="t-muted">x<sub>1</sub> + 2x<sub>2</sub> = 6</text>
+          <text x="116" y="226" class="t-ok">z = 10</text>
+          <text x="188" y="176" font-size="11.5">z 커지는 쪽</text>
+          <text x="238" y="110" class="t-crane" font-weight="500">z = 21 등고선</text>
+          <text x="242" y="190" class="t-crane" font-weight="500">(3, 3/2) ★</text>
+          <text x="280" y="248" text-anchor="middle">(4, 0)</text>
+          <text x="90" y="102">(0, 3)</text>
+        </g>
+        <g font-size="12.5">
+          <rect x="445" y="52" width="245" height="190" rx="6" class="f-bay" stroke-width="1"/>
+          <text x="462" y="78" font-weight="500">네 꼭짓점의 이익 (5x<sub>1</sub> + 4x<sub>2</sub>)</text>
+          <text x="462" y="108">(0, 0) → 5·0 + 4·0 = 0</text>
+          <text x="462" y="136">(4, 0) → 5·4 + 4·0 = 20</text>
+          <text x="462" y="164">(0, 3) → 5·0 + 4·3 = 12</text>
+          <text x="462" y="192" class="t-crane" font-weight="500">(3, 3/2) → 5·3 + 4·(3/2) = 21 ★</text>
+          <text x="462" y="224" class="t-muted" font-size="11.5">21보다 큰 등고선은 영역 밖으로 나간다</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>공방 예의 도해법. 파란 사각형이 가능 영역이고, 점선이 같은 값 직선 5x<sub>1</sub> + 4x<sub>2</sub> = z입니다. z를 키우며 오른쪽 위로 밀다가 영역과 마지막으로 만나는 점이 꼭짓점 (3, 3/2)입니다.</figcaption>
+    </figure>
+    <p>그림에서 보듯이 z = 21일 때 등고선은 가능 영역의 꼭짓점 (3, 3/2) 한 점에만 닿습니다. 이 점은 두 직선 6x<sub>1</sub> + 4x<sub>2</sub> = 24와 x<sub>1</sub> + 2x<sub>2</sub> = 6을 연립해 풀어서 구합니다. 아래 식의 4배를 위 식에서 빼거나 두 식을 적당히 맞춰 풀면 6x<sub>1</sub> + 4x<sub>2</sub> = 24, 2x<sub>1</sub> + 4x<sub>2</sub> = 12에서 4x<sub>1</sub> = 12, 곧 x<sub>1</sub> = 3이고 x<sub>2</sub> = 3/2입니다. z를 21보다 조금이라도 크게 하면 등고선이 가능 영역 밖으로 벗어나므로, 21이 가장 큰 이익입니다.</p>
+    <div class="defn"><b>정의</b> 변수가 둘인 LP에서 가능 영역과 같은 값 직선(등고선)을 좌표평면에 그려, 등고선을 목적함수가 좋아지는 방향으로 평행 이동해 최적해를 찾는 방법을 <strong>도해법(graphical method)</strong>이라고 합니다.</div>
+    <p>그렇다면 <strong>트럭 예</strong>에서 "트럭 대수는 정수"라는 조건을 잠깐 지우면 어떨까요? 2장에서 다룬 트럭 예의 LP 버전은 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; 10x + 7y</span><span class="all">트럭 값(만 원)</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp;&nbsp; 9x + 5y ≥ 30,&nbsp; x ≥ 0,&nbsp; y ≥ 0</span><span class="all">소수 대수 허용</span></div>
+    </div>
+    <p>가능 영역은 직선 9x + 5y = 30의 오른쪽 위 전체입니다. 공방 예처럼 사각형으로 닫혀 있지 않고 위와 오른쪽으로 끝없이 뻗어 있습니다. 하지만 이번에는 <em>최소화</em>이므로 등고선 10x + 7y = z를 값이 작아지는 왼쪽 아래로 밉니다. 경계의 꼭짓점은 (10/3, 0)과 (0, 6) 둘뿐입니다. 값을 계산하면 (10/3, 0)에서 10·(10/3) + 0 = 100/3 ≈ 33.33이고, (0, 6)에서 42입니다. 따라서 왼쪽 아래로 밀던 등고선이 가장 나중에 닿는 곳은 (10/3, 0)이고, 최적값은 100/3 ≈ 33.33입니다.</p>
+    <p>2장에서 정수 조건이 있을 때의 최적값은 (3, 1)의 37이었습니다. 정수 조건을 지우니 값이 37에서 33.33으로 내려갔습니다. (물론 실제로 큰 트럭을 3.33대 부를 수는 없으므로, 이 값 33.33은 "정수 답을 아무리 잘 골라도 33.33보다 쌀 수는 없다"는 기준선이 됩니다. 13장에서 이 사실을 크게 씁니다.)</p>
+  </section>
+
+  <section>
+    <h2>꼭짓점 정리: 모퉁이만 보면 된다</h2>
+    <p>도해법을 쓸 때 눈치챘을 것입니다. 공방 예에서도, 트럭 예에서도 최적해는 가능 영역의 한가운데가 아니라 뾰족한 <strong>모퉁이(꼭짓점)</strong>에 있었습니다.</p>
+    <div class="defn"><b>정의</b> 가능 영역의 점 가운데, 영역 안의 다른 두 점을 이은 선분의 중간에 놓일 수 없는 점을 <strong>꼭짓점(vertex)</strong>이라고 합니다.</div>
+    <p>사각형의 네 모퉁이가 꼭짓점인 이유를 이 정의로 확인해 봅니다. 변 위의 가운데 점 (2, 0)은 같은 영역 안의 (1, 0)과 (3, 0)을 이은 선분의 한가운데에 있으므로 꼭짓점이 아닙니다. 영역 안쪽의 점 (1, 1)도 양옆 점을 이은 선분 위에 놓이므로 꼭짓점이 아닙니다. 반면 (3, 3/2)는 어느 두 점의 선분 한가운데에도 둘 수 없으므로 꼭짓점입니다.</p>
+    <div class="thm"><b>핵심 사실 (꼭짓점 정리)</b> LP에 최적해가 있다면, 가능 영역의 꼭짓점 가운데에도 반드시 최적해가 있습니다.</div>
+    <div class="why"><p>등고선을 목적함수가 좋아지는 쪽으로 끝까지 밀어 보면, 마지막으로 걸리는 곳은 평평한 면이나 모퉁이입니다. 한 점(모퉁이)에만 걸리면 그 점이 바로 꼭짓점입니다. 만약 등고선이 영역의 변 하나와 평행해서 변 전체가 한꺼번에 마지막으로 걸린다면 어떨까요? 그래도 그 변의 양 끝 점은 꼭짓점이고, 그 두 꼭짓점 역시 최적해입니다.</p></div>
+    <p>실제로 공방 예에서 목적함수를 6x<sub>1</sub> + 4x<sub>2</sub>로 바꾸면, 등고선 기울기가 목재 제약 직선과 같아져 변 (4, 0)–(3, 3/2) 위의 모든 점이 값 24로 최적해가 됩니다. 이처럼 최적해가 무수히 많을 때도 양 끝 꼭짓점 (4, 0)과 (3, 3/2)가 여전히 최적해에 포함됩니다.</p>
+    <p>이 사실이 왜 대단할까요? 가능 영역 안에는 점이 무한히 많지만, 꼭짓점은 몇 개 되지 않기 때문입니다. 아래 Python 코드는 공방 예의 경계선 네 개가 서로 만나서 만드는 교점 후보 여섯 개를 검사해, 가능 영역 안의 꼭짓점을 고르고 가장 큰 이익을 찾습니다.</p>
+<pre class="py">
+pts = [[0, 0], [4, 0], [6, 0], [0, 3], [0, 6], [3, 1.5]]
+best_z = -1
+best_p = []
+for p in pts:
+    x1 = p[0]
+    x2 = p[1]
+    ok = (6 * x1 + 4 * x2 &lt;= 24) and (x1 + 2 * x2 &lt;= 6) and (x1 &gt;= 0) and (x2 &gt;= 0)
+    if ok:
+        z = 5 * x1 + 4 * x2
+        print(p, "가능, 이익 =", z)
+        if z &gt; best_z:
+            best_z = z
+            best_p = p
+    else:
+        print(p, "영역 밖")
+print("최적:", best_p, best_z)
+</pre>
+<pre class="out">
+[0, 0] 가능, 이익 = 0
+[4, 0] 가능, 이익 = 20
+[6, 0] 영역 밖
+[0, 3] 가능, 이익 = 12
+[0, 6] 영역 밖
+[3, 1.5] 가능, 이익 = 21.0
+최적: [3, 1.5] 21.0
+</pre>
+    <ul class="code">
+      <li><b>1행</b> 네 직선(x<sub>1</sub> = 0, x<sub>2</sub> = 0, 6x<sub>1</sub> + 4x<sub>2</sub> = 24, x<sub>1</sub> + 2x<sub>2</sub> = 6)이 둘씩 만나서 만드는 교점 여섯 개입니다.</li>
+      <li><b>2~3행</b> 지금까지 찾은 가장 큰 이익 <code>best_z</code>와 그때의 점 <code>best_p</code>를 저장할 변수입니다.</li>
+      <li><b>4~7행</b> 점마다 네 개의 제약을 모두 지키는지 확인해 참이면 <code>ok</code>에 넣습니다.</li>
+      <li><b>8~15행</b> 가능 영역 안의 점(꼭짓점)이면 이익 <code>5 * x1 + 4 * x2</code>를 계산하고 최대를 갱신합니다. (6, 0)과 (0, 6)은 영역 밖이라 버려집니다.</li>
+      <li><b>16행</b> 가장 좋은 꼭짓점 <code>[3, 1.5]</code>와 최적값 <code>21.0</code>을 출력합니다.</li>
+    </ul>
+    <p>다음 장에서는 3장의 행렬과 연립방정식을 써서, 그림을 못 그릴 때도 이 교점(꼭짓점)들을 계산으로 찾아내는 방법을 배웁니다.</p>
+    <div class="aside"><p>대학 교재에서는 가능 영역처럼 1차 부등식 몇 개가 겹쳐 만든 영역을 <strong>다면체(polyhedron)</strong>, 다면체가 사방으로 막혀 있어 무한히 뻗지 않는 경우를 <strong>다포체(polytope)</strong>라고 부릅니다. 또 꼭짓점을 <strong>극점(extreme point)</strong>이라고 부릅니다. 유계인 다포체 안의 모든 점은 꼭짓점들의 가중평균(볼록 조합)으로 쓸 수 있으므로, 1차식의 최댓값과 최솟값은 반드시 꼭짓점 가운데서 나옵니다.</p></div>
+  </section>
+
+  <div class="part">2부 · 세 가지 결말과 볼록</div>
+
+  <section>
+    <h2>LP의 세 가지 결말: 최적·불능·비유계</h2>
+    <p>모든 LP에 최적해가 있는 것은 아닙니다. 어떤 LP를 풀든 결말은 다음 셋 중 하나입니다.</p>
+    <ul class="plain">
+      <li><strong>최적해 있음.</strong> 공방 예나 트럭 LP처럼 가능 영역이 비어 있지 않고, 목적함수 쪽이 막혀 있어 가장 좋은 값이 존재합니다.</li>
+      <li><strong>불능(infeasible).</strong> 제약을 모두 지키는 점이 하나도 없습니다. 예를 들어 x<sub>1</sub> + x<sub>2</sub> ≤ 2와 x<sub>1</sub> + x<sub>2</sub> ≥ 4를 동시에 요구하면 겹치는 영역이 비어 있습니다.</li>
+      <li><strong>비유계(unbounded).</strong> 가능해는 있지만 목적함수를 끝없이 좋게 만들 수 있어 최적값이 없습니다. 예를 들어 트럭 예의 영역(9x + 5y ≥ 30, x, y ≥ 0)에서 비용을 <em>최대화</em>하라고 하면, 트럭을 한없이 많이 부를수록 값이 커져서 끝이 없습니다.</li>
+    </ul>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 245" role="img" aria-label="LP의 세 가지 결말. 왼쪽은 닫힌 영역에서 최적해가 있는 경우, 가운데는 두 부등식이 겹치지 않아 불능인 경우, 오른쪽은 열린 영역으로 등고선이 끝없이 나아가 비유계인 경우">
+        <defs><marker id="ar6b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g class="s-muted" stroke-width=".8"><line x1="240" y1="14" x2="240" y2="232"/><line x1="480" y1="14" x2="480" y2="232"/></g>
+
+        <text x="120" y="24" font-size="13.5" text-anchor="middle" font-weight="500">① 최적해 있음</text>
+        <polygon class="f-steel" opacity=".55" points="45,195 165,195 135,130 45,75"/>
+        <g class="s-line" stroke-width="1.2"><line x1="45" y1="195" x2="210" y2="195"/><line x1="45" y1="195" x2="45" y2="42"/></g>
+        <line x1="75" y1="55" x2="188" y2="195" class="s-crane" stroke-width="1.8" stroke-dasharray="5 4"/>
+        <circle cx="135" cy="130" r="5" class="f-crane"/>
+        <line x1="95" y1="150" x2="122" y2="128" class="s-line" stroke-width="1.3" marker-end="url(#ar6b)"/>
+        <text x="144" y="122" font-size="12" class="t-crane">최적 꼭짓점</text>
+        <text x="120" y="224" font-size="12" text-anchor="middle" class="t-muted">등고선이 모퉁이에 걸린다</text>
+
+        <text x="360" y="24" font-size="13.5" text-anchor="middle" font-weight="500">② 불능 (infeasible)</text>
+        <polygon class="f-steel" opacity=".5" points="285,195 345,195 285,135"/>
+        <polygon class="f-crane" opacity=".4" points="325,55 445,55 445,175"/>
+        <g class="s-line" stroke-width="1.2"><line x1="285" y1="195" x2="450" y2="195"/><line x1="285" y1="195" x2="285" y2="42"/></g>
+        <line x1="285" y1="135" x2="345" y2="195" class="s-steel" stroke-width="1.6"/>
+        <line x1="325" y1="55" x2="445" y2="175" class="s-crane" stroke-width="1.6"/>
+        <text x="308" y="182" font-size="11" class="t-steel">≤ 2</text>
+        <text x="408" y="96" font-size="11" class="t-crane">≥ 4</text>
+        <text x="360" y="224" font-size="12" text-anchor="middle" class="t-muted">겹치는 점이 하나도 없다</text>
+
+        <text x="600" y="24" font-size="13.5" text-anchor="middle" font-weight="500">③ 비유계 (unbounded)</text>
+        <polygon class="f-steel" opacity=".5" points="525,195 570,195 660,105 660,55 525,55"/>
+        <g class="s-line" stroke-width="1.2"><line x1="525" y1="195" x2="690" y2="195"/><line x1="525" y1="195" x2="525" y2="42"/></g>
+        <line x1="570" y1="195" x2="660" y2="105" class="s-steel" stroke-width="1.6"/>
+        <line x1="525" y1="115" x2="605" y2="195" class="s-crane" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <line x1="545" y1="75" x2="650" y2="180" class="s-crane" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <line x1="585" y1="135" x2="635" y2="85" class="s-line" stroke-width="1.5" marker-end="url(#ar6b)"/>
+        <text x="642" y="82" font-size="12" class="t-crane">끝없이 커짐</text>
+        <text x="600" y="224" font-size="12" text-anchor="middle" class="t-muted">영역이 열려 있어 답이 없다</text>
+      </svg>
+      </div>
+      <figcaption>LP의 세 결말. 트럭 LP의 예에서 보듯, 영역이 열려 있어도 목적함수가 막힌 방향을 향하면 ①이 되고, 열린 방향을 향하면 ③이 됩니다.</figcaption>
+    </figure>
+    <p>비유계는 가능 영역만으로 결정되지 않고, <em>영역과 목적함수의 짝</em>에 따라 갈립니다. 트럭 예의 영역은 위와 오른쪽으로 열려 있지만, 비용 10x + 7y를 최소화하면 왼쪽 아래가 막혀 있어 ①(최적해 있음)이 됩니다. 반대로 같은 영역에서 최대화를 하면 ③(비유계)이 됩니다.</p>
+    <div class="warn"><p>왜 LP에서는 &lt; 나 &gt; (등호가 빠진 부등호)를 쓰지 않을까요? 만약 "최대화 x, 제약 x &lt; 5"라는 문제를 허용하면, x = 4.9, 4.99, 4.999, …처럼 5에 한없이 다가갈 수는 있지만 x = 5는 넣을 수 없어 "가장 큰 값"이 존재하지 않습니다. LP에서는 ≤, ≥, =만 허용하므로 경계가 영역에 포함되고, 그래서 위의 세 결말 말고 네 번째 애매한 경우가 생기지 않습니다.</p></div>
+  </section>
+
+  <section>
+    <h2>볼록, 그리고 「동네 최고 = 전체 최고」</h2>
+    <p>이 장 처음에 "소수 답을 허용하는 LP는 아주 커져도 빠르게 풀 수 있다"고 말했습니다. 그 비결은 가능 영역의 모양에 있습니다.</p>
+    <div class="defn"><b>정의</b> 어떤 영역 안의 두 점 A와 B를 아무렇게나 골라도, 두 점을 잇는 선분이 통째로 그 영역 안에 들어 있으면 그 영역은 <strong>볼록(convex)</strong>하다고 합니다.</div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 220" role="img" aria-label="볼록한 다각형, 볼록하지 않은 오목한 도형, 그리고 격자점 집합 비교. 볼록한 도형에서는 두 점을 이은 선분이 영역 안에 머물지만, 오목한 도형과 격자점 집합에서는 선분이 밖으로 나간다">
+        <g class="s-muted" stroke-width=".8"><line x1="240" y1="14" x2="240" y2="206"/><line x1="480" y1="14" x2="480" y2="206"/></g>
+
+        <text x="120" y="24" font-size="13.5" text-anchor="middle" font-weight="500">볼록 (LP 가능 영역)</text>
+        <polygon class="f-steel" opacity=".55" points="55,155 120,60 195,90 175,168 85,175"/>
+        <line x1="82" y1="145" x2="165" y2="105" class="s-crane" stroke-width="2"/>
+        <circle cx="82" cy="145" r="4" class="f-fg"/><circle cx="165" cy="105" r="4" class="f-fg"/>
+        <text x="72" y="138" font-size="12">A</text><text x="172" y="102" font-size="12">B</text>
+        <text x="120" y="198" font-size="12" text-anchor="middle" class="t-muted">선분이 항상 영역 안에 있다</text>
+
+        <text x="360" y="24" font-size="13.5" text-anchor="middle" font-weight="500">볼록하지 않음 (오목한 모양)</text>
+        <path class="f-hull" opacity=".55" d="M285,165 C290,75 390,55 430,100 C375,92 340,120 355,165 Z"/>
+        <line x1="305" y1="145" x2="405" y2="95" class="s-crane" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="305" cy="145" r="4" class="f-fg"/><circle cx="405" cy="95" r="4" class="f-fg"/>
+        <text x="295" y="138" font-size="12">A</text><text x="412" y="94" font-size="12">B</text>
+        <text x="360" y="198" font-size="12" text-anchor="middle" class="t-muted">선분의 가운데가 영역 밖으로 나간다</text>
+
+        <text x="600" y="24" font-size="13.5" text-anchor="middle" font-weight="500">볼록하지 않음 (정수 격자점)</text>
+        <g class="f-fg">
+          <circle cx="545" cy="155" r="4.5"/><circle cx="600" cy="155" r="4.5"/><circle cx="655" cy="155" r="4.5"/>
+          <circle cx="545" cy="100" r="4.5"/><circle cx="600" cy="100" r="4.5"/><circle cx="655" cy="100" r="4.5"/>
+        </g>
+        <line x1="545" y1="155" x2="655" y2="100" class="s-crane" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="600" cy="127.5" r="4" class="f-bay" stroke-width="1.3"/>
+        <text x="533" y="168" font-size="12">A</text><text x="662" y="96" font-size="12">B</text>
+        <text x="600" y="198" font-size="12" text-anchor="middle" class="t-muted">두 정수점의 중간은 정수가 아니다</text>
+      </svg>
+      </div>
+      <figcaption>볼록과 비볼록. LP의 가능 영역은 언제나 왼쪽처럼 볼록합니다. 반면 오른쪽의 정수 격자점은 두 점을 이은 선분 위의 점(빈 원)이 집합에 들어 있지 않아 볼록하지 않습니다.</figcaption>
+    </figure>
+    <div class="thm"><b>핵심 사실</b> LP의 가능 영역은 언제나 볼록합니다. 그래서 LP에서는 <strong>"동네 최고가 곧 전체 최고"</strong>입니다.</div>
+    <div class="why">
+      <p>먼저 왜 볼록할까요? 직선 하나가 나누는 반쪽 평면(ax<sub>1</sub> + bx<sub>2</sub> ≤ c)은 볼록합니다. 두 점 A, B가 모두 c 이하이면, 두 점 사이의 중간 점들은 값이 그 사이 어딘가에 있으므로 역시 c 이하이기 때문입니다. 그리고 볼록한 영역들을 여러 개 겹쳐도(교집합) 여전히 볼록합니다. 두 점이 겹친 곳에 있으면 선분도 각각의 영역 안에 모두 들어가기 때문입니다.</p>
+      <p>이제 왜 <strong>"동네 최고 = 전체 최고"</strong>가 될까요? 등산을 떠올려 봅니다. 안개가 낀 산에서 내 발밑 주변만 보일 때, 한 걸음 내디딜 수 있는 모든 방향이 다 내리막이라면 나는 지금 꼭대기에 있을까요? 산봉우리가 여러 개라면 못 믿습니다. 저 멀리 구름 너머에 더 높은 봉우리가 있을 수 있으니까요. 하지만 봉우리가 하나뿐인 완만한 언덕이라면 주변이 다 내리막인 곳이 곧 전체에서 가장 높은 곳입니다.</p>
+      <p>LP가 바로 그 완만한 언덕입니다. 지금 있는 점 A보다 더 좋은 점 B가 저 멀리 있다고 합시다. 가능 영역이 볼록하므로 A와 B를 이은 선분은 통째로 가능 영역 안에 있습니다. 목적함수는 1차식이므로, 이 선분을 따라 A에서 B 쪽으로 아주 조금만(예를 들어 1%만) 움직여도 값은 A와 B의 값 사이에서 A보다 좋아집니다. 즉, <strong>멀리 더 좋은 점이 있다면 반드시 내 바로 옆(동네)에도 더 좋은 점이 있습니다.</strong> 뒤집어 말하면, 내 동네에 더 좋은 점이 하나도 없다면 멀리에도 더 좋은 점이 있을 수 없습니다.</p>
+    </div>
+    <p>이 한 가지 성질 때문에 LP가 쉽습니다. 아무 꼭짓점에서 시작해 더 좋은 이웃 꼭짓점으로 한 걸음씩 옮겨 가다가, 더 좋은 이웃이 없는 꼭짓점에 닿으면 "여기가 전체에서 최고"라고 자신 있게 멈출 수 있습니다. 이것이 8장에서 배울 <strong>심플렉스법</strong>의 원리입니다. 반대로 정수계획은 격자점이라 볼록하지 않고, 옆 격자점을 다 확인해도 멀리 더 좋은 정수점이 숨어 있을 수 있습니다.</p>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드에서 트럭 예의 정수 조건을 지우고 직선을 그려 푸는 그림이 바로 이 장의 도해법입니다. 트럭 예의 LP 답 (3.33, 0)과 최적값 33.33은 직선 10x + 7y = z를 왼쪽 아래로 밀다가 영역의 모퉁이 (10/3, 0)에 닿은 결과입니다.</p></div>
+    <div class="gref"><p>가이드는 "LP는 빠르고, 답은 항상 꼭짓점에 있다"고 요약합니다. 「답은 항상 꼭짓점에 있다」는 이 장의 꼭짓점 정리이고, 「빠르다」의 뿌리는 가능 영역이 볼록해서 동네 최고가 곧 전체 최고가 된다는 점에 있습니다.</p></div>
+    <div class="gref"><p>가이드가 모형 규칙으로 "1차식만 쓰고, ≤, ≥, =만 쓸 수 있다"고 말하는 이유도 이 장에서 보았습니다. 1차 부등식(등호 포함)을 겹쳐야 가능 영역이 경계를 품은 볼록한 다각형(다면체)이 되고, 그래야 꼭짓점 정리와 세 결말이 깔끔하게 성립하기 때문입니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>LP는 변수가 실수이고 목적함수와 제약이 모두 1차식인 문제입니다.</li>
+        <li>변수가 둘인 LP는 부등식의 영역(가능 영역)과 같은 값 직선(등고선)을 그려 푸는 도해법으로 풀 수 있습니다.</li>
+        <li>LP의 결말은 최적해 있음, 불능(가능해 없음), 비유계(끝없이 좋아짐) 셋 중 하나입니다.</li>
+        <li>LP에 최적해가 있으면 꼭짓점 가운데에도 반드시 최적해가 있습니다(꼭짓점 정리).</li>
+        <li>LP의 가능 영역은 언제나 볼록하고, 따라서 동네 최고가 곧 전체 최고입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>최대화 3x<sub>1</sub> + 2x<sub>2</sub>, 제약 2x<sub>1</sub> + x<sub>2</sub> ≤ 8, x<sub>1</sub> + x<sub>2</sub> ≤ 5, x<sub>1</sub> ≥ 0, x<sub>2</sub> ≥ 0을 도해법으로 푸세요. 네 꼭짓점의 좌표와 목적함수 값을 모두 구하세요.</summary>
+      <p>가능 영역의 경계는 x<sub>1</sub> = 0, x<sub>2</sub> = 0, 2x<sub>1</sub> + x<sub>2</sub> = 8, x<sub>1</sub> + x<sub>2</sub> = 5입니다. 두 경계선의 교점은 (2x<sub>1</sub> + x<sub>2</sub>) − (x<sub>1</sub> + x<sub>2</sub>) = 8 − 5에서 x<sub>1</sub> = 3, x<sub>2</sub> = 2입니다. 네 꼭짓점은 (0, 0) → 0, (4, 0) → 12, (3, 2) → 13, (0, 5) → 10입니다. 등고선 3x<sub>1</sub> + 2x<sub>2</sub> = z를 오른쪽 위로 밀면 마지막에 (3, 2)에서 만나고 최적값은 13입니다.</p>
+    </details>
+    <details>
+      <summary>트럭 예(9x + 5y ≥ 30, x, y ≥ 0, 소수 허용)에서 트럭 값이 바뀌어 목적함수가 최소화 12x + 5y가 되었습니다. 톤당 값만 보면 작은 트럭이 1톤당 1만 원, 큰 트럭이 1.33만 원입니다. 도해법으로 최적해와 최적값을 구하세요.</summary>
+      <p>가능 영역의 꼭짓점은 그대로 (10/3, 0)과 (0, 6) 둘입니다. (10/3, 0)에서 값은 12·(10/3) = 40이고, (0, 6)에서 값은 5·6 = 30입니다. 따라서 등고선 12x + 5y = z를 왼쪽 아래로 밀면 마지막에 닿는 꼭짓점은 (0, 6)이고 최적값은 30입니다.</p>
+    </details>
+    <details>
+      <summary>다음 문제들은 최적해 있음, 불능, 비유계 중 어느 결말인가요? (가) 최소화 x + y, 제약 x + y ≥ 2, x − y ≤ 1, x, y ≥ 0 (나) 같은 영역에서 최대화 x + y (다) 최대화 2x + y, 제약 x + y ≤ 3, x ≥ 4, y ≥ 0.</summary>
+      <p>(가) 최적해 있음: x + y ≥ 2이므로 값은 2 이상이고, (0, 2)나 (1.5, 0.5)에서 2가 됩니다(변 (0, 2)–(1.5, 0.5) 전체가 최적). (나) 비유계: x = 0으로 두고 y를 얼마든지 크게 하면 모든 제약을 지키며 x + y → ∞가 됩니다. (다) 불능: x ≥ 4이고 y ≥ 0이면 x + y ≥ 4인데, x + y ≤ 3과 동시에 성립할 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>공방 예에서 이익 식이 5x<sub>1</sub> + 4x<sub>2</sub>가 아니라 6x<sub>1</sub> + 4x<sub>2</sub>로 바뀌면 최적해와 최적값이 어떻게 되나요? 꼭짓점 정리와 어긋나지 않는지 설명하세요.</summary>
+      <p>등고선 6x<sub>1</sub> + 4x<sub>2</sub> = z가 첫째 제약 직선 6x<sub>1</sub> + 4x<sub>2</sub> = 24와 평행합니다. 따라서 (4, 0)과 (3, 3/2)를 잇는 변 위의 모든 점이 값 24로 최적해가 됩니다. 최적해는 무수히 많지만, 그 가운데 꼭짓점 (4, 0)과 (3, 3/2)가 들어 있으므로 「최적해가 있다면 꼭짓점 가운데에도 최적해가 있다」는 꼭짓점 정리와 어긋나지 않습니다.</p>
+    </details>
+    <details>
+      <summary>집합 {(x, y) : x ≥ 0, y ≥ 0, y ≥ x<sup>2</sup>}과 집합 {(x, y) : x = 0 또는 y = 0, x ≥ 0, y ≥ 0}은 각각 볼록인가요? 정의를 써서 판정하세요.</summary>
+      <p>첫째 집합은 포물선 y = x<sup>2</sup>의 위쪽(내부)으로, 두 점을 이은 선분이 영역 밖으로 나가지 않으므로 볼록입니다(단, 경계가 곡선이라 LP의 다각형 영역은 아닙니다). 둘째 집합은 양의 x축과 양의 y축을 합친 L자 모양입니다. x축 위의 점 (2, 0)과 y축 위의 점 (0, 2)를 이은 선분의 가운데 점 (1, 1)은 두 축 어디에도 없으므로 볼록이 아닙니다.</p>
+    </details>
+    <details>
+      <summary>본문의 Python 코드에서 목적함수가 최대화 5x<sub>1</sub> + 4x<sub>2</sub> 대신 최대화 x<sub>1</sub> + 3x<sub>2</sub>로 바뀌면, 9행과 마지막 출력은 어떻게 바뀔까요?</summary>
+      <p>9행을 <code>z = x1 + 3 * x2</code>로 바꾸면 네 꼭짓점의 값은 (0, 0) → 0, (4, 0) → 4, (0, 3) → 9, (3, 1.5) → 7.5가 됩니다. 따라서 최적은 <code>[0, 3] 9</code>가 됩니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1368479">KOCW 「선형계획의 이해」 (한국공학대 허재석)</a> — 13강짜리 동영상 강의. LP 모형화와 도해법을 한국어로 다룹니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — 선형계획의 기본 개념과 역사 소개.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/볼록_집합">위키백과 「볼록 집합」</a> — 볼록 집합의 뜻과 여러 성질.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 영어, 대학 수준. 앞쪽 강의(1~3강)가 LP 모형과 그림 풀이입니다.</li>
+      <li><span class="tagc">무료</span><a href="https://web.stanford.edu/~boyd/cvxbook/">S. Boyd, L. Vandenberghe, <em>Convex Optimization</em> (Cambridge University Press, 2004)</a> — 영어, 대학원 수준 무료 PDF. 2장이 볼록 집합을 깊이 다룹니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch5">← 이전: 5장 높이, 방향, 이분 그래프</a><a href="#ch7">다음: 7장 선형계획 ②: 꼭짓점을 계산으로 →</a></div>
+</article>

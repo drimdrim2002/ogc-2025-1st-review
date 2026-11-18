@@ -1,0 +1,286 @@
+<article class="chapter" id="ch11">
+  <header>
+    <div class="kicker">11 / 12</div>
+    <h1>결과·한계·개선 방향: 어디서 이겼고 어디서 졌는가</h1>
+  </header>
+
+  <section>
+    <p class="lead">이 풀이는 예선, 본선, 결선에서 모두 1위를 했습니다. 그렇다고 모든 문제에서 가장 좋은 해를 낸 것은 아닙니다. 이 장은 성적표를 문제 하나하나까지 내려가서 읽고, 진 문제에서 풀이의 약점을 찾고, 팀이 스스로 꼽은 개선 방향을 살펴봅니다.</p>
+    <p>성적은 대회 사이트의 예선·본선·결선 결과 페이지에서 가져왔고, 이 장을 쓰면서 표의 숫자를 사이트의 결과표와 다시 맞춰 봤습니다. 평가에 쓰인 문제 파일을 내려받아 분석하지는 않았습니다. 그래서 "이 문제는 배가 컸을 것이다" 같은 문제별 설명은 모두 추측이고, 그렇게 표시했습니다.</p>
+    <div class="note">
+      <p><strong>점수 계산 되짚기(2장).</strong> 문제마다 점수 = (평가 팀 수) − (나보다 더 좋은 값을 낸 팀 수)입니다. 값의 차이가 얼마나 큰지는 상관없고 순서만 봅니다. 무효해·시간 초과·실행 오류는 −1점입니다. 표에 나오는 값은 모두 목적함수(총비용 − 대회 LB)이고 <strong>작을수록 좋습니다.</strong></p>
+    </div>
+  </section>
+
+  <div class="part">1부 · 성적표</div>
+
+  <section>
+    <h2>세 단계 요약</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>단계</th><th>문제 수 · 제한 시간</th><th class="num">평가 팀 수</th><th class="num">tryAgain</th><th>2위 (팀 이름)</th><th>단독·공동 1위 문제</th></tr></thead>
+      <tbody>
+        <tr><td>예선</td><td>5문제 · 모두 60초</td><td class="num">165</td><td class="num">820</td><td>819 (081F38)</td><td>4 / 5</td></tr>
+        <tr><td>본선</td><td>10문제 · 60~240초</td><td class="num">40</td><td class="num">388 / 400</td><td>351 (NormalDeck)</td><td>2 / 10</td></tr>
+        <tr><td>결선</td><td>14문제 · 30~600초</td><td class="num">10</td><td class="num">123 / 140</td><td>89 (081F38)</td><td>8 / 14</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>본선에서는 1위를 한 문제가 둘뿐인데도 총점은 2위보다 37점 높습니다. 점수 방식 때문입니다. 점수가 "나보다 잘한 팀 수"만큼 깎이므로, 한 문제에서 크게 이기는 팀보다 <strong>어느 문제에서도 크게 밀리지 않는 팀</strong>이 유리합니다. tryAgain은 본선 10문제 가운데 9문제에서 자기보다 잘한 팀이 2팀 이하였습니다. 다른 상위 팀들은 한두 문제에서 크게 무너졌습니다. 예를 들어 본선 P2에서 「임시개발」 팀은 목적함수 61,957로 7점을 받았고, 본선 P10에서 081F38 팀은 58,603으로 10점을 받았습니다(40점 만점).</p>
+    <p>최종 순위는 결선의 문제 풀이 점수를 80점 만점으로 바꾼 값과 발표 평가(20점 만점)를 더해 정했습니다. tryAgain은 123 ÷ 140 × 80 ≈ 70.29점에 발표 18.3점을 받았고, 사이트에 적힌 합계는 88.5점으로 1위입니다. 두 값을 그대로 더하면 88.59인데, 표에 실린 값들이 각각 반올림된 것으로 보입니다. 2위의 합계는 67.9점입니다.</p>
+  </section>
+
+  <section>
+    <h2>결선 14문제</h2>
+    <p>결선은 본선에 마지막으로 낸 프로그램을 그대로, 처음 보는 문제 14개에 돌린 것입니다. 이 문서가 읽은 소스 코드가 바로 그 프로그램입니다. 표의 「다른 팀 최고」는 나머지 9팀 가운데 가장 좋은 값이고, 「비율」은 tryAgain의 값을 그 값으로 나눈 것입니다. 비율이 1보다 작으면 tryAgain이 이긴 문제입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>문제</th><th class="num">제한 시간(초)</th><th class="num">tryAgain</th><th class="num">다른 팀 최고</th><th class="num">비율</th><th class="num">더 잘한 팀 수</th><th class="num">점수</th></tr></thead>
+      <tbody>
+        <tr><td>P1</td><td class="num">600</td><td class="num">5,945</td><td class="num">6,067</td><td class="num">0.98</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P2</td><td class="num">300</td><td class="num">10,984</td><td class="num">11,702</td><td class="num">0.94</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P3</td><td class="num">180</td><td class="num">1,462</td><td class="num">1,438</td><td class="num">1.02</td><td class="num">3</td><td class="num">7</td></tr>
+        <tr><td>P4</td><td class="num">120</td><td class="num">2,386</td><td class="num">2,386</td><td class="num">1.00</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P5</td><td class="num">180</td><td class="num">2,386</td><td class="num">2,246</td><td class="num">1.06</td><td class="num">1</td><td class="num">9</td></tr>
+        <tr><td>P6</td><td class="num">60</td><td class="num">1,223</td><td class="num">1,531</td><td class="num">0.80</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P7</td><td class="num">240</td><td class="num">2,362</td><td class="num">2,360</td><td class="num">1.001</td><td class="num">1</td><td class="num">9</td></tr>
+        <tr><td>P8</td><td class="num">180</td><td class="num">5,460</td><td class="num">6,920</td><td class="num">0.79</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P9</td><td class="num">30</td><td class="num">7,906</td><td class="num">3,502</td><td class="num">2.26</td><td class="num">9</td><td class="num">1</td></tr>
+        <tr><td>P10</td><td class="num">120</td><td class="num">1,255</td><td class="num">1,561</td><td class="num">0.80</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P11</td><td class="num">240</td><td class="num">5,528</td><td class="num">6,465</td><td class="num">0.86</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P12</td><td class="num">120</td><td class="num">6,473</td><td class="num">7,089</td><td class="num">0.91</td><td class="num">0</td><td class="num">10</td></tr>
+        <tr><td>P13</td><td class="num">180</td><td class="num">915</td><td class="num">764</td><td class="num">1.20</td><td class="num">2</td><td class="num">8</td></tr>
+        <tr><td>P14</td><td class="num">360</td><td class="num">4,119</td><td class="num">4,110</td><td class="num">1.002</td><td class="num">1</td><td class="num">9</td></tr>
+        <tr><td><strong>합계</strong></td><td></td><td></td><td></td><td></td><td></td><td class="num"><strong>123</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>P4와 P5에서 tryAgain의 값이 똑같이 2,386인 것은 옮겨 적다 생긴 실수가 아니라 원자료(대회 사이트와 발표자료)가 그렇습니다. 14문제는 네 무리로 나뉩니다.</p>
+    <ul class="plain">
+      <li><strong>크게 이긴 문제 (P1, P2, P6, P8, P10, P11, P12).</strong> tryAgain의 값이 2위의 값보다 2%에서 21%까지 작습니다. P8은 5,460 대 6,920입니다.</li>
+      <li><strong>공동 1위 (P4).</strong> 다른 한 팀과 값이 같습니다.</li>
+      <li><strong>진 문제 (P3, P5, P7, P13, P14).</strong> P7은 2 차이, P14는 9 차이, P3은 24 차이로 아슬아슬합니다. P5와 P13은 140, 151 차이(6%, 20%)로 그보다 큽니다.</li>
+      <li><strong>크게 진 문제 (P9).</strong> 유효해를 낸 10팀 가운데 가장 나쁜 값이고, 1위 값의 약 2.3배입니다. 제한 시간이 30초로 가장 짧은 문제입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>진 문제에서 읽을 수 있는 것</h2>
+    <p>이긴 이유는 앞 장들에서 본 그대로입니다. 배치 전체를 한꺼번에 최적화하는 모형이 있고(8장), 그 모형을 시간 안에 최적 또는 최적에 가깝게 푸는 솔버가 있습니다(10장). 진 이유는 어떤 자료에도 적혀 있지 않습니다. 평가 문제 파일도, 프로그램이 돌면서 남긴 기록(로그)도 없습니다. 그래서 아래 세 가지는 풀이의 구조를 보고 세운 <strong>가설</strong>이고, 어느 것도 확인된 것이 아닙니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>가설</th><th>내용</th><th>뒷받침하는 것</th><th>맞지 않는 것</th></tr></thead>
+      <tbody>
+        <tr><td>모형 밖의 해</td><td>다른 팀이 위치변경이나, 높이를 거슬러 돌아 나가는 경로로 더 싼 해를 찾았다. 둘 다 이 모형이 스스로 포기한 것이다(7장).</td><td>발표자료 6쪽은 "내부 이동이 필요 없는 인스턴스의 경우 원 문제의 최적에 매우 근접"이라고 조건을 달았습니다. 뒤집으면 배 안에서 차를 옮기는 것(위치변경)이 유리한 문제에서는 차이가 난다는 뜻입니다.</td><td>어느 문제에 빈칸이 많았는지 모릅니다. 공개된 연습 문제들은 배가 거의 꽉 차 있었습니다(8장).</td></tr>
+        <tr><td>모형의 최적에 못 미침</td><td>솔버가 시간 안에 모형의 최적해까지 가지 못했거나, 「차이가 0.01% 안쪽이면 멈춘다」는 기본 설정(10장)에 걸려 조금 일찍 멈췄다.</td><td>P7(2 차이), P14(9 차이)처럼 아주 작은 차이는 이 설명과 어울립니다.</td><td>로그가 없어서 멈출 때 상한과 하한의 차이(gap)가 얼마였는지 모릅니다.</td></tr>
+        <tr><td>시간 부족</td><td>제한 시간이 짧아서 솔버가 좋은 해를 찾기 전에 끝났다.</td><td>가장 크게 진 P9가 제한 시간이 가장 짧은 문제입니다(30초. 솔버가 쓸 수 있는 시간은 약 28초). 본선에서도 점수가 가장 낮은 문제가 60초짜리 P9였습니다.</td><td>60초인 결선 P6에서는 20% 차이로 크게 이겼습니다. 시간만으로는 설명되지 않고, 문제의 크기와 함께 봐야 합니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>진 정도와 제한 시간 사이에 단순한 관계는 없습니다. 위 표의 비율을 제한 시간 순으로 늘어놓으면 이렇습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>제한 시간(초)</th><th class="num">30</th><th class="num">60</th><th>120</th><th>180</th><th>240</th><th class="num">300</th><th class="num">360</th><th class="num">600</th></tr></thead>
+      <tbody>
+        <tr><td>비율</td><td class="num">2.26</td><td class="num">0.80</td><td>1.00, 0.80, 0.91</td><td>1.02, 1.06, 0.79, 1.20</td><td>1.001, 0.86</td><td class="num">0.94</td><td class="num">1.002</td><td class="num">0.98</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>30초짜리 한 문제만 두드러지고 나머지는 섞여 있습니다. 본선도 마찬가지입니다. 본선 P2(180초)는 15,039 대 11,999로 25% 뒤졌고 P5(120초)는 2,328 대 2,100이었는데, 둘 다 시간이 짧은 문제가 아닙니다.</p>
+    <p>P9에 대해 말할 수 있는 것은 여기까지입니다. 문제가 커서 「큰 문제」 쪽으로 분류됐다면 28초 동안 솔버의 내장 휴리스틱(NoRel)만 돌았을 것이고, 작아서 분지한계법 쪽으로 갔다면 첫 번째 LP를 풀고 탐색을 막 시작한 무렵에 시간이 끝났을 수 있습니다(두 갈래는 10장). 어느 쪽이었는지는 문제 파일에서 노드 수 N과 항구 수 P를 읽으면 알 수 있고, 같은 프로그램을 제한 시간만 바꿔 가며 돌려 보면 원인도 가릴 수 있습니다. 이 문서에서는 하지 못했습니다.</p>
+  </section>
+
+  <section>
+    <h2>발표자료의 결과표와 대회 사이트를 맞춰 보면</h2>
+    <p>팀의 발표자료 부록(17~19쪽)에도 예선·본선·결선의 결과표가 있습니다. 표마다 세 줄, 곧 tryAgain의 목적함수 값, 「BEST 목적함수 값(최종 제출 기준)」, 「더 좋은 결과 낸 팀 수」가 적혀 있습니다. 대회 사이트의 결과표와 맞춰 본 결과입니다.</p>
+    <ul class="plain">
+      <li><strong>예선.</strong> 발표자료의 값은 231, 822, 808, 1,383, 1,723이고, BEST는 앞의 네 문제가 같은 값, 다섯째가 1,711(더 잘한 팀 5)입니다. 사이트와 모두 일치합니다.</li>
+      <li><strong>결선.</strong> 앞 절 표의 「tryAgain」, 「다른 팀 최고」(tryAgain이 1위인 문제는 tryAgain의 값), 「더 잘한 팀 수」와 모두 일치합니다.</li>
+      <li><strong>본선.</strong> tryAgain의 값과 「더 좋은 결과 낸 팀 수」는 일치하지만, BEST 값 다섯 개가 사이트의 본선 최종 결과표와 다릅니다.</li>
+    </ul>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>본선 문제</th><th class="num">tryAgain</th><th class="num">발표자료의 BEST</th><th class="num">사이트 최종표의 최솟값</th><th class="num">더 좋은 결과 낸 팀 수 (발표자료)</th><th>일치</th></tr></thead>
+      <tbody>
+        <tr><td>P1</td><td class="num">1,556</td><td class="num">1,122</td><td class="num">1,148</td><td class="num">1</td><td>다름</td></tr>
+        <tr><td>P2</td><td class="num">15,039</td><td class="num">11,993</td><td class="num">11,999</td><td class="num">1</td><td>다름</td></tr>
+        <tr><td>P3</td><td class="num">8,709</td><td class="num">8,511</td><td class="num">8,625</td><td class="num">1</td><td>다름</td></tr>
+        <tr><td>P4</td><td class="num">969</td><td class="num">969</td><td class="num">969</td><td class="num">0</td><td>같음</td></tr>
+        <tr><td>P5</td><td class="num">2,328</td><td class="num">2,100</td><td class="num">2,100</td><td class="num">2</td><td>같음</td></tr>
+        <tr><td>P6</td><td class="num">6,761</td><td class="num">6,661</td><td class="num">6,761</td><td class="num">0</td><td>다름</td></tr>
+        <tr><td>P7</td><td class="num">1,750</td><td class="num">1,724</td><td class="num">1,724</td><td class="num">1</td><td>같음</td></tr>
+        <tr><td>P8</td><td class="num">1,283</td><td class="num">1,253</td><td class="num">1,253</td><td class="num">1</td><td>같음</td></tr>
+        <tr><td>P9</td><td class="num">757</td><td class="num">563</td><td class="num">563</td><td class="num">4</td><td>같음</td></tr>
+        <tr><td>P10</td><td class="num">8,455</td><td class="num">7,711</td><td class="num">8,021</td><td class="num">1</td><td>다름</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>P6을 보면 발표자료 안에서도 앞뒤가 맞지 않습니다. BEST가 6,661로 tryAgain의 6,761보다 좋은데 「더 좋은 결과 낸 팀 수」는 0입니다. 사이트 최종표에서는 6,761이 가장 좋은 값입니다(tryAgain을 포함해 두 팀). 발표자료의 BEST가 최종 제출이 아니라 본선 기간 중에 순위표에 올랐던 값을 포함한 것일 수 있지만, 확인할 방법은 없습니다. 이 장의 숫자는 사이트의 최종 결과표를 따랐습니다.</p>
+  </section>
+
+  <div class="part">2부 · 베이스라인과 비교</div>
+
+  <section>
+    <h2>주최 측이 준 예제 풀이: 베이스라인</h2>
+    <p>주최 측은 참가자가 출발점으로 삼을 수 있는 예제 프로그램을 나눠 주었습니다. 이런 기준용 풀이를 <strong>베이스라인</strong>(baseline)이라고 부릅니다. 대회 사이트의 설명에 따르면 뼈대는 다음과 같습니다. 2장에서 본 대로 <code>solution[p]</code>는 항구 p에서 실행할 경로 목록입니다.</p>
+    <pre class="py">
+for p in range(P):
+    if p &gt; 0:
+        route_list_unload, rehandling_demands = unloading_heuristic(p, node_allocations)
+        solution[p].extend(route_list_unload)
+    else:
+        rehandling_demands = []
+    if p &lt; P-1:
+        route_list_load, node_allocations = loading_heuristic(p, node_allocations, rehandling_demands)
+        solution[p].extend(route_list_load)
+</pre>
+    <ul class="code">
+      <li><b>1</b> 항구 0, 1, …, P−1을 차례로 돕니다.</li>
+      <li><b>2~4</b> 첫 항구가 아니면 하역 함수를 부릅니다. 이 함수는 하역 경로 목록과, 그 과정에서 길을 비키느라 임시로 내린 차의 목록(<code>rehandling_demands</code>)을 돌려줍니다. <code>extend</code>는 리스트 뒤에 다른 리스트의 원소들을 이어 붙이는 리스트의 기능입니다.</li>
+      <li><b>5~6</b> 첫 항구에서는 내릴 차가 없으니 임시로 내린 차도 없습니다.</li>
+      <li><b>7~9</b> 마지막 항구가 아니면 선적 함수를 부릅니다. 이 항구에서 새로 실을 차와 방금 임시로 내린 차를 싣고, 바뀐 배 상태(<code>node_allocations</code>: 칸마다 어느 차가 있는지)를 돌려줍니다.</li>
+    </ul>
+    <p>사이트는 이것을 "문제 이해를 돕기 위한 아주 간단한 알고리즘"이라고 소개합니다. 베이스라인의 소스 파일은 이번 분석에 포함되어 있지 않아서, 두 함수의 속(어느 칸을 고르는지, 어느 차를 임시로 내리는지)은 읽지 못했습니다. 그래서 아래의 비교는 "결정을 내리는 구조"와 결과 숫자에 한정됩니다.</p>
+    <p>구조에서 한 가지 차이는 분명합니다. 베이스라인은 <strong>항구를 앞에서부터 하나씩</strong> 결정합니다. 항구 0에서 차를 어디에 둘지 정할 때, 항구 3에서 무슨 일이 생길지는 계산에 넣지 않습니다. tryAgain의 모형은 <strong>모든 항구의 배치를 한 문제로 묶어 동시에</strong> 정합니다. 8장의 공식 예시에서 "어차피 두 대를 재배치해야 한다면 어느 항구에서 하는 것이 전체로 보아 싼가"를 솔버가 찾아낸 것(194가 아니라 190)이 그 차이입니다.</p>
+  </section>
+
+  <section>
+    <h2>숫자로 본 차이</h2>
+    <p>본선 결과표에는 베이스라인도 한 줄로 들어 있습니다. 40팀 중 39위, 26점입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>본선 문제</th><th class="num">제한 시간(초)</th><th class="num">베이스라인</th><th class="num">tryAgain</th><th class="num">다른 팀 최고</th><th class="num">tryAgain 점수 (40 만점)</th></tr></thead>
+      <tbody>
+        <tr><td>P1</td><td class="num">60</td><td class="num">18,812</td><td class="num">1,556</td><td class="num">1,148</td><td class="num">39</td></tr>
+        <tr><td>P2</td><td class="num">180</td><td class="num">66,365</td><td class="num">15,039</td><td class="num">11,999</td><td class="num">39</td></tr>
+        <tr><td>P3</td><td class="num">240</td><td class="num">64,873</td><td class="num">8,709</td><td class="num">8,625</td><td class="num">39</td></tr>
+        <tr><td>P4</td><td class="num">90</td><td class="num">13,151</td><td class="num">969</td><td class="num">969</td><td class="num">40</td></tr>
+        <tr><td>P5</td><td class="num">120</td><td class="num">10,916</td><td class="num">2,328</td><td class="num">2,100</td><td class="num">38</td></tr>
+        <tr><td>P6</td><td class="num">240</td><td class="num">76,657</td><td class="num">6,761</td><td class="num">6,761</td><td class="num">40</td></tr>
+        <tr><td>P7</td><td class="num">120</td><td class="num">21,678</td><td class="num">1,750</td><td class="num">1,724</td><td class="num">39</td></tr>
+        <tr><td>P8</td><td class="num">120</td><td class="num">25,541</td><td class="num">1,283</td><td class="num">1,253</td><td class="num">39</td></tr>
+        <tr><td>P9</td><td class="num">60</td><td class="num">10,297</td><td class="num">757</td><td class="num">563</td><td class="num">36</td></tr>
+        <tr><td>P10</td><td class="num">240</td><td class="num">109,349</td><td class="num">8,455</td><td class="num">8,021</td><td class="num">39</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>tryAgain의 값은 베이스라인의 4분의 1에서 20분의 1 수준입니다. 목적함수는 "막힘 때문에 추가로 든 비용"이고, 9장에서 봤듯이 재배치 경로의 비용과 가까운 칸을 쓰지 못해 늘어난 거리로 이루어집니다. 고정비 F가 큰 만큼 차이의 대부분은 재배치 횟수에서 올 것으로 짐작되지만, 베이스라인이 낸 해를 직접 본 것은 아닙니다. 표의 「다른 팀 최고」는 한 팀이 아니라 문제마다 다른 팀입니다. 모든 문제에서 고르게 2등 안팎을 한 것이 총점 1위의 내용입니다.</p>
+  </section>
+
+  <div class="part">3부 · 한계</div>
+
+  <section>
+    <h2>풀이의 한계 다섯 가지</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>한계</th><th>내용</th><th>어디서 봤나</th></tr></thead>
+      <tbody>
+        <tr><td>위치변경을 쓰지 못한다</td><td>빈칸으로 잠깐 비키면 경로 하나(F + 길이)로 끝날 일을, 임시 하역과 재적재라는 경로 둘(2F + 두 길이)로 처리합니다. 빈칸이 있는 문제일수록 손해입니다.</td><td>7장, 8장</td></tr>
+        <tr><td>높이를 거스르는 길을 쓰지 못한다</td><td>고리가 많은 배에서, 돌아가면 닿을 수 있는 칸을 "접근 불가"로 판정합니다.</td><td>7장</td></tr>
+        <tr><td>모형의 비용이 실제보다 작을 수 있다</td><td>홀수 순환(간선 수가 홀수인 고리)이 있는 배에서는, 돌아가느라 늘어난 길이가 목적함수에 들어 있지 않습니다. 솔버가 줄인 값과 채점 값이 어긋날 수 있습니다.</td><td>8장</td></tr>
+        <tr><td>크기와 시간에 민감하다</td><td>변수의 수가 항구 수의 제곱에 비례해 늘고, 제한 시간이 짧으면 해의 품질이 뚝 떨어집니다. 솔버가 가능해를 하나도 못 찾았을 때의 대비도 없습니다.</td><td>8장, 10장, 이 장의 P9</td></tr>
+        <tr><td>돈을 내고 쓰는 솔버에 기댄다</td><td>Gurobi와 그 사용권(라이선스)이 있어야 돕니다. NoRel 휴리스틱의 속은 공개되어 있지 않아서, 큰 문제에서의 성능은 사실상 Gurobi의 성능입니다.</td><td>5장, 10장</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="note">
+      <p><strong>위치변경을 직접 구현해 보려는 독자에게.</strong> 팀의 소스와 함께 들어 있는 채점 코드 <span class="mono">util.py</span>의 <code>check_feasibility</code>는 선적·하역 경로의 간선은 양쪽 방향으로 확인하지만(<code>(u,v) not in E and (v,u) not in E</code>), 위치변경 경로의 간선은 <code>(u,v) not in E</code> 한 방향만 확인합니다. "간선에는 방향이 없다"는 문제 설명(1장)과 어긋나는 부분입니다. 입력 <code>E</code>에 <code>[2, 3]</code>으로 적힌 간선을 3 → 2 방향으로 지나는 위치변경 경로는 이 코드에서 무효로 판정됩니다. 이 폴더에 든 파일을 기준으로 한 관찰이고, 평가 서버가 쓴 채점 코드도 같았는지는 확인하지 못했습니다. tryAgain은 위치변경을 쓰지 않으므로 영향이 없습니다.</p>
+    </div>
+  </section>
+
+  <div class="part">4부 · 개선 방향</div>
+
+  <section>
+    <h2>발표자료가 꼽은 세 갈래</h2>
+    <p>발표자료 10쪽 「알고리듬의 개선 방향」을 항목별로 풀어 봅니다. 모두 구현되지 않은 생각이고, 구체적인 방법은 자료에 없습니다. 설명 가운데 "예를 들어" 뒤의 내용은 이 문서가 덧붙인 것입니다.</p>
+    <div class="stage">
+      <h3>① 위치변경</h3>
+      <ul class="plain">
+        <li><strong>뒤처리로 넣기.</strong> 솔버가 낸 해를 받은 뒤, "임시 하역 + 재적재" 한 쌍을 "위치변경 한 번"으로 바꿀 수 있는 곳을 찾아 바꿉니다. 지금 남겨 두는 2초는 해 복원(9장)에만 쓰입니다. 예를 들어 어떤 항구에서 임시로 내린 차가, 다시 실릴 칸까지 배 안의 빈 길로 갈 수 있었다면 경로 둘을 하나로 줄여 F 이상을 아낍니다.</li>
+        <li><strong>모형에 넣기.</strong> 위치변경을 나타내는 변수를 추가합니다. 그러면 "한 구간 동안 차는 한 칸에 머문다"는 모형의 뼈대(7장)가 흔들리므로 쉬운 확장은 아닙니다.</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <h3>② 문제의 크기를 줄이는 휴리스틱</h3>
+      <ul class="plain">
+        <li><strong>이웃한 칸을 묶기.</strong> 붙어 있는 칸 여러 개를 한 덩어리로 묶어 "차가 여러 대 들어가는 칸 하나"로 다루면 노드 수 N이 줄어듭니다. 그러려면 묶음 안에서 누가 누구를 막는지를 따로 처리해야 하는데, 발표자료에 방법은 없습니다.</li>
+        <li><strong>중간 항구의 배치를 먼저 정해서 문제를 둘로 가르기.</strong> 어떤 중간 항구를 떠날 때 "어느 칸에 어느 차가 있는가"를 먼저 정해 버리면, 남은 결정은 그 앞쪽 항구들과 뒤쪽 항구들로 갈라집니다. 변수의 수가 P²에 비례하므로, 항구를 반으로 나누면 크기가 크게 줄어듭니다. 그 배치를 누가 어떻게 정하는지는 발표자료에 없습니다.</li>
+        <li><strong>쓰일 가능성이 낮은 변수를 0으로 고정하기.</strong> 예를 들어 바로 다음 항구에서 내릴 차를 가장 깊은 칸에 두는 x는 좋은 해에 나타날 가능성이 낮습니다. 미리 0으로 못 박아 두면 솔버가 볼 변수가 줄어듭니다.</li>
+      </ul>
+      <p>셋 다 최적성을 조금 포기하고 크기를 줄이는 방법입니다. 7장의 "규칙을 더해서 문제를 좁힌다"와 같은 방향입니다.</p>
+    </div>
+    <div class="stage">
+      <h3>③ 솔버에 통째로 맡기지 않는 방법 둘</h3>
+      <p>발표자료는 "최적화 모형을 기반으로 빠르게 좋은 해를 반환하는 알고리듬"으로 두 가지 이름을 듭니다. 둘 다 대학의 최적화 과목 뒤쪽에 나오는 주제입니다. 여기서는 어떤 생각인지만 한 문단씩 적습니다.</p>
+      <p><strong>라그랑지 완화</strong>(Lagrangian relaxation). 문제를 어렵게 만드는 제약 몇 개를 "반드시 지켜라"에서 "어기면 어긴 만큼 벌금을 내라"로 바꿉니다. 주차 금지 구역을 벽으로 막는 대신 과태료를 매기는 것과 비슷합니다. 벽이 사라지면 남은 문제가 훨씬 쉬워지거나 서로 상관없는 작은 문제 여러 개로 쪼개집니다. 쉬워진 문제를 풀어 보고, 답이 그 제약을 어겼으면 벌금의 단가를 올리고 넉넉히 지켰으면 내리기를 되풀이합니다. 이렇게 얻는 값은 원래 문제의 하한이 되고(조건을 풀어 주면 하한이 나온다는 5장의 원리), 매번 나오는 "조금만 어긴 답"을 손봐서 가능해를 만듭니다. 큰 LP를 한 번도 풀지 않아도 된다는 것이 장점입니다. 이 모형이라면, 예를 들어 x와 y를 잇는 제약 ②③④를 벌금으로 돌리는 것을 생각해 볼 수 있습니다. 어느 제약을 고를지는 발표자료에 없고, 이 예는 이 문서가 덧붙인 것입니다.</p>
+      <p><strong>분지가격법</strong>(branch-and-price). 변수가 너무 많은 모형에서, 변수를 처음부터 다 만들지 않고 <strong>필요한 것만 그때그때 만들어 넣는</strong> 방법(열 생성)을 분지한계법과 합친 것입니다. 메뉴가 수억 가지인 식당에서 메뉴판을 다 인쇄하지 않고, 지금 손님에게 이득이 될 메뉴만 주방에 물어 한 줄씩 추가하는 것과 비슷합니다. 변수 하나에 "큰 덩어리의 계획 하나"를 담을 수 있게 되어 모형이 단단해지는 것이 장점입니다. 이 문제라면, 예를 들어 "칸 하나가 항해 내내 겪는 일정(어느 구간들을 차례로 받는가)"을 변수 하나로 삼는 모형을 생각해 볼 수 있습니다. 이것도 이 문서가 덧붙인 예입니다.</p>
+    </div>
+    <div class="gref">
+      <p>벌금의 단가(라그랑지 승수)를 어떻게 올리고 내리는지, 왜 하한이 되는지, 열 생성에서 "이득이 될 변수"를 찾는 가격 문제가 무엇인지는 교재 15장에 작은 숫자 예로 나옵니다. 그 장을 읽으려면 교재 9장(쌍대성)과 13장(완화와 분지한계법)이 먼저입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이 풀이에서 배울 것</h2>
+    <ul class="plain">
+      <li><strong>탐색을 짜는 대신 문제를 적었습니다.</strong> 이 풀이에는 "해를 조금씩 고쳐 가며 더 좋은 것을 찾는" 코드가 한 줄도 없습니다. 사람이 설계한 것은 "무엇을 변수로 두고 무엇을 변수에서 뺄 것인가"뿐이고, 찾는 일은 솔버가 했습니다.</li>
+      <li><strong>순서를 없앨 수 있는지를 먼저 봤습니다.</strong> 순서가 전부인 것처럼 보이는 문제도, 규칙 하나를 더하면 순서가 배치에서 저절로 따라 나오는 경우가 있습니다. 그런 구조를 찾으면 식으로 적어 솔버에 맡기는 길이 열립니다.</li>
+      <li><strong>문제를 좁히는 것은 물러서는 것이 아니라 기법입니다.</strong> 가능한 해의 일부를 스스로 버리고 나머지를 정확히 푸는 것이, 전체를 대충 푸는 것보다 좋을 수 있습니다. 수학 문제에서 "일반성을 잃지 않고 a ≤ b라고 하자"로 경우를 줄이는 것과 닮았습니다. 다만 여기서는 일반성을 조금 잃습니다. 잃는 양이 작다는 것을 팀은 성적으로 보였습니다.</li>
+      <li><strong>약점도 분명합니다.</strong> 시간이 아주 짧거나 문제가 아주 크면 품질이 뚝 떨어지고, 모형에 담지 못한 움직임(위치변경)은 끝내 쓰지 못합니다. 그래서 모형으로 큰 틀을 잡고 간단한 규칙으로 다듬는 조합을 생각해 볼 수 있습니다. 개선 방향 ①의 뒤처리가 그런 조합입니다.</li>
+      <li><strong>채점 방식이 전략을 정합니다.</strong> 순위로 점수를 주는 방식에서는 한 문제의 대승보다 모든 문제에서의 안정이 중요했습니다. 어떤 입력에도 가능해가 있는 모형(7장)이라는 성질이 그 안정의 바탕이었습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>결선(10팀)의 어떤 문제에서 나보다 좋은 값을 낸 팀이 3팀이었습니다. 몇 점인가요? 결선 P9에서 tryAgain이 1점인 이유도 같은 식으로 설명해 보세요.</summary>
+      <p>10 − 3 = 7점입니다(결선 P3이 이 경우입니다). P9에서는 나머지 9팀이 모두 더 좋은 값을 냈으므로 10 − 9 = 1점입니다. 무효해였다면 −1점이었을 테니, 꼴찌라도 유효해를 낸 것이 2점만큼 낫습니다.</p>
+    </details>
+    <details>
+      <summary>결선 표의 점수 열을 직접 더해 123이 되는지 확인하고, 80점 만점으로 바꿔 보세요.</summary>
+      <p>10점이 8문제(P1, P2, P4, P6, P8, P10, P11, P12)라서 80점, 나머지가 7 + 9 + 9 + 1 + 8 + 9 = 43점, 합계 123점입니다. 140점 만점을 80점 만점으로 바꾸면 123 ÷ 140 × 80 = 70.285…, 반올림해서 70.29점입니다.</p>
+    </details>
+    <details>
+      <summary>결선 P8의 비율 0.79는 어떻게 나온 값인가요? P13의 비율 1.20은 몇 % 뒤졌다는 뜻인가요?</summary>
+      <p>P8은 5,460 ÷ 6,920 ≈ 0.789입니다. tryAgain의 값이 2위 값의 79%, 곧 21% 작습니다. P13은 915 ÷ 764 ≈ 1.198이므로 가장 좋은 팀보다 약 20% 큽니다(차이 151).</p>
+    </details>
+    <details>
+      <summary>F = 100인 배에서, 출입구에서 거리 3인 칸에 있는 차가 길을 막고 있습니다. (가) 바로 옆 빈칸으로 위치변경하는 것과 (나) 임시로 내렸다가 같은 칸에 다시 싣는 것의 비용을 각각 계산해 보세요.</summary>
+      <p>(가)는 경로 하나에 간선 1개이므로 100 + 1 = 101입니다. (나)는 하역 경로 100 + 3과 선적 경로 100 + 3, 합해서 206입니다. 이 모형은 (나)만 쓸 수 있으므로, 옮길 빈칸이 있는 상황에서는 한 번에 105씩 손해를 봅니다. 배가 꽉 차서 빈칸이 없으면 (가)는 애초에 할 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>본선에서 1위를 한 문제가 둘뿐인데 총점 1위를 한 이유를 점수 방식으로 설명해 보세요.</summary>
+      <p>문제별 점수가 "팀 수 − 나보다 잘한 팀 수"이기 때문입니다. tryAgain은 본선의 모든 문제에서 36~40점을 받았고, 그중 9문제는 더 잘한 팀이 2팀 이하였습니다. 한 문제에서 1위를 해도 다른 문제에서 크게 밀리면 그 문제에서 수십 점을 잃습니다.</p>
+    </details>
+    <details>
+      <summary>결선 P9의 결과가 나쁜 원인을 확인하려면 어떤 실험을 하면 될까요?</summary>
+      <p>먼저 P9 문제 파일에서 N과 P를 읽어, 10장에서 본 「큰 문제」 기준을 넘는지 봅니다. 그다음 같은 프로그램을 제한 시간 30초, 60초, 120초로 돌려 목적함수가 어떻게 변하는지 봅니다. 시간을 늘렸을 때 값이 다른 팀 수준으로 내려오면 시간 부족이 원인이고, 내려오지 않으면 모형의 한계(위치변경 등)가 원인입니다.</p>
+    </details>
+    <details>
+      <summary>"쓰일 가능성이 낮은 변수를 0으로 고정"하면 무엇을 얻고 무엇을 잃나요?</summary>
+      <p>변수가 줄어 솔버가 볼 경우가 줄고 LP도 빨리 풀립니다. 대신 고정한 변수가 실제로는 최적해에 필요했다면 그 최적해를 잃습니다. 7장에서 규칙 두 개를 더한 것과 같은 종류의 거래입니다.</p>
+    </details>
+  </section>
+
+  <div class="sum">
+    <ul>
+      <li>세 단계 모두 1위였지만, 결선 14문제 중 5문제에서는 근소하게 또는 뚜렷하게 졌고 30초짜리 한 문제에서는 크게 졌습니다.</li>
+      <li>진 이유로 「모형 밖의 해」, 「모형의 최적에 못 미침」, 「시간 부족」을 꼽을 수 있지만 셋 다 확인되지 않은 가설입니다.</li>
+      <li>베이스라인은 항구를 하나씩 차례로 정하고, tryAgain은 모든 항구를 한꺼번에 정합니다. 본선에서 값의 차이는 4배에서 20배였습니다.</li>
+      <li>한계는 위치변경을 못 쓰는 것, 높이를 거스르는 길을 못 쓰는 것, 홀수 순환에서 비용이 어긋날 수 있는 것, 크기와 시간에 민감한 것, 유료 솔버에 기대는 것입니다.</li>
+      <li>팀이 꼽은 다음 과제는 위치변경, 크기 줄이기, 그리고 라그랑지 완화와 분지가격법입니다.</li>
+    </ul>
+  </div>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span>OGC 2025 <a href="https://ogchallenge.github.io/ogc/2025/#preliminary-results">예선 결과</a>, <a href="https://ogchallenge.github.io/ogc/2025/#main-results">본선 결과</a>, <a href="https://ogchallenge.github.io/ogc/2025/#final-results">결선 결과</a>, <a href="https://ogchallenge.github.io/ogc/2025/#final-ranking">최종 순위 및 발표자료</a> — 이 장의 숫자 출처. 문제별 제한 시간도 여기에 있고, 다른 팀의 발표자료와 코드도 「최종 순위 및 발표자료」에 모여 있습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#baseline-algorithm">OGC 2025 「개발 환경 및 베이스라인 알고리즘」</a> — 베이스라인의 뼈대 코드와 설명.</li>
+      <li><span class="tagc">참고</span><a href="https://www.sintef.no/en/publications/publication/0198cc4e8605-d73e3a5d-7217-42a8-ace7-7f2b91337e34/">Øvstebø, Hvattum, Fagerholt, "Optimization of stowage plans for RoRo ships" (2011)</a> — 자동차 운반선의 적재 계획을 다룬 학술 논문. 제목과 저자가 적힌 소개 페이지만 확인했고 본문은 읽지 못했습니다. 대회 문제와 설정이 같은지도 확인하지 않았습니다. 영어이고 대학원 수준이라 지금 읽을 자료는 아닙니다.</li>
+      <li>라그랑지 완화와 분지가격법은 교재 15장, 앞으로의 공부 순서는 이 문서 12장.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch10">← 이전: 10장 솔버 설정과 시간 관리</a><a href="#ch12">다음: 12장 학습 로드맵 →</a></div>
+</article>

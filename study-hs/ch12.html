@@ -1,0 +1,490 @@
+<article class="chapter" id="ch12">
+  <header>
+    <div class="kicker">12 / 16</div>
+    <h1>정수계획 모델링 ②: 흐름, 묶음, 순서</h1>
+  </header>
+
+  <section>
+    <p class="lead">11장에서는 0과 1로 논리와 스위치를 적었습니다. 현실 문제에는 그 밖에 세 가지 큰 뼈대가 더 있습니다. 물건이 "들어온 만큼 나가는" <strong>흐름</strong>, 후보 가운데 겹치지 않게 고르는 <strong>묶음</strong>, 그리고 방문하는 차례와 연결을 적는 <strong>순서</strong>입니다. 이 세 가지를 익히고 나면, 이 책의 주인공인 자동차 운반선 문제의 1등 풀이(tryAgain 모형) 전체를 한 줄씩 읽을 수 있습니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 5장(높이 h(i), 방향 그래프, DAG, 아래 이웃 pred(i), 6칸 고리의 서로 받쳐 주는 섬), 11장(이진변수, 진리표, big-M, 모은 식, 비용이 0인 스위치). 고등학교의 수열과 Σ, 조합(<sub>n</sub>C<sub>k</sub>).</li>
+      <li><strong>이 장을 읽고 나면.</strong> 흐름 보존·집합 분할·부분 순환·대칭성의 뜻을 알고, tryAgain 모형의 변수 x, y, z와 제약 ①~⑥을 작은 예에 대입해 읽고 크기를 셀 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <!-- ================= 1부 ================= -->
+  <div class="part">1부 · 흐름과 묶음</div>
+
+  <section>
+    <h2>들어온 만큼 나간다: 흐름 보존</h2>
+    <p>상수도관을 떠올려 보세요. 갈라지고 합쳐지는 관을 따라 물이 흐릅니다. 물탱크에서 보낸 물이 관을 지나다 중간에 새거나 갑자기 생겨날 수는 없습니다. 중간 연결 마디에서는 <strong>들어온 물의 양과 나간 물의 양이 같아야</strong> 합니다.</p>
+    <p>작은 배달망으로 숫자를 넣어 봅니다. 출발지 s에서 물건 2상자를 보내 도착지 t에서 2상자를 받습니다. 중간에 거점 a가 하나 있고, 길은 세 개뿐입니다. 각 길에는 하루에 보낼 수 있는 최대 양(용량)이 1상자로 정해져 있습니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 230" role="img" aria-label="출발지 s에서 2상자가 나가고, 거점 a를 거치거나 곧바로 도착지 t로 들어가는 흐름 그림. 왼쪽은 거점의 들어오는 양과 나가는 양이 같다는 그림, 오른쪽은 s, a, t 세 노드의 흐름 예">
+        <defs><marker id="ar12_a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g font-size="13" text-anchor="middle">
+          <text x="155" y="28" class="t-muted">거점에서는 들어온 만큼 나간다</text>
+          <g class="s-steel" stroke-width="2" marker-end="url(#ar12_a)">
+            <line x1="45" y1="86" x2="128" y2="112"/>
+            <line x1="45" y1="154" x2="128" y2="128"/>
+            <line x1="182" y1="120" x2="275" y2="120"/>
+          </g>
+          <circle cx="155" cy="120" r="22" class="f-bay" stroke-width="1.5"/>
+          <text x="155" y="125">거점</text>
+          <text x="72" y="84" class="t-steel">3</text>
+          <text x="72" y="166" class="t-steel">2</text>
+          <text x="230" y="108" class="t-steel">5</text>
+          <text x="155" y="196" class="t-muted" font-size="12">들어온 양 (3 + 2) = 나간 양 (5)</text>
+        </g>
+        <line x1="330" y1="24" x2="330" y2="206" class="s-line" stroke-width="1" stroke-dasharray="4 4"/>
+        <g font-size="13" text-anchor="middle">
+          <text x="525" y="28" class="t-muted">작은 배달망 (용량 1, 비용은 길 위)</text>
+          <g class="s-line" stroke-width="1.8" marker-end="url(#ar12_a)">
+            <line x1="420" y1="106" x2="508" y2="62"/>
+            <line x1="546" y1="62" x2="634" y2="106"/>
+            <line x1="422" y1="118" x2="630" y2="118"/>
+          </g>
+          <circle cx="400" cy="118" r="19" class="f-steel" stroke-width="1.4"/><text x="400" y="123">s</text>
+          <circle cx="527" cy="54" r="19" class="f-bay" stroke-width="1.4"/><text x="527" y="59">a</text>
+          <circle cx="654" cy="118" r="19" class="f-hull" stroke-width="1.4"/><text x="654" y="123">t</text>
+          <text x="454" y="72" class="t-steel">비용 1 · 흐름 1</text>
+          <text x="602" y="72" class="t-steel">비용 1 · 흐름 1</text>
+          <text x="527" y="138" class="t-crane">비용 3 · 흐름 1</text>
+          <text x="400" y="156" font-size="12">보냄 +2</text>
+          <text x="654" y="156" font-size="12">받음 −2</text>
+          <text x="527" y="196" class="t-muted" font-size="12">용량이 1이라 나누어 보냄: 총비용 1 + 1 + 3 = 5</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>왼쪽: 거점에서는 들어온 양과 나간 양이 같아야 합니다. 오른쪽: s에서 t로 2상자를 보낼 때 길마다 용량이 1이면 두 길로 나누어 흘려야 합니다. 용량이 2라면 모두 s → a → t로 보내 비용이 4로 줄어듭니다.</figcaption>
+    </figure>
+    <p>이 규칙을 방향 간선 i → j를 지나는 흐름 변수 f<sub>ij</sub> ≥ 0으로 적습니다. 각 지점 i에는 "내보내는 양"을 뜻하는 수 b<sub>i</sub>를 둡니다. 출발지이면 b<sub>i</sub> &gt; 0, 도착지이면 b<sub>i</sub> &lt; 0, 거점이면 b<sub>i</sub> = 0입니다. 위 오른쪽 그림에서는 b<sub>s</sub> = 2, b<sub>a</sub> = 0, b<sub>t</sub> = −2입니다.</p>
+    <div class="defn"><b>정의</b> 방향 그래프에서 간선마다 흐르는 양을 변수 f<sub>ij</sub> ≥ 0으로 두고, 모든 노드 i마다 다음 등식을 요구하는 것을 <strong>흐름 보존(flow conservation)</strong>이라고 합니다.
+      <div class="eq">
+        <div class="row"><span>Σ<sub>j</sub> f<sub>ij</sub> − Σ<sub>j</sub> f<sub>ji</sub> = b<sub>i</sub></span><span class="all">모든 노드 i &nbsp;(나가는 양 − 들어오는 양 = 공급 b<sub>i</sub>)</span></div>
+        <div class="row"><span>0 ≤ f<sub>ij</sub> ≤ u<sub>ij</sub></span><span class="all">모든 방향 간선 i → j &nbsp;(용량 제한)</span></div>
+      </div>
+    </div>
+    <p>오른쪽 그림의 세 노드에 이 식을 적으면 s는 f<sub>sa</sub> + f<sub>st</sub> = 2, a는 f<sub>at</sub> − f<sub>sa</sub> = 0, t는 −f<sub>at</sub> − f<sub>st</sub> = −2입니다. 간선마다 비용 c<sub>ij</sub>를 곱해 Σ c<sub>ij</sub>f<sub>ij</sub>를 최소화하면 <strong>최소비용 흐름 문제</strong>입니다. 특히 b<sub>s</sub> = 1, b<sub>t</sub> = −1이고 나머지 b<sub>i</sub> = 0이며 비용이 간선 길이(또는 1)이면 s에서 t까지의 최단 경로 문제가 됩니다.</p>
+    <div class="why"><p>"들어온 양 − 나간 양 = 쓰는 양"으로 적을 수도 있습니다. 양변에 −1을 곱하면 모양이 바뀔 뿐 뜻은 같습니다. tryAgain 모형의 첫 번째 제약도 "원래 수요 + 다른 구간이 쪼개지며 들어온 토막 − 쪼개져 나간 수"를 맞추는 흐름 보존의 꼴입니다(4부).</p></div>
+  </section>
+
+  <section>
+    <h2>짝짓기와 고르기: 배정, 집합 분할·덮개·포장</h2>
+    <p>흐름이 물길이라면, 이번에는 "딱 맞게 고르기"입니다. 먼저 작업자 n명에게 일 n개를 한 사람당 하나씩 맡기는 <strong>배정(assignment)</strong> 문제를 봅니다. 이진변수 x<sub>ik</sub>는 "작업자 i가 일 k를 맡으면 1"입니다.</p>
+    <div class="eq">
+      <div class="row"><span>Σ<sub>k</sub> x<sub>ik</sub> = 1</span><span class="all">모든 작업자 i (한 사람당 일 하나)</span></div>
+      <div class="row"><span>Σ<sub>i</sub> x<sub>ik</sub> = 1</span><span class="all">모든 일 k (일 하나당 한 사람)</span></div>
+    </div>
+    <p>이제 조금 더 넓은 상황을 생각합니다. 고객 1, 2, 3에게 물건을 배달해야 합니다. 트럭 한 대가 한 번에 돌 수 있는 후보 경로 여섯 가지를 미리 만들어 비용을 계산해 두었습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>후보 경로</th><th>방문하는 고객</th><th class="num">비용</th><th>특징</th></tr></thead>
+      <tbody>
+        <tr><td>S<sub>1</sub>, S<sub>2</sub>, S<sub>3</sub></td><td>{1}, {2}, {3}</td><td class="num">4, 4, 4</td><td>한 집씩 따로 간다</td></tr>
+        <tr><td>S<sub>4</sub></td><td>{1, 2}</td><td class="num">5</td><td>1과 2를 한 번에 돈다</td></tr>
+        <tr><td>S<sub>5</sub></td><td>{2, 3}</td><td class="num">5</td><td>2와 3을 한 번에 돈다</td></tr>
+        <tr><td>S<sub>6</sub></td><td>{1, 2, 3}</td><td class="num">9</td><td>세 집을 한 번에 돈다</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>후보 경로 j를 고르면 x<sub>j</sub> = 1, 안 고르면 0입니다. 고객마다 "적힌 경로 중 몇 개에 들어가는가"를 세는 식은 같고, 오른쪽 부등호만 달라집니다. 고객 2를 예로 들면 S<sub>2</sub>, S<sub>4</sub>, S<sub>5</sub>, S<sub>6</sub>에 고객 2가 들어 있으므로 합은 x<sub>2</sub> + x<sub>4</sub> + x<sub>5</sub> + x<sub>6</sub>입니다.</p>
+    <div class="defn"><b>정의</b> 원소들의 집합과 후보 묶음 S<sub>1</sub>, …, S<sub>n</sub>(각각 비용 c<sub>j</sub>)이 있고, 원소 i가 묶음 j에 들어 있으면 a<sub>ij</sub> = 1, 아니면 0이라고 둡니다. 이진변수 x<sub>j</sub> ∈ {0, 1}에 대해 다음 세 모형이 있습니다.
+      <ul>
+        <li><strong>집합 분할(set partitioning):</strong> Σ<sub>j</sub> a<sub>ij</sub>x<sub>j</sub> = 1 (모든 원소 i). 모든 원소가 고른 묶음 중 <em>정확히 하나</em>에 들어갑니다.</li>
+        <li><strong>집합 덮개(set covering):</strong> Σ<sub>j</sub> a<sub>ij</sub>x<sub>j</sub> ≥ 1 (모든 원소 i). 모든 원소가 <em>적어도 하나</em>에 들어갑니다.</li>
+        <li><strong>집합 포장(set packing):</strong> Σ<sub>j</sub> a<sub>ij</sub>x<sub>j</sub> ≤ 1 (모든 원소 i). 고른 묶음끼리 <em>서로 겹치지 않습니다</em>(보통 최대화).</li>
+      </ul>
+    </div>
+    <p>위의 배달 예에서 집합 분할의 가능해는 {1}{2}{3}(비용 12), {1, 2}{3}(9), {1}{2, 3}(9), {1, 2, 3}(9) 네 가지입니다. 최적값은 9이고 최적해는 셋입니다. 반면 S<sub>4</sub> = {1, 2}와 S<sub>5</sub> = {2, 3}을 함께 고르면 고객 2를 두 번 방문하게 되어(x<sub>2</sub> + x<sub>4</sub> + x<sub>5</sub> + x<sub>6</sub> = 2) 집합 분할에서는 안 되지만, 집합 덮개에서는 비용 10의 가능해로 허용됩니다.</p>
+    <div class="aside"><p>경로를 미리 다 만들어 두면 제약이 "고객마다 = 1" 한 종류로 놀랄 만큼 깔끔해집니다. 문제는 고객이 100명만 되어도 가능한 경로의 수가 천문학적으로 많아 목록을 미리 만들 수 없다는 것입니다. 그래서 필요한 경로만 그때그때 만들어 넣는 방법(열 생성)을 15장에서 배웁니다.</p></div>
+  </section>
+
+  <!-- ================= 2부 ================= -->
+  <div class="part">2부 · 순서와 연결성</div>
+
+  <section>
+    <h2>외판원 문제와 부분 순환</h2>
+    <p>배달 기사 한 명이 도시 0에서 출발해 나머지 도시 1, …, n−1을 한 번씩만 들르고 다시 도시 0으로 돌아오려 합니다. 이동 거리의 합이 가장 짧은 길을 찾는 문제가 유명한 <strong>외판원 문제(TSP, traveling salesman problem)</strong>입니다.</p>
+    <p>가장 먼저 떠오르는 변수는 x<sub>ij</sub> ∈ {0, 1}("도시 i에서 바로 도시 j로 이동하면 1", i ≠ j)입니다. 도시마다 한 번 나가고 한 번 들어와야 하므로 다음 두 줄을 적습니다.</p>
+    <div class="eq">
+      <div class="row"><span>Σ<sub>j≠i</sub> x<sub>ij</sub> = 1</span><span class="all">모든 도시 i (각 도시에서 정확히 한 번 나간다)</span></div>
+      <div class="row"><span>Σ<sub>i≠j</sub> x<sub>ij</sub> = 1</span><span class="all">모든 도시 j (각 도시로 정확히 한 번 들어온다)</span></div>
+    </div>
+    <p>이 두 줄을 <strong>차수 제약</strong>이라고 부릅니다. 이제 도시 6개에서 이 식만 넣고 풀었을 때 무슨 일이 생기는지 봅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 245" role="img" aria-label="도시 6개 그림. 왼쪽은 0에서 1, 2, 3, 4, 5를 거쳐 0으로 돌아오는 하나의 큰 순환. 오른쪽은 0-1-2-0과 3-4-5-3 두 개의 작은 부분 순환으로 나뉜 그림">
+        <defs>
+          <marker id="ar12_ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ok)"/></marker>
+          <marker id="ar12_cr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--crane)"/></marker>
+        </defs>
+        <g font-size="13" text-anchor="middle">
+          <text x="175" y="26" class="t-ok">원하던 답: 한 바퀴 순환</text>
+          <g class="s-ok" stroke-width="2" marker-end="url(#ar12_ok)">
+            <line x1="125" y1="68" x2="210" y2="68"/>
+            <line x1="238" y1="84" x2="262" y2="112"/>
+            <line x1="262" y1="146" x2="238" y2="174"/>
+            <line x1="210" y1="190" x2="125" y2="190"/>
+            <line x1="96" y1="174" x2="72" y2="146"/>
+            <line x1="72" y1="112" x2="96" y2="84"/>
+          </g>
+          <circle cx="108" cy="68" r="16" class="f-steel"/><text x="108" y="73">0</text>
+          <circle cx="228" cy="68" r="16" class="f-bay"/><text x="228" y="73">1</text>
+          <circle cx="274" cy="129" r="16" class="f-bay"/><text x="274" y="134">2</text>
+          <circle cx="228" cy="190" r="16" class="f-bay"/><text x="228" y="195">3</text>
+          <circle cx="108" cy="190" r="16" class="f-bay"/><text x="108" y="195">4</text>
+          <circle cx="60" cy="129" r="16" class="f-bay"/><text x="60" y="134">5</text>
+          <text x="175" y="230" class="t-muted" font-size="12">0 → 1 → 2 → 3 → 4 → 5 → 0</text>
+        </g>
+        <line x1="360" y1="22" x2="360" y2="230" class="s-line" stroke-width="1" stroke-dasharray="4 4"/>
+        <g font-size="13" text-anchor="middle">
+          <text x="545" y="26" class="t-crane">차수 제약이 허용하는 엉터리 답: 부분 순환</text>
+          <g class="s-steel" stroke-width="2" marker-end="url(#ar12_ok)">
+            <line x1="454" y1="68" x2="508" y2="68"/>
+            <line x1="518" y1="84" x2="490" y2="152"/>
+            <line x1="472" y1="152" x2="444" y2="84"/>
+          </g>
+          <g class="s-crane" stroke-width="2" marker-end="url(#ar12_cr)">
+            <line x1="598" y1="84" x2="650" y2="84"/>
+            <line x1="658" y1="100" x2="632" y2="154"/>
+            <line x1="616" y1="154" x2="590" y2="100"/>
+          </g>
+          <circle cx="436" cy="68" r="16" class="f-steel"/><text x="436" y="73">0</text>
+          <circle cx="526" cy="68" r="16" class="f-bay"/><text x="526" y="73">1</text>
+          <circle cx="481" cy="170" r="16" class="f-bay"/><text x="481" y="175">2</text>
+          <circle cx="582" cy="84" r="16" class="f-crane"/><text x="582" y="89">3</text>
+          <circle cx="668" cy="84" r="16" class="f-crane"/><text x="668" y="89">4</text>
+          <circle cx="625" cy="170" r="16" class="f-crane"/><text x="625" y="175">5</text>
+          <text x="545" y="230" class="t-muted" font-size="12">0→1→2→0 과 3→4→5→3 둘로 갈라졌다</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>오른쪽 그림에서도 모든 도시에서 화살표가 하나 나가고 하나 들어오므로 차수 제약은 모두 성립합니다. 하지만 두 고리가 서로 떨어져 있어 한 번에 돌 수 없습니다.</figcaption>
+    </figure>
+    <div class="defn"><b>정의</b> 전체 도시를 하나의 큰 고리로 도는 대신, 몇 개의 작은 고리로 갈라졌을 때 그 작은 고리를 <strong>부분 순환(subtour)</strong>이라고 합니다.</div>
+    <div class="thm"><b>핵심 사실</b> 차수 제약만 만족하는 0/1 해는 "도시들을 몇 개의 서로 겹치지 않는 고리로 나눈 것"과 같습니다. 고리가 딱 하나일 때만 외판원 문제의 해입니다.</div>
+    <div class="why"><p>차수 제약은 각 도시의 바로 앞과 바로 뒤만 봅니다(국소적인 조건). 3번 도시는 5번에서 와서 4번으로 가고 있을 뿐, 0번 도시와 이어져 있는지는 전혀 묻지 않기 때문에 3 → 4 → 5 → 3처럼 자기들끼리만 도는 작은 고리를 막지 못합니다.</p></div>
+    <p>고리가 하나인지, 여러 부분 순환으로 갈라졌는지는 다음 도시 번호를 따라가 보면 바로 알 수 있습니다.</p>
+<pre class="py">
+def find_cycles(nxt):
+    seen = [0] * len(nxt)
+    cycles = []
+    for start in range(len(nxt)):
+        if seen[start] == 0:
+            cur = start
+            cyc = []
+            while seen[cur] == 0:
+                seen[cur] = 1
+                cyc.append(cur)
+                cur = nxt[cur]
+            cycles.append(cyc)
+    return cycles
+
+print("해 A:", find_cycles([1, 2, 3, 4, 5, 0]))
+print("해 B:", find_cycles([1, 2, 0, 4, 5, 3]))
+</pre>
+<pre class="out">
+해 A: [[0, 1, 2, 3, 4, 5]]
+해 B: [[0, 1, 2], [3, 4, 5]]
+</pre>
+    <ul class="code">
+      <li><b>1~3행</b> <code>nxt[i]</code>는 도시 i 다음에 가는 도시 번호입니다. <code>seen</code>은 방문했는지 적는 목록입니다.</li>
+      <li><b>4~12행</b> 아직 안 본 도시에서 출발해 화살표를 따라가며 처음 도시로 돌아올 때까지 <code>cyc</code>에 담습니다.</li>
+      <li><b>15~16행</b> 해 A는 고리가 하나뿐이고, 해 B는 고리가 두 개([0, 1, 2]와 [3, 4, 5])로 갈라졌습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>방법 ①: 순번 변수 u와 MTZ 제약</h2>
+    <p>이제 부분 순환을 1차 부등식으로 막는 세 가지 방법을 배웁니다. 첫째 방법은 <strong>방문 순서 번호표</strong>를 붙이는 것입니다. 이 방법을 만든 세 사람(Miller, Tucker, Zemlin)의 머리글자를 따서 <strong>MTZ 제약</strong>이라고 부릅니다.</p>
+    <div class="warn"><p>이 절에서만 도시의 방문 순번을 나타내는 변수로 <code>u<sub>i</sub></code>를 씁니다(9장의 쌍대 변수 u와는 다른 뜻입니다). 4부에서는 쓰지 않습니다.</p></div>
+    <p>출발 도시 0은 빼고, 나머지 도시 1, …, n−1마다 순번 변수 u<sub>i</sub>를 하나씩 둡니다. "도시 0 다음 첫 번째로 들르는 도시는 u = 1, 두 번째는 u = 2, …, 마지막 도시는 u = n − 1"이 되도록, i에서 j로 가면 j의 번호표가 i보다 최소 1 크다고 적습니다. 11장에서 배운 big-M 꼴(M = n − 1)을 그대로 씁니다.</p>
+    <div class="eq">
+      <div class="row"><span>u<sub>j</sub> ≥ u<sub>i</sub> + 1 − (n − 1)(1 − x<sub>ij</sub>)</span><span class="all">모든 i ≠ j (단 i, j ∈ {1, …, n−1}, 도시 0은 제외)</span></div>
+      <div class="row"><span>1 ≤ u<sub>i</sub> ≤ n − 1</span><span class="all">모든 i ∈ {1, …, n−1}</span></div>
+    </div>
+    <p>도시 6개(n = 6)일 때 앞의 엉터리 해 B(0→1→2→0과 3→4→5→3)가 왜 막히는지 숫자를 넣어 봅니다. 부분 순환 3 → 4 → 5 → 3에는 도시 0이 없으므로 세 간선 모두 위 식이 걸립니다(x<sub>34</sub> = x<sub>45</sub> = x<sub>53</sub> = 1).</p>
+    <div class="formula">u<sub>4</sub> ≥ u<sub>3</sub> + 1,&nbsp;&nbsp; u<sub>5</sub> ≥ u<sub>4</sub> + 1,&nbsp;&nbsp; u<sub>3</sub> ≥ u<sub>5</sub> + 1</div>
+    <p>세 식의 왼쪽끼리, 오른쪽끼리 모두 더하면 u<sub>3</sub> + u<sub>4</sub> + u<sub>5</sub> ≥ u<sub>3</sub> + u<sub>4</sub> + u<sub>5</sub> + 3, 곧 0 ≥ 3이라는 모순이 나옵니다. 번호표가 한 바퀴 돌며 계속 커질 수는 없기 때문입니다.</p>
+    <div class="why"><p>부분 순환이 하나라도 있으면 그중 적어도 하나는 출발 도시 0을 지나지 않으므로(0은 고리 하나에만 들어갈 수 있으니까요), 그 고리에서 위와 같은 모순이 생깁니다. 반대로 도시 전체를 한 바퀴 도는 정상적인 해 0 → i<sub>1</sub> → i<sub>2</sub> → … → i<sub>n−1</sub> → 0에서는 u<sub>i<sub>t</sub></sub> = t로 두면 됩니다. 가는 간선(x<sub>ij</sub> = 1)에서는 u<sub>j</sub> = u<sub>i</sub> + 1이 딱 맞고, 안 가는 간선(x<sub>ij</sub> = 0)에서는 식이 u<sub>j</sub> ≥ u<sub>i</sub> − (n − 2)인데 u<sub>i</sub> ≤ n − 1, u<sub>j</sub> ≥ 1이므로 언제나 성립합니다. 그래서 멀쩡한 한 바퀴 순환은 하나도 잘리지 않습니다.</p></div>
+    <div class="aside"><p>출발 도시 0과 연결된 간선에 MTZ 식을 걸지 않는 것이 핵심입니다. 마지막 도시에서 도시 0으로 돌아올 때는 번호표가 n−1에서 다시 0으로 돌아와야 하므로, 거기까지 식을 걸면 정상적인 한 바퀴까지 잘려 버립니다.</p></div>
+  </section>
+
+  <section>
+    <h2>방법 ②: 부분 순환 제거 부등식</h2>
+    <p>이번에는 순번 변수 u를 새로 만들지 않고 x만으로 부분 순환을 막아 봅니다. 해 B의 부분 순환 S = {3, 4, 5}를 보세요. 도시 3개를 도는 작은 고리에는 간선이 3개(3→4, 4→5, 5→3) 있습니다. 전체를 한 바퀴 도는 길이라면 S 안의 도시들끼리만 오가는 간선이 많아야 2개여야 합니다(마지막 하나는 S 밖으로 나가야 하니까요).</p>
+    <div class="formula">x<sub>34</sub> + x<sub>43</sub> + x<sub>35</sub> + x<sub>53</sub> + x<sub>45</sub> + x<sub>54</sub> ≤ 2 &nbsp;&nbsp;(부분집합 S = {3, 4, 5}에 대해)</div>
+    <div class="defn"><b>정의</b> 도시들의 부분집합 S(원소 개수 2 ≤ |S| ≤ n − 1)마다 "S 안의 도시들끼리 잇는 간선은 |S| − 1개 이하"라고 적는 식을 <strong>부분 순환 제거 부등식</strong>이라고 합니다.
+      <div class="formula">Σ<sub>i∈S</sub> Σ<sub>j∈S, j≠i</sub> x<sub>ij</sub> ≤ |S| − 1 &nbsp;&nbsp;(2 ≤ |S| ≤ n − 1인 모든 부분집합 S)</div>
+    </div>
+    <p>이 식은 big-M도 추가 변수도 없어서 깔끔합니다. 하지만 치명적인 약점이 있습니다. 부분집합 S의 개수가 대략 2<sup>n</sup>개라서 도시가 50개만 되어도 부등식이 1,000조 개를 넘어, 모형에 처음부터 다 적을 수 없습니다. 그래서 실제 솔버는 일단 차수 제약만으로 풀고, 답에 부분 순환이 보이면 그 S에 대한 식만 골라서 덧붙이고 다시 푸는 방식을 씁니다(14장의 절단평면에서 다시 만납니다).</p>
+  </section>
+
+  <section>
+    <h2>연결성을 적는 세 방법 비교</h2>
+    <p>"고른 것들이 출발점(도시 0이나 배의 출입구)과 하나로 이어져 있어야 한다"는 조건을 1차 부등식으로 적는 세 가지 방법을 한눈에 견주어 봅니다. 둘째 방법은 1부의 <strong>흐름</strong>을 쓰는 것이고, 셋째 방법은 5장에서 배운 <strong>높이 h(i)</strong>를 쓰는 tryAgain의 방법입니다.</p>
+    <ul class="plain">
+      <li><strong>① 순번 변수(MTZ):</strong> 위에서 본 방법입니다. 도시마다 순번 변수 u를 두고 big-M을 써서 간선을 따라 순번이 늘게 합니다.</li>
+      <li><strong>② 흐름 변수:</strong> 도시 0이 물건 n − 1개를 내보내고, 다른 도시마다 1개씩 받는다고 둡니다. 물건은 선택된 간선으로만 흐를 수 있게 <code>0 ≤ f<sub>ij</sub> ≤ (n − 1)x<sub>ij</sub></code>를 겁니다. 도시 0과 끊긴 부분 순환 안에는 물건이 들어갈 수 없으므로, 그 도시들은 1개를 받을 수 없어 모순이 생깁니다.</li>
+      <li><strong>③ 미리 정한 높이로 전파하기(tryAgain의 방법):</strong> 순서를 변수로 두지 않고, 5장에서 배운 대로 너비 우선 탐색(BFS) 방문 순번으로 높이 h(i)를 <em>미리 고정</em>합니다. 각 노드의 아래 이웃 pred(i)에 대해서만 연결을 허락하면, 높이가 계속 줄어드는 길만 따라가므로 부분 순환이나 "서로 받쳐 주는 섬"이 절대 생길 수 없습니다.</li>
+    </ul>
+    <div class="recall"><p>5장에서 배운 6칸 고리(출입구 0, 칸 1~5가 0-1-2-3-4-5-0으로 이어진 배)를 떠올려 보세요. 칸 1과 칸 5에 머무는 차가 있을 때, 그냥 모든 이웃을 허용하면 칸 2, 3, 4가 서로를 근거로 "접근 가능하다"고 우기는 <strong>서로 받쳐 주는 섬</strong>이 생겼습니다. 아래 이웃 pred(i)만 적으면 근거를 따라갈수록 높이가 줄어들어 반드시 출입구에서 끝나므로 섬이 사라집니다.</p></div>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>방법</th><th>추가 변수</th><th>big-M류 계수</th><th>멀쩡한 답을 잃는가</th><th>특징</th></tr></thead>
+      <tbody>
+        <tr><td>① MTZ (순번 변수)</td><td>노드마다 1개</td><td>있음 (n − 1)</td><td>아니오</td><td>식은 적지만 big-M 때문에 LP 완화가 느슨하다(14장)</td></tr>
+        <tr><td>② 흐름 변수</td><td>간선마다 1개</td><td>있음 (n − 1)</td><td>아니오</td><td>간선 수만큼 변수가 늘어 모형이 커진다</td></tr>
+        <tr><td>부분 순환 제거 부등식</td><td>없음</td><td>없음</td><td>아니오</td><td>식이 2<sup>n</sup>개라 처음부터 못 적고 필요할 때만 넣는다</td></tr>
+        <tr><td>③ 고정 높이 전파 (tryAgain)</td><td>없음 (y만 사용)</td><td>없음 (계수 0, ±1)</td><td><strong>예</strong> (높이를 거스르는 길)</td><td>모형이 작고 big-M이 없다. 대신 순서를 거스르는 답은 포기한다</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ================= 3부 ================= -->
+  <div class="part">3부 · 택배 트럭 경로 문제와 대칭성</div>
+
+  <section>
+    <h2>택배 트럭 경로 문제의 모형</h2>
+    <p>이제 11장의 배달 시각(big-M)과 이 장의 흐름 보존·집합 분할·MTZ를 하나로 합쳐 봅니다. 물류센터(노드 0)에서 트럭 K대가 출발해 고객 1, …, n에게 배달하고 돌아옵니다. 트럭마다 실을 수 있는 용량은 Q, 고객 i가 주문한 무게는 q<sub>i</sub>, 배달받을 수 있는 시간창은 [a<sub>i</sub>, b<sub>i</sub>]입니다(학술 이름으로는 용량과 시간창이 있는 차량 경로 문제, <strong>CVRPTW</strong>라고 부릅니다).</p>
+    <p>결정변수는 둘입니다. 이진변수 x<sub>ijk</sub>는 "트럭 k가 i에서 바로 j로 가면 1", 실수 변수 t<sub>ik</sub>는 "트럭 k가 고객 i에서 배달을 시작하는 시각"입니다. c<sub>ij</sub>는 이동 비용, s<sub>i</sub>는 일하는 시간, τ<sub>ij</sub>는 이동 시간입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화 &nbsp;Σ<sub>k</sub> Σ<sub>i</sub> Σ<sub>j</sub> c<sub>ij</sub> x<sub>ijk</sub></span><span class="all">모든 트럭의 총 이동 비용</span></div>
+      <div class="row"><span class="tag">(1)</span><span>Σ<sub>k</sub> Σ<sub>j</sub> x<sub>ijk</sub> = 1</span><span class="all">모든 고객 i &nbsp;[집합 분할: 한 번만 방문]</span></div>
+      <div class="row"><span class="tag">(2)</span><span>Σ<sub>i</sub> x<sub>ihk</sub> − Σ<sub>j</sub> x<sub>hjk</sub> = 0</span><span class="all">모든 고객 h, 모든 트럭 k &nbsp;[흐름 보존]</span></div>
+      <div class="row"><span class="tag">(3)</span><span>Σ<sub>j</sub> x<sub>0jk</sub> ≤ 1</span><span class="all">모든 트럭 k &nbsp;[집합 포장: 트럭당 한 번 출발]</span></div>
+      <div class="row"><span class="tag">(4)</span><span>Σ<sub>i</sub> q<sub>i</sub> Σ<sub>j</sub> x<sub>ijk</sub> ≤ Q</span><span class="all">모든 트럭 k &nbsp;[용량 제한]</span></div>
+      <div class="row"><span class="tag">(5)</span><span>t<sub>jk</sub> ≥ t<sub>ik</sub> + s<sub>i</sub> + τ<sub>ij</sub> − M<sub>ij</sub>(1 − x<sub>ijk</sub>)</span><span class="all">모든 고객 i ≠ j, 모든 트럭 k &nbsp;[big-M · MTZ 겸용]</span></div>
+      <div class="row"><span class="tag">(6)</span><span>a<sub>i</sub> ≤ t<sub>ik</sub> ≤ b<sub>i</sub></span><span class="all">모든 고객 i, 모든 트럭 k &nbsp;[시간창]</span></div>
+    </div>
+    <p>여섯 줄 모두 우리가 이미 배운 관용구입니다. 특히 (5)번은 11장에서 구한 가장 작은 유효한 M<sub>ij</sub> = b<sub>i</sub> + s<sub>i</sub> + τ<sub>ij</sub> − a<sub>j</sub>를 씁니다. 동시에 s<sub>i</sub> + τ<sub>ij</sub> &gt; 0인 한 물류센터(0)를 거치지 않는 고리를 돌면 시각이 끝없이 늘어나므로, MTZ처럼 부분 순환도 함께 막아 줍니다.</p>
+    <p>모형의 크기를 세어 봅니다. 고객 n = 100명, 트럭 K = 10대라면 노드가 101개이므로 변수 x<sub>ijk</sub>만 101 × 100 × 10 = <strong>101,000개</strong>이고, 제약 (5)는 100 × 99 × 10 = <strong>99,000줄</strong>입니다. 변수가 세 개의 첨자를 달고 다니기 때문에 크기가 빠르게 불어납니다.</p>
+  </section>
+
+  <section>
+    <h2>대칭성: 이름표만 다른 같은 해</h2>
+    <p>위 모형에는 숨은 골칫거리가 하나 더 있습니다. 트럭 10대가 모두 같은 트럭이라고 합시다. 그러면 "1번 트럭이 강남을 돌고 2번 트럭이 강북을 도는 해"와 "2번 트럭이 강남을 돌고 1번 트럭이 강북을 도는 해"는 실제로는 <em>완전히 같은 계획</em>입니다. 하지만 모형에서는 x<sub>ij1</sub>과 x<sub>ij2</sub>가 다른 변수라서 서로 다른 두 해로 셉니다.</p>
+    <div class="defn"><b>정의</b> 물건이나 차량처럼 서로 구별할 필요가 없는 대상에 번호를 붙여 적었을 때, 번호(이름표)만 맞바꾼 사실상 같은 해가 여럿 생기는 현상을 <strong>대칭성(symmetry)</strong>이라고 합니다.</div>
+    <p>트럭 10대가 모두 일을 하면 번호표를 바꾸는 가짓수가 10! = <strong>3,628,800가지</strong>입니다. 분지한계법(13장)은 번호표만 다른 360만 개의 해를 일일이 갈라 보며 치워야 할 수 있어서 풀이가 크게 느려집니다.</p>
+    <p>대칭성을 없애는 길은 둘입니다. 첫째는 "1번 트럭부터 차례로 쓴다", "트럭 번호가 클수록 첫 고객 번호가 크다" 같은 <strong>대칭 깨기 제약</strong>을 덧붙이는 것입니다. 둘째는 더 근본적인 방법인데, <strong>애초에 변수에 이름표를 넣지 않는 것</strong>입니다. 바로 이어서 볼 tryAgain 모형이 이 길을 택했습니다. 변수 x<sub>pqi</sub>에는 "몇 번째 차인지"가 들어 있지 않고, 오직 구간이 있는지 없는지만 적습니다.</p>
+  </section>
+
+  <!-- ================= 4부 ================= -->
+  <div class="part">4부 · tryAgain 모형</div>
+
+  <section>
+    <h2>tryAgain 모형의 변수 x, y, z와 목적함수</h2>
+    <p>이제 1장의 자동차 운반선 문제를 적은 tryAgain 모형 전체를 봅니다. 먼저 문제에서 주어지거나 그래프에서 미리 계산해 두는 수(파라미터)부터 정리합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>기호</th><th>뜻</th><th>미니 문제 B에서의 값</th></tr></thead>
+      <tbody>
+        <tr><td>N, P, F</td><td>노드 수(출입구 0 + 칸 1~N−1), 항구 수(0~P−1), 경로 고정비</td><td>N = 3, P = 4, F = 10</td></tr>
+        <tr><td>d<sub>pq</sub></td><td>항구 p에서 실어 항구 q에서 내릴 차의 수 (p &lt; q)</td><td>d<sub>02</sub> = 1 (차 A), d<sub>13</sub> = 1 (차 B), 나머지 0</td></tr>
+        <tr><td>dist(i)</td><td>출입구 0에서 칸 i까지의 최단거리(4장 BFS)</td><td>dist(1) = 1, dist(2) = 2</td></tr>
+        <tr><td>h(i), pred(i)</td><td>노드 i의 높이(5장), 높이가 더 낮은 이웃들의 집합</td><td>h(i) = i, pred(1) = {0}, pred(2) = {1}</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>핵심 생각은 <strong>구간</strong>입니다. 차 한 대가 "어느 항구 p에서 실려, 칸 i에 서 있다가, 항구 q에서 내려질 때까지"를 하나의 구간이라고 부릅니다. 1장에서 본 미니 문제 B(일렬 배: 출입구 0–칸 1–칸 2, 차 A: 0→2, 차 B: 1→3)의 최적해 (가)를 구간 막대로 그려 봅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 220" role="img" aria-label="미니 문제 B의 해 (가)를 구간 막대로 그린 그림. 가로축은 항구 0, 1, 2, 3이고 세로축은 칸 1과 칸 2이다. 칸 1에는 항구 0에서 1까지 차 A의 앞 토막 x01,1이 있고, 항구 1에서 2까지 차 A의 뒤 토막 x12,1이 있다. 칸 2에는 항구 1에서 3까지 차 B의 구간 x13,2가 있다. 항구 1에서 z012는 1이다">
+        <g class="s-line" stroke-width="1.1">
+          <line x1="120" y1="55" x2="650" y2="55"/>
+          <line x1="120" y1="115" x2="650" y2="115"/>
+          <line x1="120" y1="175" x2="650" y2="175"/>
+          <line x1="140" y1="45" x2="140" y2="180"/>
+          <line x1="300" y1="45" x2="300" y2="180"/>
+          <line x1="460" y1="45" x2="460" y2="180"/>
+          <line x1="620" y1="45" x2="620" y2="180"/>
+        </g>
+        <g font-size="13" text-anchor="middle" class="t-muted">
+          <text x="140" y="34">항구 0</text><text x="300" y="34">항구 1</text><text x="460" y="34">항구 2</text><text x="620" y="34">항구 3</text>
+          <text x="65" y="90">칸 1</text><text x="65" y="150">칸 2</text>
+        </g>
+        <rect x="144" y="68" width="152" height="34" rx="5" class="f-crane" stroke-width="1.4"/>
+        <rect x="304" y="68" width="152" height="34" rx="5" class="f-crane" stroke-width="1.4"/>
+        <rect x="304" y="128" width="312" height="34" rx="5" class="f-steel" stroke-width="1.4"/>
+        <g font-size="13" text-anchor="middle" font-family="var(--font-mono)">
+          <text x="220" y="90">x<tspan baseline-shift="sub" font-size="10">01,1</tspan> = 1 (A 앞)</text>
+          <text x="380" y="90">x<tspan baseline-shift="sub" font-size="10">12,1</tspan> = 1 (A 뒤)</text>
+          <text x="460" y="150">x<tspan baseline-shift="sub" font-size="10">13,2</tspan> = 1 (B)</text>
+        </g>
+        <g font-size="12" text-anchor="middle">
+          <text x="300" y="204" class="t-crane">항구 1에서 A를 쪼갬: z<tspan baseline-shift="sub" font-size="9">012</tspan> = 1</text>
+          <text x="460" y="204" class="t-steel">항구 2에서 B가 머묾: y<tspan baseline-shift="sub" font-size="9">2,2</tspan> = 0</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>미니 문제 B의 최적해 (가). 막대 하나가 x = 1인 구간 하나입니다. 항구 1에서 차 A(0→2)가 잠깐 내렸다 다시 실리면서 (0,1)과 (1,2) 두 구간으로 나뉘었습니다. 같은 줄(칸) 안에서는 막대들이 겹치지 않습니다.</figcaption>
+    </figure>
+    <p>모형의 결정변수는 세 종류입니다. 숫자를 넣어 쓸 때 항구 둘과 칸 번호가 헷갈리면 <code>x<sub>02,1</sub></code>(p = 0, q = 2, 칸 1)처럼 쉼표를 넣습니다.</p>
+    <div class="defn"><b>정의 (tryAgain 모형의 변수)</b>
+      <ul>
+        <li><strong>x<sub>pqi</sub> ∈ {0, 1}</strong> (p &lt; q, 칸 i = 1, …, N−1): 항구 p에서 칸 i에 실려 항구 q에서 내리는 구간이 있으면 1, 없으면 0.</li>
+        <li><strong>y<sub>pi</sub> ∈ {0, 1}</strong> (중간 항구 p = 1, …, P−2, 노드 i = 0, …, N−1): 항구 p에서 노드 i가 접근 가능하면 1.</li>
+        <li><strong>z<sub>pqr</sub> ≥ 0 정수</strong> (p &lt; q &lt; r): 항구 p에서 실어 r에서 내릴 차 가운데, 중간 항구 q에서 잠깐 내렸다 다시 실어 구간을 둘((p, q)와 (q, r))로 쪼갠 대수.</li>
+      </ul>
+    </div>
+    <p>y를 첫 항구(0)와 마지막 항구(P−1)에 두지 않는 이유는 간단합니다. 첫 항구에서는 배가 비어 있고, 마지막 항구에서는 남은 차를 모두 내리므로 <em>머무는 차가 없기 때문</em>입니다. 모든 칸이 비어 있어 접근 가능 여부를 따질 필요가 없습니다.</p>
+    <p>목적함수는 구간의 비용 합입니다. 구간 하나마다 실을 때 경로 하나, 내릴 때 경로 하나, 곧 경로 둘이 생기고, 칸 i까지의 경로 하나의 비용은 F + dist(i)입니다. 따라서 구간 하나의 비용은 <strong>2 · (F + dist(i))</strong>입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화 &nbsp;Σ<sub>p&lt;q</sub> Σ<sub>i</sub> 2 · (F + dist(i)) · x<sub>pqi</sub></span><span class="all">모든 항구 쌍 p &lt; q, 모든 칸 i</span></div>
+    </div>
+    <p>z와 y에는 비용이 없습니다. 구간을 쪼개면 x가 하나 더 1이 되면서 2(F + dist(i))가 자동으로 붙기 때문입니다. 또한 모든 계수가 2 × (정수)이므로 목적함수 값은 언제나 짝수입니다(13장 「k의 배수」 논증의 근거입니다).</p>
+  </section>
+
+  <section>
+    <h2>제약 ①~⑥: 여섯 줄로 문제 전체를 적다</h2>
+    <p>이제 여섯 가지 제약을 한꺼번에 적어 놓고, 각 줄이 앞의 어느 관용구인지 읽습니다.</p>
+    <div class="eq">
+      <div class="row"><span class="tag">제약 ①</span><span>Σ<sub>i</sub> x<sub>pqi</sub> = d<sub>pq</sub> − Σ<sub>p&lt;r&lt;q</sub> z<sub>prq</sub> + Σ<sub>r&gt;q</sub> z<sub>pqr</sub> + Σ<sub>r&lt;p</sub> z<sub>rpq</sub></span><span class="all">모든 항구 쌍 p &lt; q</span></div>
+      <div class="row"><span class="tag">제약 ②</span><span>Σ<sub>p&lt;q</sub> Σ<sub>r&gt;q</sub> x<sub>pri</sub> ≤ 1 − y<sub>qi</sub></span><span class="all">모든 중간 항구 q, 모든 칸 i</span></div>
+      <div class="row"><span class="tag">제약 ③</span><span>Σ<sub>p&lt;q</sub> x<sub>pqi</sub> ≤ y<sub>qi</sub></span><span class="all">모든 중간 항구 q, 모든 칸 i</span></div>
+      <div class="row"><span class="tag">제약 ④</span><span>Σ<sub>r&gt;q</sub> x<sub>qri</sub> ≤ y<sub>qi</sub></span><span class="all">모든 중간 항구 q, 모든 칸 i</span></div>
+      <div class="row"><span class="tag">제약 ⑤</span><span>y<sub>qi</sub> ≤ Σ<sub>j∈pred(i)</sub> y<sub>qj</sub></span><span class="all">모든 중간 항구 q, 모든 칸 i</span></div>
+      <div class="row"><span class="tag">제약 ⑥</span><span>y<sub>q0</sub> = 1</span><span class="all">모든 중간 항구 q</span></div>
+    </div>
+    <ul class="plain">
+      <li><strong>제약 ① (수요 맞추기 = 흐름 보존).</strong> 왼쪽은 "(p, q) 구간이 몇 대 있는가"입니다. 오른쪽은 원래 수요 d<sub>pq</sub>에서 중간 항구 r에서 쪼개져 사라진 수(z<sub>prq</sub>)를 빼고, 더 긴 구간 (p, r)이나 (r, q)가 쪼개지며 새로 생긴 앞·뒤 토막(z<sub>pqr</sub>, z<sub>rpq</sub>)을 더한 값입니다.</li>
+      <li><strong>제약 ② (머무는 차가 있는 칸은 접근 불가).</strong> 왼쪽은 항구 q보다 일찍(p &lt; q) 실려 q보다 늦게(r &gt; q) 내리는 구간, 곧 항구 q에서 칸 i에 <em>머무는 차</em>의 합입니다. 11장에서 본 "모은 식"(<code>x<sub>1</sub> + x<sub>2</sub> + … ≤ 1 − y</code>)이라서, 머무는 차는 많아야 1대이고(포장), 1대라도 있으면 y<sub>qi</sub> = 0이 됩니다.</li>
+      <li><strong>제약 ③ (내리려면 접근 가능).</strong> 왼쪽은 항구 q에서 칸 i로부터 <em>내리는 차</em>의 합입니다. 내리는 차는 많아야 1대이고, 내리려면 y<sub>qi</sub> = 1이어야 합니다.</li>
+      <li><strong>제약 ④ (실으려면 접근 가능).</strong> 왼쪽은 항구 q에서 칸 i에 <em>싣는 차</em>의 합입니다. 실으려면 역시 y<sub>qi</sub> = 1이어야 합니다. 제약 ③과 ④는 서로를 막지 않아서, 같은 항구에서 한 차를 내리고 그 칸에 새 차를 실을 수 있습니다.</li>
+      <li><strong>제약 ⑤⑥ (접근 가능 전파).</strong> 2부에서 본 "고정 높이 전파" 그대로입니다. 출입구는 언제나 접근 가능하고(⑥), 칸 i가 접근 가능하려면 아래 이웃 pred(i) 가운데 적어도 하나가 접근 가능해야 합니다(⑤).</li>
+    </ul>
+    <div class="why"><p><strong>"한 칸에 차 두 대가 겹치는 일은 왜 없는가?"</strong> 모형에 "동시에 한 대 이하"라는 식을 따로 적지 않았는데도 겹칠 수 없습니다. 칸 i에 두 구간 A(a<sub>1</sub> → a<sub>2</sub>)와 B(b<sub>1</sub> → b<sub>2</sub>)가 겹쳤다고 해 봅시다. ① B가 A의 도중에 실리면(a<sub>1</sub> &lt; b<sub>1</sub> &lt; a<sub>2</sub>), 항구 b<sub>1</sub>에서 A는 머무는 차이므로 ②가 y = 0을 강제하고, B를 실어야 하므로 ④가 y = 1을 요구해 모순입니다. ② 같은 항구에서 실려 A가 먼저 내리면(a<sub>1</sub> = b<sub>1</sub>, a<sub>2</sub> &lt; b<sub>2</sub>), 항구 a<sub>2</sub>에서 B는 머무는 차(y = 0)인데 A를 내려야 하므로 ③이 y = 1을 요구해 역시 모순입니다. 시작과 끝이 모두 같으면 같은 변수 x<sub>pqi</sub> ∈ {0, 1}이므로 애초에 1대뿐입니다.</p></div>
+    <p>11장 끝에서 본 대로 y는 목적함수에 비용이 0인 스위치입니다. 그래서 아무 일도 없는 빈칸의 y가 0으로 나와도 제약 위반이 아니며, 실제로 싣거나 내리지 않으므로 해가 틀릴 일도 없습니다.</p>
+  </section>
+
+  <section>
+    <h2>가장 작은 예(미니 문제 B)에 숫자 넣기</h2>
+    <p>미니 문제 B(N = 3, P = 4, d<sub>02</sub> = d<sub>13</sub> = 1)에 일반식을 그대로 풀어 적어 봅니다. 먼저 항구 쌍 여섯 개에 대한 제약 ① 여섯 줄입니다.</p>
+    <div class="eq">
+      <div class="row"><span>x<sub>01,1</sub> + x<sub>01,2</sub> = 0 + z<sub>012</sub> + z<sub>013</sub></span><span class="all">(0, 1): 0→2나 0→3이 1에서 쪼개진 앞 토막</span></div>
+      <div class="row"><span>x<sub>02,1</sub> + x<sub>02,2</sub> = 1 − z<sub>012</sub> + z<sub>023</sub></span><span class="all">(0, 2): 수요 1대, 항구 1에서 쪼개면 빠짐</span></div>
+      <div class="row"><span>x<sub>03,1</sub> + x<sub>03,2</sub> = 0 − z<sub>013</sub> − z<sub>023</sub></span><span class="all">(0, 3): 수요 없음 → z<sub>013</sub> = z<sub>023</sub> = 0</span></div>
+      <div class="row"><span>x<sub>12,1</sub> + x<sub>12,2</sub> = 0 + z<sub>123</sub> + z<sub>012</sub></span><span class="all">(1, 2): 0→2의 뒤 토막 또는 1→3의 앞 토막</span></div>
+      <div class="row"><span>x<sub>13,1</sub> + x<sub>13,2</sub> = 1 − z<sub>123</sub> + z<sub>013</sub></span><span class="all">(1, 3): 수요 1대, 항구 2에서 쪼개면 빠짐</span></div>
+      <div class="row"><span>x<sub>23,1</sub> + x<sub>23,2</sub> = 0 + z<sub>023</sub> + z<sub>123</sub></span><span class="all">(2, 3): 1→3이 2에서 쪼개진 뒤 토막</span></div>
+    </div>
+    <p>앞 그림의 해 (가)(x<sub>01,1</sub> = 1, x<sub>12,1</sub> = 1, x<sub>13,2</sub> = 1, z<sub>012</sub> = 1, 나머지 x와 z는 0)를 넣어 보세요. (0, 1)은 1 = 0 + 1, (0, 2)는 0 = 1 − 1, (1, 2)는 1 = 0 + 1, (1, 3)은 1 = 1로 여섯 줄 모두 딱 맞습니다. 비용은 22 + 22 + 24 = 68입니다.</p>
+    <p>이제 재배치 없이(z = 0) 차 A를 안쪽 칸 2에, 차 B를 바깥쪽 칸 1에 둔 배치(x<sub>02,2</sub> = 1, x<sub>13,1</sub> = 1)를 제약 ②③⑤에 넣어 봅니다. 항구 2, 칸 2에서 A를 내려야 하므로 제약 ③이 x<sub>02,2</sub> ≤ y<sub>2,2</sub>에서 y<sub>2,2</sub> = 1을 요구합니다. 그러면 제약 ⑤(y<sub>2,2</sub> ≤ y<sub>2,1</sub>) 때문에 y<sub>2,1</sub> = 1이어야 합니다. 그런데 항구 2, 칸 1에는 차 B가 머물고 있으므로 제약 ②(x<sub>13,1</sub> ≤ 1 − y<sub>2,1</sub>)가 y<sub>2,1</sub> = 0을 요구합니다. 모순입니다! 이렇게 식 세 줄이 사슬처럼 맞물려 불가능한 배치를 막아 줍니다.</p>
+  </section>
+
+  <section>
+    <h2>변수와 제약 개수 세기</h2>
+    <p>아무 크기의 문제(노드 N개, 항구 P개)에서 변수와 제약의 개수는 <sub>P</sub>C<sub>2</sub> = P(P − 1)/2와 <sub>P</sub>C<sub>3</sub> = P(P − 1)(P − 2)/6으로 바로 셉니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>종류</th><th>개수 세는 식</th><th class="num">미니 문제 B<br>(N = 3, P = 4)</th><th class="num">공식 예시<br>(N = 5, P = 5)</th></tr></thead>
+      <tbody>
+        <tr><td>x<sub>pqi</sub> (이진)</td><td>P(P − 1)/2 × (N − 1)</td><td class="num">6 × 2 = 12</td><td class="num">10 × 4 = 40</td></tr>
+        <tr><td>y<sub>pi</sub> (이진)</td><td>(P − 2) × N</td><td class="num">2 × 3 = 6</td><td class="num">3 × 5 = 15</td></tr>
+        <tr><td>z<sub>pqr</sub> (정수)</td><td>P(P − 1)(P − 2)/6</td><td class="num">4</td><td class="num">10</td></tr>
+        <tr><td>제약 ①</td><td>P(P − 1)/2</td><td class="num">6</td><td class="num">10</td></tr>
+        <tr><td>제약 ②③④⑤</td><td>각각 (P − 2) × (N − 1)</td><td class="num">각 4 (합 16)</td><td class="num">각 12 (합 48)</td></tr>
+        <tr><td>제약 ⑥</td><td>P − 2</td><td class="num">2</td><td class="num">3</td></tr>
+        <tr><td><strong>합계</strong></td><td></td><td class="num"><strong>변수 22, 제약 24</strong></td><td class="num"><strong>변수 65, 제약 61</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>공식 예시(일렬 배, N = 5, P = 5, F = 10, 대회 LB = 137)를 이 모형으로 풀면 최적값이 <strong>190</strong>입니다. 한편 변수의 대부분을 차지하는 x는 P<sup>2</sup>N에 비례합니다. 앞에서 본 택배 트럭 경로 문제(3첨자 모형, n<sup>2</sup>K)와 달리 첨자에 간선이나 방문 순번이 들어가지 않고, 간선 정보는 오직 제약 ⑤의 pred(i) 안에만 들어 있습니다. 본선의 큰 문제(N = 163, P = 20)에서도 모형 크기가 얼마나 되는지 Python으로 확인해 봅니다.</p>
+<pre class="py">
+def model_size(N, P):
+    pairs = P * (P - 1) // 2
+    triples = P * (P - 1) * (P - 2) // 6
+    nx = pairs * (N - 1)
+    ny = (P - 2) * N
+    nz = triples
+    nc = pairs + 4 * (P - 2) * (N - 1) + (P - 2)
+    return nx + ny + nz, nc
+
+print("미니 문제 B:", model_size(3, 4))
+print("공식 예시:", model_size(5, 5))
+print("본선 큰 문제:", model_size(163, 20))
+</pre>
+<pre class="out">
+미니 문제 B: (22, 24)
+공식 예시: (65, 61)
+본선 큰 문제: (34854, 11872)
+</pre>
+    <ul class="code">
+      <li><b>2~3행</b> 항구 쌍(<sub>P</sub>C<sub>2</sub>)과 항구 셋(<sub>P</sub>C<sub>3</sub>)의 개수를 정수 나눗셈 <code>//</code>으로 구합니다.</li>
+      <li><b>4~6행</b> x, y, z 변수의 개수입니다.</li>
+      <li><b>7행</b> 제약 ①~⑥을 모두 더한 줄 수입니다.</li>
+      <li><b>10~12행</b> N = 163, P = 20인 큰 문제도 변수 약 3만 5천 개, 제약 약 1만 2천 줄에 담깁니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드의 「모형 한 줄씩」 절에 나오는 변수 x, y, z와 제약 ①~⑥이 바로 이 장 4부의 식입니다. 가이드가 "첨자에는 노드와 항구만 있고 간선과 순번은 없다"고 적은 것은, 2부에서 비교한 MTZ·흐름 방법 대신 고정 높이 전파를 택했기 때문입니다.</p></div>
+    <div class="gref"><p>가이드가 1등 팀이 대칭성을 피한 비결로 꼽는 "어느 수요의 차인지 이름을 붙이지 않고 구간의 개수만 센 것"은 3부의 대칭성 이야기입니다. 대칭 깨기 제약을 덧붙이는 대신 아예 이름표를 변수에서 뺐습니다.</p></div>
+    <div class="gref"><p>가이드가 설명하는 "위치변경과 높이를 거스르는 길을 잃는다"는 대목은 2부 비교 표의 「멀쩡한 답을 잃는가: 예」에 해당합니다. 16장에서 이 모형의 장단점을 이론 전체로 다시 짚어 봅니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>흐름 보존: 노드마다 (나가는 양) − (들어오는 양) = (공급). 최소비용 흐름과 최단 경로가 이 꼴입니다.</li>
+        <li>집합 분할(= 1), 덮개(≥ 1), 포장(≤ 1)은 고른 묶음들이 원소를 몇 번 덮는지로 갈립니다.</li>
+        <li>차수 제약만 적으면 부분 순환이 생깁니다. MTZ(순번 변수 u + big-M), 흐름 변수, 부분 순환 제거 부등식, 고정 높이 전파로 막습니다.</li>
+        <li>구별할 필요 없는 대상에 번호표를 붙이면 대칭성이 생겨 탐색이 느려집니다.</li>
+        <li>tryAgain 모형은 변수 x<sub>pqi</sub>(구간), y<sub>pi</sub>(접근 가능), z<sub>pqr</sub>(쪼개기)와 제약 ①~⑥으로 이루어지며, big-M도 대칭성도 없습니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>1부의 작은 배달망(s→a 비용 1, a→t 비용 1, s→t 비용 3)에서 각 길의 용량이 2상자로 늘고, s에서 t로 2상자를 보낸다고 합시다. 흐름 보존식을 만족하면서 가장 싼 흐름은 무엇이고 총비용은 얼마인가요?</summary>
+      <p>f<sub>sa</sub> = 2, f<sub>at</sub> = 2, f<sub>st</sub> = 0입니다. 흐름 보존: s는 2 + 0 = 2, a는 2 − 2 = 0, t는 −2 − 0 = −2로 모두 성립합니다. 총비용은 1 × 2 + 1 × 2 = 4입니다.</p>
+    </details>
+    <details>
+      <summary>1부의 배달 예(고객 {1, 2, 3}, S<sub>1</sub>={1}(4), S<sub>2</sub>={2}(4), S<sub>3</sub>={3}(4), S<sub>4</sub>={1,2}(5), S<sub>5</sub>={2,3}(5), S<sub>6</sub>={1,2,3}(9))에서 S<sub>6</sub>의 비용이 9에서 10으로 올랐을 때, 집합 분할의 최적값과 집합 덮개의 최적값은 각각 얼마인가요?</summary>
+      <p>집합 분할에서는 {1, 2}{3}과 {1}{2, 3}이 비용 5 + 4 = 9로 가장 쌉니다(S<sub>6</sub>은 10이라 탈락). 집합 덮개에서는 {1, 2}와 {2, 3}을 함께 골라도 5 + 5 = 10이므로 9보다 싸지 않아 최적값은 역시 9입니다.</p>
+    </details>
+    <details>
+      <summary>도시 5개(0~4)에서 해 0 → 1 → 0, 2 → 3 → 4 → 2가 MTZ 제약을 어기는 것을 보이세요. 0 → 1 → 0의 간선에는 MTZ 식이 걸리나요?</summary>
+      <p>2 → 3 → 4 → 2에는 도시 0이 없으므로 u<sub>3</sub> ≥ u<sub>2</sub> + 1, u<sub>4</sub> ≥ u<sub>3</sub> + 1, u<sub>2</sub> ≥ u<sub>4</sub> + 1이 모두 걸립니다. 세 식을 더하면 0 ≥ 3으로 모순입니다. 0 → 1 → 0의 두 간선에는 도시 0이 끼어 있어 MTZ 식이 걸리지 않지만, 부분 순환 하나만 막아도 해 전체가 불능이 되므로 충분합니다.</p>
+    </details>
+    <details>
+      <summary>본문의 <code>find_cycles</code> 함수에 <code>[2, 0, 1, 4, 3]</code>을 넣으면 어떤 결과가 나올지 손으로 따라가 보세요.</summary>
+      <p>start = 0에서 0 → 2 → 1 → 0으로 첫 고리 [0, 2, 1]을 찾습니다. start = 1, 2는 이미 방문했으므로 건너뛰고, start = 3에서 3 → 4 → 3으로 둘째 고리 [3, 4]를 찾습니다. 결과는 <code>[[0, 2, 1], [3, 4]]</code>로, 부분 순환 두 개가 나옵니다.</p>
+    </details>
+    <details>
+      <summary>3 × 3 격자 배(pred(3) = {1}, pred(4) = {1, 2}, pred(6) = {3, 4})의 어느 항구에서 칸 1과 칸 2에 모두 머무는 차가 있습니다. 제약 ②와 ⑤를 따라가며 y<sub>6</sub> = 1이 가능한지 확인하세요.</summary>
+      <p>칸 1과 칸 2에 머무는 차가 있으므로 제약 ②에서 y<sub>1</sub> = 0, y<sub>2</sub> = 0입니다. 제약 ⑤에 의해 y<sub>3</sub> ≤ y<sub>1</sub> = 0, y<sub>4</sub> ≤ y<sub>1</sub> + y<sub>2</sub> = 0이므로 y<sub>3</sub> = y<sub>4</sub> = 0이고, 따라서 y<sub>6</sub> ≤ y<sub>3</sub> + y<sub>4</sub> = 0입니다. y<sub>6</sub> = 1은 불가능합니다.</p>
+    </details>
+    <details>
+      <summary>미니 문제 B의 다른 최적해 (나)(x<sub>02,2</sub> = 1, x<sub>12,1</sub> = 1, x<sub>23,1</sub> = 1, z<sub>123</sub> = 1)를 제약 ①의 여섯 줄에 대입해 확인하고, y<sub>1,1</sub>, y<sub>1,2</sub>, y<sub>2,1</sub>, y<sub>2,2</sub>의 값을 정해 보세요.</summary>
+      <p>제약 ①: (0,1) 0 = 0, (0,2) 1 = 1 − 0 + 0, (0,3) 0 = 0, (1,2) 1 = 0 + 1 + 0, (1,3) 0 = 1 − 1 + 0, (2,3) 1 = 0 + 0 + 1로 모두 맞습니다. 항구 1에서는 칸 2에 A가 머무니 y<sub>1,2</sub> = 0(②), 칸 1에 B를 실으니 y<sub>1,1</sub> = 1(④). 항구 2에서는 칸 2에서 A를 내리니 y<sub>2,2</sub> = 1(③), 그러려면 y<sub>2,1</sub> = 1(⑤)이어야 하고 칸 1에는 머무는 차가 없어 ②도 성립합니다.</p>
+    </details>
+    <details>
+      <summary>항구가 5개(0~4)일 때, 제약 ②에서 항구 q = 2, 칸 i의 왼쪽 합을 풀어 쓰세요.</summary>
+      <p>p &lt; 2이므로 p는 0 또는 1, r &gt; 2이므로 r은 3 또는 4입니다. 따라서 왼쪽은 x<sub>03,i</sub> + x<sub>04,i</sub> + x<sub>13,i</sub> + x<sub>14,i</sub>입니다. 항구 2를 사이에 끼고 지나는 구간 네 가지입니다.</p>
+    </details>
+    <details>
+      <summary>노드 N = 8, 항구 P = 4인 가지가 있는 배에서 tryAgain 모형의 변수 x, y, z와 제약 ①~⑥의 개수를 각각 세고, 본문의 <code>model_size(8, 4)</code>와 맞는지 확인하세요.</summary>
+      <p>x: (4×3/2) × 7 = 6 × 7 = 42개. y: (4 − 2) × 8 = 16개. z: 4×3×2/6 = 4개. 변수 합계 62개. 제약 ①: 6줄, ②~⑤: 4 × 2 × 7 = 56줄, ⑥: 2줄. 제약 합계 64줄입니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://unerue.github.io/operations-research/integer-programming/integer-programming.html">강경수, 「정수 계획법」 튜토리얼</a> — 배낭, 외판원 문제(TSP), 집합 덮개를 한국어 코드 예제로 보여 줍니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1132487">KOCW 「경영과학」 (중앙대 안봉현)</a> — 대학 강의. 7강이 정수계획법 모형입니다.</li>
+      <li><span class="tagc">무료</span><a href="https://scipbook.readthedocs.io/en/latest/routing.html">Kubo 외, <em>Mathematical Optimization: Solving Problems using SCIP and Python</em> 「Routing problems」</a> — 영어. 외판원 문제의 부분 순환 제거, MTZ, 흐름 정식화를 Python 코드로 비교합니다.</li>
+      <li><span class="tagc">교과서</span><a href="https://www.wiley.com/en-us/Integer+Programming%2C+2nd+Edition-p-9781119606536">L. A. Wolsey, <em>Integer Programming</em>, 2판 (Wiley, 2020)</a> — 영어, 대학 교재. 1장 Formulations에서 흐름, 집합 분할·덮개·포장, 경로 문제 모형을 다룹니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/pages/lecture-notes/">MIT OCW 6.251J Introduction to Mathematical Programming (2009) 강의 노트</a> — 영어. 1강(Formulations)과 24~25강(Discrete optimization)이 이 장의 범위입니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch11">← 이전: 11장 정수계획 모델링 ①: 0과 1로 논리 적기</a><a href="#ch13">다음: 13장 완화와 분지한계법 →</a></div>
+</article>

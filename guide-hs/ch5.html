@@ -1,0 +1,491 @@
+<article class="chapter" id="ch5">
+  <header>
+    <div class="kicker">5 / 12</div>
+    <h1>솔버가 푸는 법: 다 해 보지 않고 가장 좋은 답을 찾는다</h1>
+  </header>
+
+  <section>
+    <p class="lead">4장에서는 솔버를 「식을 넣으면 답이 나오는 상자」로 뒀습니다. 이 장에서는 상자를 엽니다. 속을 알아야 하는 이유는 둘입니다. 솔버가 내놓는 gap이라는 숫자를 읽을 수 있어야 하고, tryAgain이 바꾼 솔버 설정(10장)이 무엇을 건드리는지 알아야 합니다.</p>
+    <p>필요한 개념은 네 개입니다. LP 완화, 상한과 하한, 분지한계법, 그리고 솔버 안의 휴리스틱입니다. 4장의 트럭 예 하나로 처음부터 끝까지 따라갑니다.</p>
+  </section>
+
+  <section>
+    <h2>왜 전부 넣어 볼 수 없는가</h2>
+    <p>4장에서 트럭 예는 49가지를, 배낭 예는 8가지를 전부 넣어 보고 답을 찾았습니다. 배 문제도 그렇게 풀면 안 될까요? 가장 작은 문제에서 실제로 해 봤습니다.</p>
+    <p>1장의 미니 문제 B(칸 2개, 항구 4개, 차 2대)를 tryAgain의 방식으로 식으로 적으면 변수가 22개 나옵니다(식은 8장에서 한 줄씩 적습니다. 여기서는 개수만 봅니다). 그중 값이 미리 정해지지 않는 것은 0 또는 1인 변수 x 12개와 y 4개, 그리고 0 이상의 정수인 변수 z 4개입니다. 차가 두 대뿐이라 z는 2를 넘을 수 없으므로 0, 1, 2만 넣어 보면 됩니다. 조합의 수는</p>
+    <div class="formula">2<sup>12</sup> × 2<sup>4</sup> × 3<sup>4</sup> = 4,096 × 16 × 81 = 5,308,416가지</div>
+    <p>아래는 이 530만 가지를 모두 넣어 보는 프로그램의 뼈대입니다. <code>product((0, 1), repeat=12)</code>는 0과 1을 12자리에 넣는 모든 경우를 차례로 만들어 주는 Python 기능으로, for 문을 12겹 쌓은 것과 같습니다.</p>
+    <div class="lbl">Python · examples/mini_model_enumerate.py의 뼈대 (요지)</div>
+    <pre>
+for xv in product((0, 1), repeat=12):            # x 12개에 0, 1을 넣는 4,096가지
+    for zv in product((0, 1, 2), repeat=4):      # z 4개에 0, 1, 2를 넣는 81가지
+        if not demand_ok(x, z):                  # 제약 ①을 어기면 버린다
+            continue
+        for yv in product((0, 1), repeat=4):     # y 4개에 0, 1을 넣는 16가지
+            if not access_ok(x, y):              # 제약 ②~⑥을 어기면 버린다
+                continue
+            feasible += 1                        # 여기까지 오면 가능해
+            ...                                  # 비용이 가장 작은 것을 기억해 둔다
+</pre>
+    <pre class="out">
+넣어 본 조합: 5308416
+제약을 모두 지킨 조합(가능해): 8
+가장 작은 목적함수 값: 68
+</pre>
+    <p>530만 가지 가운데 제약식을 모두 지키는 것은 8가지뿐이고, 그중 가장 좋은 값은 1장에서 손으로 찾은 68입니다. 이 문서를 쓴 컴퓨터에서 1초 안에 끝났습니다(제약 ①을 어긴 조합은 y를 넣어 보기 전에 건너뛰었고, 건너뛴 것까지 센 수가 5,308,416입니다). 차 두 대짜리 문제는 이렇게 풀립니다. 문제는 그다음입니다.</p>
+    <div class="recall">
+      <p>0 또는 1인 변수가 n개면 조합은 2<sup>n</sup>가지입니다. 지수함수는 n이 조금만 커져도 값이 폭발합니다. 1초에 100만 가지를 넣어 볼 수 있다고 치고 걸리는 시간을 계산하면 다음과 같습니다.</p>
+    </div>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>0/1 변수의 수 n</th><th class="num">조합의 수 2<sup>n</sup></th><th>1초에 100만 가지씩 볼 때</th></tr></thead>
+      <tbody>
+        <tr><td>20</td><td class="num">1,048,576</td><td>약 1초</td></tr>
+        <tr><td>30</td><td class="num">1,073,741,824</td><td>약 18분</td></tr>
+        <tr><td>40</td><td class="num">1,099,511,627,776 (약 1.1조)</td><td>약 13일</td></tr>
+        <tr><td>100</td><td class="num">약 1.27 × 10<sup>30</sup></td><td>약 4 × 10<sup>16</sup>년 (우주 나이 약 138억 년의 300만 배쯤)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>2장의 공식 예시(칸 4개, 항구 5개, 차 6대)는 같은 방식으로 적으면 x만 40개입니다. x만 따져도 2<sup>40</sup>, 약 1.1조 가지입니다. 대회가 공개한 연습 문제에서는 x가 적게는 220개, 많게는 38,010개입니다(8장). 전부 넣어 보는 방법은 여기서 끝입니다.</p>
+    <p>그런데 솔버는 변수가 수만 개인 문제에서도 "이것이 최적이다"라는 답을 내놓습니다. 다 해 보지 않고도 <strong>"이보다 좋은 답은 없다"</strong>는 것을 알아내는 방법이 있기 때문입니다. 그 방법의 재료가 「하한」입니다.</p>
+  </section>
+
+  <!-- ================= 1부 ================= -->
+  <div class="part">1부 · LP 완화와 하한</div>
+
+  <section>
+    <h2>정수 조건만 빼면 쉬운 문제가 된다</h2>
+    <p>트럭 예를 다시 적습니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp;&nbsp; 10x + 7y</span><span class="all">큰 트럭 x대, 작은 트럭 y대</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; 9x + 5y ≥ 30,&nbsp; x ≥ 0,&nbsp; y ≥ 0,&nbsp; x와 y는 정수</span><span class="all"></span></div>
+    </div>
+    <p>여기서 "x와 y는 정수"라는 조건만 지웁니다. 그러면 4장에서 본 LP가 됩니다. 이렇게 만든 문제를 원래 문제의 <strong>LP 완화</strong>(LP relaxation)라고 합니다. 완화는 조건을 풀어 준다는 뜻입니다. 발표자료의 「선형완화문제」가 이것입니다.</p>
+    <p>LP는 빠르게 풀립니다. 이 예는 암산으로도 됩니다. 1톤을 싣는 데 드는 돈이 큰 트럭은 10/9 ≈ 1.11만 원, 작은 트럭은 7/5 = 1.4만 원이므로, 소수 대수를 허용한다면 싼 큰 트럭만 쓰는 것이 답입니다.</p>
+    <div class="formula">LP 완화의 최적해: x = 10/3 ≈ 3.33, y = 0, 비용 100/3 ≈ 33.33</div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 300" role="img" aria-label="x축 큰 트럭, y축 작은 트럭. 직선 9x+5y=30 위쪽이 가능 영역이고 그 안의 격자점이 정수해. LP 최적점은 격자점이 아닌 (3.33, 0), 정수 최적점은 (3, 1)">
+        <g>
+          <polygon class="f-steel" stroke="none" opacity=".55" points="70.0,76.0 276.7,262.0 417,262.0 417,29.5 70.0,29.5"/>
+          <g class="s-line" stroke-width="1.2"><line x1="70" y1="262" x2="417" y2="262"/><line x1="70" y1="262" x2="70" y2="30"/></g>
+          <g font-size="12" text-anchor="middle" class="t-muted"><text x="70" y="280">0</text><text x="132" y="280">1</text><text x="194" y="280">2</text><text x="256" y="280">3</text><text x="318" y="280">4</text><text x="380" y="280">5</text><text x="56" y="235">1</text><text x="56" y="204">2</text><text x="56" y="173">3</text><text x="56" y="142">4</text><text x="56" y="111">5</text><text x="56" y="80">6</text><text x="56" y="49">7</text></g>
+          <line class="s-steel" stroke-width="2" x1="70" y1="76" x2="276.7" y2="262"/>
+          <line class="s-crane" stroke-width="1.3" stroke-dasharray="5 4" x1="70" y1="114.4" x2="276.7" y2="262"/>
+          <line class="s-ok" stroke-width="1.3" stroke-dasharray="5 4" x1="70" y1="98.1" x2="299.4" y2="262"/>
+          <g><circle cx="70" cy="262" r="2" class="f-mut"/><circle cx="70" cy="231" r="2" class="f-mut"/><circle cx="70" cy="200" r="2" class="f-mut"/><circle cx="70" cy="169" r="2" class="f-mut"/><circle cx="70" cy="138" r="2" class="f-mut"/><circle cx="70" cy="107" r="2" class="f-mut"/><circle cx="70" cy="76" r="3.2" class="f-fg"/><circle cx="70" cy="45" r="3.2" class="f-fg"/><circle cx="132" cy="262" r="2" class="f-mut"/><circle cx="132" cy="231" r="2" class="f-mut"/><circle cx="132" cy="200" r="2" class="f-mut"/><circle cx="132" cy="169" r="2" class="f-mut"/><circle cx="132" cy="138" r="2" class="f-mut"/><circle cx="132" cy="107" r="3.2" class="f-fg"/><circle cx="132" cy="76" r="3.2" class="f-fg"/><circle cx="132" cy="45" r="3.2" class="f-fg"/><circle cx="194" cy="262" r="2" class="f-mut"/><circle cx="194" cy="231" r="2" class="f-mut"/><circle cx="194" cy="200" r="2" class="f-mut"/><circle cx="194" cy="169" r="3.2" class="f-fg"/><circle cx="194" cy="138" r="3.2" class="f-fg"/><circle cx="194" cy="107" r="3.2" class="f-fg"/><circle cx="194" cy="76" r="3.2" class="f-fg"/><circle cx="194" cy="45" r="3.2" class="f-fg"/><circle cx="256" cy="262" r="2" class="f-mut"/><circle cx="256" cy="231" r="3.2" class="f-fg"/><circle cx="256" cy="200" r="3.2" class="f-fg"/><circle cx="256" cy="169" r="3.2" class="f-fg"/><circle cx="256" cy="138" r="3.2" class="f-fg"/><circle cx="256" cy="107" r="3.2" class="f-fg"/><circle cx="256" cy="76" r="3.2" class="f-fg"/><circle cx="256" cy="45" r="3.2" class="f-fg"/><circle cx="318" cy="262" r="3.2" class="f-fg"/><circle cx="318" cy="231" r="3.2" class="f-fg"/><circle cx="318" cy="200" r="3.2" class="f-fg"/><circle cx="318" cy="169" r="3.2" class="f-fg"/><circle cx="318" cy="138" r="3.2" class="f-fg"/><circle cx="318" cy="107" r="3.2" class="f-fg"/><circle cx="318" cy="76" r="3.2" class="f-fg"/><circle cx="318" cy="45" r="3.2" class="f-fg"/><circle cx="380" cy="262" r="3.2" class="f-fg"/><circle cx="380" cy="231" r="3.2" class="f-fg"/><circle cx="380" cy="200" r="3.2" class="f-fg"/><circle cx="380" cy="169" r="3.2" class="f-fg"/><circle cx="380" cy="138" r="3.2" class="f-fg"/><circle cx="380" cy="107" r="3.2" class="f-fg"/><circle cx="380" cy="76" r="3.2" class="f-fg"/><circle cx="380" cy="45" r="3.2" class="f-fg"/></g>
+          <circle cx="276.7" cy="262" r="6" class="s-crane" stroke-width="2"/>
+          <circle cx="256" cy="231" r="7" class="s-ok" stroke-width="2"/>
+          <g font-size="12.5">
+            <text x="420" y="266" class="t-muted">x (큰 트럭)</text>
+            <text x="62" y="22" class="t-muted" text-anchor="middle">y (작은 트럭)</text>
+            
+            <g class="s-crane" stroke-width="1"><line x1="283" y1="256" x2="470" y2="200"/></g>
+            <text x="476" y="196" class="t-crane">LP 완화의 최적점 (3.33, 0)</text>
+            <text x="476" y="214" class="t-crane">비용 33.33 = 하한</text>
+            <g class="s-ok" stroke-width="1"><line x1="264" y1="229" x2="470" y2="130"/></g>
+            <text x="476" y="126" class="t-ok">정수 최적해 (3, 1)</text>
+            <text x="476" y="144" class="t-ok">비용 37</text>
+            <text x="476" y="42" class="t-muted">파란 실선 = 9x + 5y = 30</text><text x="476" y="60" class="t-muted">굵은 점 = 가능한 정수해 (작은 점 = 불가능)</text>
+            <text x="476" y="78" class="t-muted">색칠한 영역 = 9x + 5y ≥ 30 (오른쪽·위로 계속)</text>
+            <text x="476" y="96" class="t-muted">점선 = 비용이 같은 점들 (주황 33.33, 녹색 37)</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>가로축이 큰 트럭 대수 x, 세로축이 작은 트럭 대수 y입니다. 직선 9x + 5y = 30의 오른쪽 위(색칠한 영역)가 제약을 지키는 점들입니다. LP 완화는 색칠한 영역 전체에서 가장 싼 점을 찾고, 원래 문제는 그 안의 굵은 점(x, y가 모두 정수인 점)들 중에서 가장 싼 점을 찾습니다. 비용이 같은 점들은 직선(점선)을 이루고, 이 직선을 왼쪽 아래로 평행 이동할수록 쌉니다. 영역을 벗어나기 직전에 마지막으로 닿는 곳이 LP의 최적점이고, 그곳은 영역의 모퉁이(꼭짓점)입니다. LP의 답 (3.33, 0)을 반올림한 (3, 0)은 27톤밖에 못 싣고, 올림한 (4, 0)은 40만 원으로 최적이 아닙니다. <strong>LP의 답을 반올림한다고 정수 문제의 답이 되지는 않습니다.</strong></figcaption>
+    </figure>
+    <p>트럭 3.33대는 쓸 수 없는 답입니다. 그래도 33.33이라는 숫자에는 큰 쓸모가 있습니다.</p>
+    <div class="why">
+      <p><strong>LP 완화의 최적값은 원래 문제의 하한입니다.</strong> 우리 반에서 키가 가장 작은 학생과 학년 전체에서 키가 가장 작은 학생을 견주면, 학년 전체 쪽이 같거나 더 작습니다. 찾는 범위를 넓히면 최솟값은 나빠질 수 없습니다. 정수 조건을 지우는 것이 바로 범위를 넓히는 일입니다. 정수인 답은 모두 그대로 남고 소수인 답이 추가되기 때문입니다.</p>
+      <p>따라서 원래 문제의 어떤 가능해도 33.33만 원보다 쌀 수 없습니다. 트럭 값이 정수(만 원)이므로 실제로는 34 이상입니다. 아직 답을 모르는데도 "34보다 싼 답은 없다"는 것을 먼저 알게 됩니다. 이런 값을 <strong>하한</strong>(lower bound)이라고 합니다.</p>
+    </div>
+    <p>배 문제에서도 같은 일이 생깁니다. tryAgain의 모형에서 "0 또는 1"을 "0 이상 1 이하"로 풀어 주고 LP로 풀어 보았습니다(<code>examples/roro_model_ortools.py</code>, 실행 확인).</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>문제</th><th class="num">대회 LB (2장)</th><th class="num">모형의 LP 완화 값</th><th class="num">모형의 최적값</th></tr></thead>
+      <tbody>
+        <tr><td>미니 문제 B</td><td class="num">44</td><td class="num">46</td><td class="num">68</td></tr>
+        <tr><td>공식 예시</td><td class="num">137</td><td class="num">145</td><td class="num">190</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>미니 문제 B의 LP가 내놓은 답은 "차 A를 반 대씩 칸 1과 칸 2에, 차 B도 반 대씩 칸 1과 칸 2에 싣는다"입니다(x<sub>02,1</sub> = x<sub>02,2</sub> = x<sub>13,1</sub> = x<sub>13,2</sub> = 0.5). 반쪽짜리 차는 칸을 반만 막는 것으로 계산되어 재배치 없이 서로 지나갑니다. 현실에는 없는 답이지만, 그 비용 46은 "어떤 가능해도 46보다 쌀 수 없다"는 하한이 됩니다.</p>
+    <p>2장에서 본 대회 LB도 같은 종류의 숫자입니다. 그쪽은 "차들이 서로 길을 막지 않는다"고 조건을 풀어서 얻은 하한입니다. 조건을 풀면 하한이 나온다는 원리는 같고, 무엇을 푸느냐만 다릅니다.</p>
+  </section>
+
+  <section>
+    <h2>상한과 하한 사이에 답이 있다</h2>
+    <p>최소화 문제를 푸는 동안 솔버는 숫자 두 개를 들고 다닙니다.</p>
+    <div class="obj">
+      <div><div class="f">상한 (UB)</div><p>지금까지 찾은 가장 좋은 가능해의 비용입니다. 그 가능해를 <strong>현재 최선해</strong>(incumbent)라고 부릅니다. 최적값은 이보다 클 수 없습니다. 이미 이 값짜리 답을 손에 쥐고 있으니까요.</p></div>
+      <div><div class="f">하한 (LB)</div><p>"어떤 가능해도 이보다 쌀 수 없다"는 것이 증명된 값입니다. LP 완화에서 나옵니다. 지금까지 증명된 것 가운데 가장 좋은 값을 <strong>최선 하한</strong>(best bound)이라고 부릅니다.</p></div>
+      <div><div class="f">gap</div><p>둘의 차이입니다. 최적값은 상한과 하한 사이 어딘가에 있습니다. gap이 0이 되면 지금 들고 있는 답이 최적이라는 것이 증명된 것입니다.</p></div>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 170" role="img" aria-label="수직선 위에 하한 33.33과 상한 40이 있고 그 사이에 아직 모르는 최적값 37이 있다. 하한은 오른쪽으로 올라가고 상한은 왼쪽으로 내려온다">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="162.5" y="78" width="413.5" height="16" class="f-steel" stroke="none" opacity=".55"/>
+          <g class="s-line" stroke-width="1.2"><line x1="60" y1="86" x2="670" y2="86"/>
+            <line x1="80" y1="81" x2="80" y2="91"/><line x1="142" y1="81" x2="142" y2="91"/><line x1="204" y1="81" x2="204" y2="91"/><line x1="266" y1="81" x2="266" y2="91"/><line x1="328" y1="81" x2="328" y2="91"/><line x1="390" y1="81" x2="390" y2="91"/><line x1="452" y1="81" x2="452" y2="91"/><line x1="514" y1="81" x2="514" y2="91"/><line x1="576" y1="81" x2="576" y2="91"/><line x1="638" y1="81" x2="638" y2="91"/>
+          </g>
+          <g class="t-muted" font-size="11.5"><text x="80" y="110">32</text><text x="142" y="110">33</text><text x="204" y="110">34</text><text x="266" y="110">35</text><text x="328" y="110">36</text><text x="390" y="110">37</text><text x="452" y="110">38</text><text x="514" y="110">39</text><text x="576" y="110">40</text><text x="638" y="110">41</text></g>
+          <line x1="162.5" y1="60" x2="162.5" y2="100" class="s-crane" stroke-width="2.5"/>
+          <text x="162.5" y="36" class="t-crane">하한 33.33</text><text x="162.5" y="52" class="t-crane" font-size="11.5">(LP 완화의 값)</text>
+          <g class="s-crane" stroke-width="1.5"><line x1="172" y1="126" x2="232" y2="126"/><polyline points="224,121 232,126 224,131"/></g>
+          <text x="202" y="146" class="t-crane" font-size="11.5">풀수록 올라간다</text>
+          <line x1="576" y1="60" x2="576" y2="100" class="s-ok" stroke-width="2.5"/>
+          <text x="576" y="36" class="t-ok">상한 40</text><text x="576" y="52" class="t-ok" font-size="11.5">(지금까지 찾은 가장 좋은 답)</text>
+          <g class="s-ok" stroke-width="1.5"><line x1="566" y1="126" x2="506" y2="126"/><polyline points="514,121 506,126 514,131"/></g>
+          <text x="536" y="146" class="t-ok" font-size="11.5">더 좋은 답을 찾으면 내려온다</text>
+          <circle cx="390" cy="86" r="5" class="f-fg"/>
+          <text x="390" y="66" font-size="11.5">최적값 (아직 모름)</text>
+          <text x="369" y="146" class="t-muted" font-size="11.5">gap = 40 − 33.33 = 6.67</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>트럭 예를 풀던 도중의 한 장면입니다(뒤의 분지한계법 표에서 가지 ②까지 본 시점). 큰 트럭 4대라는 답(40)을 하나 찾았고, LP 완화로 33.33이라는 하한을 알고 있습니다. 최적값은 색칠한 범위 안에 있습니다. 솔버가 하는 일은 양쪽에서 이 범위를 좁혀 가는 것입니다.</figcaption>
+    </figure>
+    <p>사람이 직접 짠 탐색 프로그램은 대개 상한만 줍니다. 답을 계속 고쳐 나가지만 "지금 답이 최적에서 얼마나 떨어져 있는지"는 알려 주지 못합니다. 솔버는 하한을 함께 끌어올리므로, 최적해를 모르는 채로도 "지금 답은 최적보다 많아야 3% 나쁘다"고 말할 수 있습니다.</p>
+    <p>gap은 두 가지로 잽니다. Gurobi의 정의는 다음과 같고, 괄호 안은 "이만큼 좁혀지면 멈춰라"를 정하는 설정의 이름입니다. 이런 설정을 Gurobi에서는 파라미터라고 부릅니다(4장의 「주어진 숫자」와는 다른 뜻으로 쓰는 말입니다).</p>
+    <div class="eq">
+      <div class="row"><span>절대 gap = 상한 − 하한</span><span class="all">설정 MIPGapAbs, 기본값 1e-10 (= 10<sup>−10</sup>)</span></div>
+      <div class="row"><span>상대 gap = (상한 − 하한) / |상한|</span><span class="all">설정 MIPGap, 기본값 1e-4 (= 0.01%)</span></div>
+    </div>
+    <p>솔버는 둘 중 하나라도 기준 아래로 내려가면 "최적"이라고 선언하고 멈춥니다. 기준을 느슨하게 주면 일찍 멈춥니다. 예를 들어 상한이 108, 하한이 100이면 절대 gap은 8, 상대 gap은 8/108 ≈ 7.4%입니다.</p>
+  </section>
+
+  <!-- ================= 2부 ================= -->
+  <div class="part">2부 · 분지한계법</div>
+
+  <section>
+    <h2>나누고, 풀고, 버린다</h2>
+    <p><strong>분지한계법</strong>(branch and bound)은 발표자료 8쪽이 "대부분의 솔버가 쓰는 해 탐색 알고리듬"이라고 소개하는 방법입니다. 분지(分枝)는 가지를 친다는 뜻이고 한계는 하한을 가리킵니다. 생각은 단순합니다.</p>
+    <ol class="plain">
+      <li>LP 완화를 풉니다. 답이 모두 정수면 끝입니다.</li>
+      <li>정수가 아닌 변수를 하나 고릅니다. 예를 들어 x = 3.33이면, 문제를 "x ≤ 3인 경우"와 "x ≥ 4인 경우" 둘로 나눕니다(분지). 3과 4 사이의 소수 값만 잘려 나가고, 정수인 답은 하나도 잃지 않습니다.</li>
+      <li>나뉜 문제 각각에 대해 다시 LP 완화를 풉니다. 조건이 추가됐으니 LP 값은 나누기 전보다 좋아질 수 없습니다. 곧 하한이 올라갑니다.</li>
+      <li>다음 세 경우에는 그 문제를 더 나누지 않고 버립니다(가지치기).</li>
+    </ol>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>버리는 경우</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>LP가 불능</td><td>이 안에는 가능해가 없습니다.</td></tr>
+        <tr><td>LP의 답이 정수</td><td>이 안에서 가장 좋은 답을 찾았습니다. 지금까지의 현재 최선해보다 좋으면 현재 최선해를 바꿉니다.</td></tr>
+        <tr><td>LP 값 ≥ 상한</td><td>이 안의 어떤 답도 이미 들고 있는 답보다 좋을 수 없습니다. 더 파 볼 필요가 없습니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>셋째 경우가 핵심입니다. 좋은 가능해를 일찍 찾을수록(상한이 낮을수록), 그리고 LP 하한이 실제 값에 가까울수록 더 많은 부분을 열어 보지도 않고 버릴 수 있습니다. 2<sup>n</sup>가지를 다 보지 않아도 되는 이유가 이것입니다.</p>
+    <p>말 세 개를 정해 둡니다. 맨 처음의 문제(조건을 하나도 추가하지 않은 것)를 <strong>뿌리</strong>(root), 나뉘어 생긴 문제 하나하나를 <strong>가지</strong>라고 합니다. 만들어졌지만 아직 버려지지도 더 나뉘지도 않은 가지를 「열린 가지」라고 하겠습니다. 전체의 하한은 열린 가지들의 하한 중 가장 작은 값입니다. 아직 LP를 풀지 않은 가지는 자기가 갈라져 나온 가지의 LP 값을 하한으로 물려받습니다.</p>
+  </section>
+
+  <section>
+    <h2>트럭 예를 끝까지 따라가기</h2>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 370" role="img" aria-label="트럭 예의 분지한계법 그림. 뿌리에서 x≤3과 x≥4로 나뉘고, x≤3 쪽에서 y≤0과 y≥1로, y≥1 쪽에서 x≤2와 x≥3으로 나뉜다">
+        <g font-size="12.5" text-anchor="middle">
+          <g class="s-line" stroke-width="1.2">
+            <line x1="360" y1="62" x2="200" y2="112"/><line x1="360" y1="62" x2="540" y2="112"/>
+            <line x1="200" y1="162" x2="95" y2="212"/><line x1="200" y1="162" x2="310" y2="212"/>
+            <line x1="310" y1="262" x2="205" y2="312"/><line x1="310" y1="262" x2="430" y2="312"/>
+          </g>
+          <rect x="270" y="12" width="180" height="50" rx="5" class="f-steel"/>
+          <text x="360" y="32">① 뿌리: (3.33, 0)</text><text x="360" y="50">LP 값 33.33</text>
+
+          <rect x="110" y="112" width="180" height="50" rx="5" class="f-steel"/>
+          <text x="200" y="132">③ x ≤ 3: (3, 0.6)</text><text x="200" y="150">LP 값 34.2</text>
+          <rect x="450" y="112" width="180" height="50" rx="5" class="f-ok"/>
+          <text x="540" y="132">② x ≥ 4: (4, 0)</text><text x="540" y="150">40 · 정수해 → 현재 최선해</text>
+
+          <rect x="15" y="212" width="160" height="50" rx="5" class="f-bay" stroke-dasharray="5 4"/>
+          <text x="95" y="232">④ y ≤ 0</text><text x="95" y="250" class="t-muted">불능 → 버림</text>
+          <rect x="220" y="212" width="180" height="50" rx="5" class="f-steel"/>
+          <text x="310" y="232">⑤ y ≥ 1: (2.78, 1)</text><text x="310" y="250">LP 값 34.78</text>
+
+          <rect x="115" y="312" width="180" height="50" rx="5" class="f-crane"/>
+          <text x="205" y="332">⑦ x ≤ 2: (2, 2.4)</text><text x="205" y="350">36.8 → 올림 37 ≥ 37 → 버림</text>
+          <rect x="340" y="312" width="180" height="50" rx="5" class="f-ok"/>
+          <text x="430" y="332">⑥ x ≥ 3: (3, 1)</text><text x="430" y="350">37 · 정수해 → 현재 최선해</text>
+
+          <g font-size="11.5" class="t-muted" text-anchor="start">
+            <text x="545" y="236">괄호 안은 (x, y)</text>
+            <text x="545" y="254">번호는 살펴본 순서</text>
+            <text x="545" y="290">녹색 = 정수해 발견</text>
+            <text x="545" y="308">주황 = 하한으로 버림</text>
+            <text x="545" y="326">점선 = 불능</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>트럭 예의 분지한계법 전체입니다. 상자 하나가 가지 하나이고, 번호는 살펴본 순서입니다. 아래로 내려갈수록 조건이 하나씩 쌓입니다. 가지 ⑤는 "x ≤ 3이고 y ≥ 1"인 문제이고, 가지 ⑥은 거기에 "x ≥ 3"이 더해져 x = 3으로 고정된 문제입니다.</figcaption>
+    </figure>
+    <p>각 가지의 LP는 이 예에서는 손으로 풀립니다. 톤당 값이 싼 큰 트럭을 허용되는 만큼 쓰고, 모자라는 짐을 작은 트럭으로 채우면 됩니다.</p>
+    <ul class="plain">
+      <li>가지 ③은 x ≤ 3이므로 x = 3(27톤), 남은 3톤을 작은 트럭 3/5 = 0.6대로 채웁니다. (3, 0.6), 비용 30 + 4.2 = 34.2.</li>
+      <li>가지 ⑤는 y ≥ 1이 추가되어 y = 1(5톤), 남은 25톤을 큰 트럭 25/9 ≈ 2.78대로 채웁니다. 비용 27.78 + 7 = 34.78.</li>
+      <li>가지 ⑦은 x ≤ 2라서 x = 2(18톤), 남은 12톤에 작은 트럭 2.4대. 비용 20 + 16.8 = 36.8.</li>
+    </ul>
+    <p>단계마다 상한과 하한이 어떻게 움직이는지를 표로 따라갑니다. 어느 가지를 먼저 볼지는 솔버가 정하는데, 여기서는 설명하기 좋은 순서로 골랐습니다. 순서가 달라도 마지막 결론은 같습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>가지</th><th>한 일</th><th class="num">상한</th><th class="num">하한</th><th class="num">절대 gap</th></tr></thead>
+      <tbody>
+        <tr><td>①</td><td>뿌리의 LP를 풂. x가 소수라 x ≤ 3 / x ≥ 4로 분지</td><td class="num">없음</td><td class="num">33.33</td><td class="num">—</td></tr>
+        <tr><td>②</td><td>x ≥ 4: 답이 (4, 0)으로 정수. 첫 가능해</td><td class="num">40</td><td class="num">33.33</td><td class="num">6.67</td></tr>
+        <tr><td>③</td><td>x ≤ 3: y가 소수라 y ≤ 0 / y ≥ 1로 분지</td><td class="num">40</td><td class="num">34.2</td><td class="num">5.8</td></tr>
+        <tr><td>④</td><td>y ≤ 0: 큰 트럭 3대로는 27톤뿐. 불능</td><td class="num">40</td><td class="num">34.2</td><td class="num">5.8</td></tr>
+        <tr><td>⑤</td><td>y ≥ 1: x가 소수라 x ≤ 2 / x ≥ 3으로 분지</td><td class="num">40</td><td class="num">34.78</td><td class="num">5.22</td></tr>
+        <tr><td>⑥</td><td>x ≥ 3: 답이 (3, 1)로 정수. 더 좋은 가능해</td><td class="num">37</td><td class="num">34.78</td><td class="num">2.22</td></tr>
+        <tr><td>⑦</td><td>x ≤ 2: LP 값이 36.8. 열린 가지는 이것뿐</td><td class="num">37</td><td class="num">36.8</td><td class="num">0.2</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>표를 읽는 예를 하나 들면, 가지 ③을 푼 직후의 열린 가지는 ③에서 갈라진 둘(y ≤ 0, y ≥ 1)이고 둘 다 아직 풀지 않았으므로 ③의 값 34.2를 물려받습니다. 그래서 하한이 34.2입니다. 가지 ②는 답이 정수로 나와 이미 닫혔습니다.</p>
+    <p>가지 ⑦에서 멈출 수 있습니다. ⑦의 LP 값 36.8은 상한 37보다 작으므로 "LP 값 ≥ 상한"이라는 규칙만으로는 버릴 수 없습니다. 여기서 사실 하나를 더 씁니다. 트럭 대수가 정수이고 값도 정수이니 비용은 언제나 정수입니다. 가지 ⑦ 안의 답은 비용이 36.8 이상인 정수, 곧 37 이상입니다. 지금 들고 있는 37보다 좋을 수 없으니 버립니다. 열린 가지가 더 없으므로 (3, 1), 37만 원이 최적이라는 것이 증명되었습니다. 이 사실을 쓰지 않았다면 가지 ⑦을 더 나눠 가며 LP를 몇 번 더 풀어야 했을 것입니다.</p>
+    <div class="note">
+      <p><strong>목적함수 값이 띄엄띄엄하면 gap이 0이 되기 전에 멈춰도 됩니다.</strong> 방금 한 추론입니다. 비용이 항상 정수라면, 절대 gap이 1보다 작아지는 순간 최적이 확정됩니다. 솔버가 식의 숫자들을 보고 이런 성질을 스스로 찾아 쓰기도 하지만, 모형을 만든 사람이 확실히 알고 있다면 "절대 gap이 이 값 미만이면 멈춰라"고 직접 알려 줄 수 있습니다. tryAgain은 이 요령을 씁니다. 그 모형에서는 비용이 항상 짝수이고(8장), 그래서 기준을 2 미만으로 줍니다(10장). Gurobi가 이 설정 없이도 같은 성질을 알아챘을지는 확인하지 못했습니다.</p>
+    </div>
+    <p>변수가 둘뿐인 이 예에서 가지 일곱 개를 봤습니다. 0/1 변수가 n개면 가장 나쁜 경우에는 가지가 2<sup>n</sup>개쯤 됩니다. 실제 문제가 풀리는 것은 가지치기가 대부분의 가지를 잘라 내기 때문이고, 가지치기가 잘 듣느냐는 두 가지에 달려 있습니다. <strong>좋은 가능해를 얼마나 빨리 찾느냐</strong>(상한)와 <strong>LP 완화의 값이 실제 최적값에 얼마나 가까우냐</strong>(하한)입니다.</p>
+  </section>
+
+  <!-- ================= 3부 ================= -->
+  <div class="part">3부 · 솔버 안에 있는 다른 것들</div>
+
+  <section>
+    <h2>분지한계법을 돕는 네 가지 장치</h2>
+    <p>Gurobi 같은 솔버는 분지한계법만 하지 않습니다. 가지치기가 잘 듣도록 돕는 장치들이 함께 돕니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>장치</th><th>하는 일</th><th>돕는 쪽</th></tr></thead>
+      <tbody>
+        <tr><td>전처리(presolve)</td><td>풀기 전에 모형을 정리합니다. 값이 뻔한 변수를 미리 정해 버리고, 겹치는 제약식을 지웁니다.</td><td>크기를 줄임</td></tr>
+        <tr><td>절단평면(cutting plane)</td><td>정수인 답은 하나도 자르지 않으면서 LP의 소수 답만 잘라 내는 부등식을 찾아서 추가합니다. 1부의 그림에서 색칠한 영역을 굵은 점들 쪽으로 깎아 들어가는 것입니다.</td><td>하한을 올림</td></tr>
+        <tr><td>휴리스틱(heuristic)</td><td>LP의 소수 답을 그럴듯하게 반올림해 보거나, 지금 답 주변을 조금 바꿔 보며 가능해를 찾습니다. 솔버 안에 수십 가지가 들어 있습니다.</td><td>상한을 내림</td></tr>
+        <tr><td>병렬 탐색</td><td>열린 가지 여러 개를 CPU 코어 여러 개가 동시에 풉니다.</td><td>속도</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><strong>휴리스틱</strong>은 "가장 좋다는 보장은 없지만 괜찮은 답을 빨리 찾는 방법"을 통틀어 부르는 말입니다. 길을 찾을 때 "일단 목적지 방향으로 간다"처럼, 그럴듯한 요령으로 답을 만드는 것입니다. 솔버에는 어떤 MIP에든 쓸 수 있는 휴리스틱이 내장되어 있고, Gurobi는 풀이 시간 중 얼마를 휴리스틱에 쓸지를 <code>Heuristics</code>라는 설정으로 받습니다(기본 0.05, 곧 5%).</p>
+  </section>
+
+  <section>
+    <h2>LP를 푸는 두 방법: 심플렉스와 배리어</h2>
+    <p>분지한계법은 LP를 수없이 풉니다. LP를 푸는 방법은 크게 둘이고, tryAgain의 설정(10장)에 이 선택이 나옵니다. 1부의 그림을 떠올리면 됩니다.</p>
+    <div class="obj">
+      <div><div class="f">심플렉스 (simplex)</div><p>색칠한 영역의 모퉁이에서 이웃 모퉁이로, 더 싼 쪽으로 옮겨 다닙니다. 답은 항상 모퉁이(꼭짓점)입니다. 조건이 하나 추가된 문제를 앞 문제의 답에서 이어서 풀 수 있어서, 분지한계법의 가지들을 푸는 데 알맞습니다.</p></div>
+      <div><div class="f">배리어 (barrier, 내부점법)</div><p>영역의 안쪽을 가로질러 최적점으로 다가갑니다. 큰 LP에서 대체로 빠르고 CPU 코어 여러 개를 잘 씁니다. 대신 답이 꼭짓점이 아닐 수 있고, 이어 풀기가 안 됩니다.</p></div>
+    </div>
+    <p>배리어가 낸 답을 꼭짓점 답으로 바꿔 주는 마무리 작업을 <strong>크로스오버</strong>(crossover)라고 합니다. 분지한계법은 꼭짓점 답에서 출발해야 가지들을 이어 풀 수 있으므로, 맨 처음의 LP(뿌리의 LP 완화)를 배리어로 풀었다면 크로스오버로 꼭짓점을 얻은 뒤 그 아래 가지들을 심플렉스로 풉니다. Gurobi는 기본 설정에서 MIP의 뿌리에 보통 심플렉스의 한 종류(쌍대 심플렉스)를 고르고, 모형이 크면 여러 방법을 동시에 돌려 먼저 끝난 것을 씁니다(Gurobi 12 문서의 <code>Method</code> 항목).</p>
+    <div class="gref">
+      <p>LP를 그림으로 푸는 법과 "최적점은 꼭짓점"이라는 사실은 교재 6장, 심플렉스법은 교재 8장, 배리어(내부점법)와 크로스오버는 교재 10장에 있습니다. 이 가이드를 읽는 데는 위의 두 문단이면 충분합니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>모형이 크면 뿌리에서 막힌다: NoRel 휴리스틱</h2>
+    <p>위의 장치들은 모두 LP 완화를 풀 수 있다는 전제 위에 있습니다. 그런데 변수가 수만, 수십만 개가 되면 맨 처음의 LP 하나를 푸는 데만 수십 초에서 몇 분이 걸립니다. 제한 시간이 60초인 대회에서는 뿌리의 LP를 풀다가 가능해 하나 못 내고 끝날 수 있습니다.</p>
+    <p>Gurobi는 이런 경우를 위해 <strong>NoRel 휴리스틱</strong>을 제공합니다. NoRel은 No Relaxation의 줄임말입니다. 이름 그대로 LP 완화를 풀지 않고 가능해를 찾아 고쳐 나가는 휴리스틱이고, 뿌리의 LP를 풀기 전에 돕니다. <code>NoRelHeurTime</code>이라는 설정에 초 단위로 시간을 주면 그만큼 돌고 나서 평소의 분지한계법으로 넘어갑니다. 기본값은 0(안 씀)입니다. Gurobi 문서에는 이 휴리스틱이 안에서 어떻게 탐색하는지에 대한 자세한 설명이 없습니다.</p>
+    <p>팀의 발표자료(8쪽)에 실린 비교표를 그대로 옮기면 다음과 같습니다. ✓가 많을수록 그 항목에서 낫다는 팀의 평가이고, 빈칸은 원래 표에서도 비어 있습니다(약하다는 뜻으로 읽힙니다). 수치 근거는 발표자료에 없습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>분지한계법</th><th>NoRel 휴리스틱</th></tr></thead>
+      <tbody>
+        <tr><td>작은 문제에서의 성능</td><td>✓✓</td><td>✓</td></tr>
+        <tr><td>큰 문제에서의 성능</td><td></td><td>✓✓</td></tr>
+        <tr><td>하한이 실제 값에 가까운가</td><td>✓✓</td><td>✓</td></tr>
+        <tr><td>짧은 시간에 가능해를 주는가</td><td></td><td>✓✓✓</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>NoRel만 돌리면 하한이 거의 올라가지 않으므로 "최적임을 증명"하지는 못합니다. 대회 점수는 제출한 답의 비용만 보므로 증명은 필요 없습니다. tryAgain이 문제 크기에 따라 둘 중 무엇을 쓰는지는 10장에서 봅니다.</p>
+  </section>
+
+  <!-- ================= 4부 ================= -->
+  <div class="part">4부 · 모형의 질과 솔버 로그</div>
+
+  <section>
+    <h2>강한 식과 약한 식</h2>
+    <p>같은 문제를 식으로 적는 방법은 여러 가지입니다. 정수인 답들의 집합은 똑같은데 LP 완화가 다를 수 있습니다. LP 완화의 영역이 정수인 답들에 더 바짝 붙어 있는 쪽을 <strong>강한 정식화</strong>라고 합니다. 강할수록 하한이 실제 값에 가까워 가지치기가 잘 듣습니다.</p>
+    <p>4장의 창고 예를 조금 키워서 봅니다. 창고 하나(이진변수 y, 여는 데 100만 원)와 고객 10명(이진변수 x<sub>1</sub>~x<sub>10</sub>, 이 창고에서 받으면 1)이 있습니다. "창고를 열어야 받을 수 있다"를 두 가지로 적을 수 있습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>식</th><th>고객 1명만 받을 때 LP가 허용하는 y</th><th>LP가 계산하는 창고 비용</th></tr></thead>
+      <tbody>
+        <tr><td>강한 식</td><td class="mono">x<sub>j</sub> ≤ y (고객마다 한 줄, 10줄)</td><td>y ≥ 1</td><td>100만 원</td></tr>
+        <tr><td>약한 식</td><td class="mono">x<sub>1</sub> + … + x<sub>10</sub> ≤ 10·y (1줄)</td><td>y ≥ 0.1</td><td>10만 원</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>y가 0 또는 1이면 두 식은 같은 뜻입니다. 그런데 정수 조건을 지운 LP에서는 약한 식이 "창고를 10%만 연다"는 답을 허용합니다. 하한이 실제보다 훨씬 낮게 나오고, 솔버는 그 차이를 분지로 메워야 합니다. 약한 식의 10이 4장의 참고 상자에서 본 big-M입니다. M이 클수록 LP 완화가 느슨해진다는 경고가 이 뜻입니다.</p>
+    <p>발표자료 2쪽의 문장도 같은 이야기입니다. "해 집합을 어떻게 정의하느냐에 따라 … 결정변수/제약식의 수 및 제약식의 강한 정도가 크게 달라질 수 있으며, 이는 해 탐색의 성능과 직결됨." 모형을 평가하는 잣대는 둘입니다.</p>
+    <ul class="plain">
+      <li><strong>크기.</strong> 변수와 제약식이 적을수록 LP 한 번이 빨리 풀립니다.</li>
+      <li><strong>강도.</strong> LP 완화가 빡빡할수록 풀어야 할 LP의 개수(가지의 수)가 줄어듭니다.</li>
+    </ul>
+    <p>둘은 대개 맞바꾸는 관계입니다(위 표에서 강한 식은 10줄, 약한 식은 1줄). tryAgain의 모형이 이 두 잣대에서 어떤지는 8장 끝에서 따집니다.</p>
+    <div class="gref">
+      <p>완화, 분지한계법, gap은 교재 13장에서 같은 트럭 예(가지 ①~⑦)로 더 자세히 다룹니다. 강한 정식화와 절단평면은 교재 14장에 있습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>솔버 로그 읽기</h2>
+    <p>솔버는 푸는 동안 진행 상황을 글자로 찍어 줍니다. 이것을 로그(log)라고 합니다. 아래는 2장의 공식 예시를 tryAgain의 모형으로 적어 Gurobi에 넣었을 때 실제로 나온 로그입니다(<code>examples/roro_model_gurobipy.py</code>, Gurobi 14.0.0. 대회 서버는 12.0이었습니다). 설명에 필요 없는 줄은 <code>...</code>으로 줄였습니다.</p>
+    <div class="lbl">Gurobi 로그 · 공식 예시 (실행 결과에서 발췌)</div>
+    <pre>
+Optimize a model with 61 rows, 65 columns and 221 nonzeros (Min)
+Variable types: 0 continuous, 65 integer (55 binary)
+...
+Found heuristic solution: objective 224.0000000
+Presolve removed 41 rows and 37 columns
+Presolved: 20 rows, 28 columns, 76 nonzeros
+...
+Root relaxation: objective 1.900000e+02, 19 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0     190.0000000  190.00000  0.00%     -    0s
+
+Explored 1 nodes (19 simplex iterations) in 0.00 seconds (0.00 work units)
+...
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.900000000000e+02, best bound 1.900000000000e+02, gap 0.0000%
+</pre>
+    <ul class="plain">
+      <li><strong>rows, columns.</strong> 제약식(rows)이 61개, 변수(columns)가 65개인 모형입니다. 변수 가운데 55개가 이진변수입니다.</li>
+      <li><strong>Found heuristic solution.</strong> 시작하자마자 휴리스틱이 비용 224짜리 가능해를 하나 찾았습니다. 첫 상한입니다.</li>
+      <li><strong>Presolve removed.</strong> 전처리가 제약식 41개와 변수 37개를 지워 제약식 20개, 변수 28개짜리 모형으로 줄였습니다.</li>
+      <li><strong>Root relaxation.</strong> 뿌리의 LP 완화 값이 190입니다. <code>1.900000e+02</code>는 1.9 × 10<sup>2</sup>이라는 표기입니다. 1부의 표에서는 이 모형의 LP 완화 값이 145였는데, 전처리가 모형을 다듬은 뒤라 더 높게 나왔습니다. 전처리를 끄고 돌리면 이 줄에 145가 찍히는 것을 확인했습니다.</li>
+      <li><strong>표의 한 줄.</strong> 맨 앞의 <code>*</code>는 LP의 답이 정수로 나와서 새 가능해를 찾았다는 표시입니다. 현재 최선해(Incumbent) 190, 최선 하한(BestBd) 190, gap 0%. 가지를 한 번도 나누지 않고 뿌리에서 끝났습니다.</li>
+      <li><strong>마지막 두 줄.</strong> "최적해를 찾았다. 가장 좋은 답 190, 하한 190." 괄호 안의 1.00e-04는 앞에서 본 상대 gap 기준(MIPGap)의 기본값입니다.</li>
+    </ul>
+    <p>공식 예시는 너무 작아서 표가 한 줄로 끝납니다. 상한과 하한이 움직이는 모습을 보려고 조금 큰 문제를 하나 만들어 돌렸습니다. 일렬 배에 칸 8개, 항구 7개, 차 25대이고 변수는 248개입니다(<code>examples/gurobi_log_demo.py</code>. 이 문서가 설명용으로 만든 문제이고 대회 문제가 아닙니다).</p>
+    <div class="lbl">Gurobi 로그 · 칸 8개, 항구 7개, 차 25대 (실행 결과에서 발췌)</div>
+    <pre>
+Found heuristic solution: objective 900.0000000
+Presolve removed 89 rows and 114 columns
+...
+Root relaxation: objective 7.180000e+02, 91 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  718.00000    0   38  900.00000  718.00000  20.2%     -    0s
+H    0     0                     776.0000000  718.00000  7.47%     -    0s
+H    0     0                     774.0000000  718.00000  7.24%     -    0s
+H    0     0                     772.0000000  718.00000  6.99%     -    0s
+H    0     0                     766.0000000  718.00000  6.27%     -    0s
+     0     0  744.00000    0   20  766.00000  744.00000  2.87%     -    0s
+     0     0  750.33333    0   29  766.00000  750.33333  2.05%     -    0s
+     0     0  750.46154    0   46  766.00000  750.46154  2.03%     -    0s
+     0     0  751.00000    0   42  766.00000  751.00000  1.96%     -    0s
+     0     0  751.11111    0   24  766.00000  751.11111  1.94%     -    0s
+     0     0     cutoff    0       766.00000  766.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 5
+...
+Optimal solution found (tolerance 1.00e-04)
+Best objective 7.660000000000e+02, best bound 7.660000000000e+02, gap 0.0000%
+</pre>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>열 또는 표시</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>Expl / Unexpl</td><td>지금까지 살펴본 가지의 수 / 아직 열려 있는 가지의 수</td></tr>
+        <tr><td>Obj / Depth / IntInf</td><td>지금 보고 있는 가지의 LP 값 / 뿌리에서부터 몇 번 나눈 가지인가 / 그 LP 답에서 정수여야 하는데 소수인 변수의 수</td></tr>
+        <tr><td>Incumbent</td><td>상한. 현재 최선해의 값</td></tr>
+        <tr><td>BestBd</td><td>하한. 최선 하한</td></tr>
+        <tr><td>Gap</td><td>상대 gap(%). 트럭 예의 표에서 쓴 절대 gap과 다릅니다. 이 값이 MIPGap 아래로 내려가면 멈춥니다</td></tr>
+        <tr><td>It/Node, Time</td><td>가지 하나당 심플렉스가 평균 몇 걸음 옮겼는가, 지금까지 걸린 시간</td></tr>
+        <tr><td>맨 앞의 H</td><td>이 줄의 새 가능해를 휴리스틱이 찾았다는 표시</td></tr>
+        <tr><td>맨 앞의 *</td><td>이 줄의 새 가능해를 LP의 답이 정수로 나와서 찾았다는 표시</td></tr>
+        <tr><td>cutoff</td><td>이 가지에는 현재 최선해보다 좋은 답이 없어서 버렸다는 표시</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>표를 위에서 아래로 읽으면 앞에서 배운 것이 그대로 보입니다. 첫 줄에서 뿌리의 LP 값은 718이고 소수인 변수가 38개입니다. 이어지는 H 네 줄에서 휴리스틱이 776, 774, 772, 766짜리 답을 차례로 찾아 상한이 내려옵니다. 그 아래 다섯 줄에서는 Incumbent가 그대로인 채 BestBd가 744에서 751.11까지 올라갑니다. 절단평면을 추가해 가며 LP를 다시 푼 결과입니다(아래쪽 "Cutting planes" 줄이 어떤 종류의 절단평면을 몇 개 썼는지 알려 줍니다). 마지막에 남은 가지가 버려지면서 하한이 766이 되어 gap이 0이 됩니다. 둘째 줄의 7.47%는 (776 − 718) / 776으로 직접 계산해 볼 수 있습니다.</p>
+    <p>로그를 읽는 요령은 Incumbent와 BestBd 중 어느 쪽이 안 움직이는지를 보는 것입니다. Incumbent가 안 내려가면 가능해 찾기가 어려운 문제이니 휴리스틱에 시간을 더 줘 볼 만하고, BestBd가 안 올라가면 모형이 약한 것이니 식을 고쳐야 합니다. tryAgain이 제출한 코드는 로그를 꺼 두었습니다(10장).</p>
+  </section>
+
+  <section>
+    <h2>직접 짠 탐색과 견주어 보면</h2>
+    <p>3장에서 문제를 푸는 길이 둘이라고 했습니다. 탐색 절차를 직접 짜는 길(휴리스틱)과, 식으로 적어 솔버에 맡기는 길입니다. 이 장의 내용으로 둘을 견주면 다음과 같습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>직접 짠 휴리스틱</th><th>모형 + 솔버</th></tr></thead>
+      <tbody>
+        <tr><td>사람이 설계하는 것</td><td>답을 어떻게 만들고 어떻게 조금씩 고쳐 나갈지, 곧 탐색 절차 전체</td><td>변수, 제약식, 목적함수</td></tr>
+        <tr><td>답이 얼마나 좋은지의 보증</td><td>없음(다른 답과 견주어 볼 뿐)</td><td>하한과 gap. 끝까지 돌면 최적 증명</td></tr>
+        <tr><td>문제가 커질 때</td><td>완만하게 나빠짐</td><td>어느 크기를 넘으면 급격히 나빠짐(뿌리의 LP조차 못 풂)</td></tr>
+        <tr><td>시간이 아주 짧을 때</td><td>짧은 만큼 덜 다듬어진 답이 나옴</td><td>뿌리의 LP와 초기 탐색에 드는 최소한의 시간이 없으면 답이 없거나 크게 나쁨</td></tr>
+        <tr><td>조건이 추가될 때</td><td>탐색 절차를 다시 짜야 할 수 있음</td><td>식 한 줄 추가. 단, 식으로 적기 어려운 조건(순서 등)은 모형을 크고 약하게 만듦</td></tr>
+        <tr><td>성패를 가르는 것</td><td>답 하나를 얼마나 빨리 평가하고, 얼마나 넓게 찾아보느냐</td><td>문제를 얼마나 작고 강하게 적느냐</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 표는 두 방법의 일반적인 경향을 정리한 것이고, 이 대회에서 측정한 결과가 아닙니다. 표의 마지막 줄을 들고 다음 장으로 갑니다. tryAgain이 배 문제를 어떻게 "작고 강하게" 적었는지가 6장부터 8장까지의 내용입니다.</p>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>[손으로 계산] 최소화 문제에서 최선 하한이 100, 현재 최선해의 값이 108입니다. 최적값에 대해 무엇을 말할 수 있나요? 절대 gap과 상대 gap은 얼마인가요?</summary>
+      <p>최적값은 100 이상 108 이하입니다. 절대 gap은 8, 상대 gap은 8/108 ≈ 7.4%입니다. 지금 답이 최적일 수도 있지만 아직 증명되지 않았습니다.</p>
+    </details>
+    <details>
+      <summary>[손으로 계산] 트럭 예에서 보낼 짐이 33톤이라면 LP 완화의 최적해와 값은 얼마인가요? 여기서 얻는 하한은 얼마인가요?</summary>
+      <p>톤당 값이 싼 큰 트럭만 씁니다. x = 33/9 = 11/3 ≈ 3.67, y = 0이고 값은 110/3 ≈ 36.67입니다. 비용이 정수이므로 하한은 37입니다. 4장의 이해 확인에서 구한 이 문제의 최적값은 40이었습니다. 하한 37과 최적값 40 사이에 차이가 있고, 솔버는 이 차이를 분지로 메웁니다.</p>
+    </details>
+    <details>
+      <summary>분지한계법에서 x = 2.6을 "x ≤ 2"와 "x ≥ 3"으로 나눌 때 정수인 답을 잃지 않는 이유는 무엇인가요?</summary>
+      <p>잘려 나가는 것은 2 &lt; x &lt; 3인 부분뿐인데, 그 안에는 x가 정수인 점이 없기 때문입니다.</p>
+    </details>
+    <details>
+      <summary>모든 가능해의 비용이 5의 배수라는 것을 알고 있습니다. 절대 gap이 얼마 미만이면 멈춰도 될까요?</summary>
+      <p>5 미만입니다. 현재 최선해보다 좋은 답이 있다면 적어도 5만큼 싸야 하는데, 하한이 현재 최선해에서 5보다 가까우면 그런 답은 있을 수 없습니다.</p>
+    </details>
+    <details>
+      <summary>[손으로 계산] 0 또는 1인 변수가 30개인 모형을 전부 넣어 보려면 몇 가지를 봐야 하나요? 1초에 100만 가지를 본다면 얼마나 걸리나요?</summary>
+      <p>2<sup>30</sup> = 1,073,741,824가지, 약 10억 7천만 가지입니다. 1초에 100만 가지면 약 1,074초, 곧 18분쯤입니다. 변수가 10개 더 늘어 40개가 되면 여기에 2<sup>10</sup> = 1,024를 곱해야 하므로 약 13일이 됩니다.</p>
+    </details>
+    <details>
+      <summary>로그에 <code>H 0 0 … 776.0000000 718.00000 7.47%</code>라는 줄이 있습니다. 이 줄이 말하는 것을 문장으로 풀어 보세요.</summary>
+      <p>휴리스틱(H)이 비용 776짜리 가능해를 새로 찾았습니다. 그래서 상한(현재 최선해)이 776이 되었고, 하한(최선 하한)은 718입니다. 최적값은 718과 776 사이에 있으며, 상대 gap은 (776 − 718) / 776 ≈ 7.47%입니다.</p>
+    </details>
+    <details>
+      <summary>NoRel 휴리스틱만 제한 시간 내내 돌리면 잃는 것은 무엇인가요?</summary>
+      <p>하한과 최적 증명입니다. 찾은 답이 최적에서 얼마나 떨어져 있는지 알 수 없고, 최적해를 이미 찾았더라도 그 사실을 모르므로 일찍 멈추지 못하고 시간을 끝까지 씁니다.</p>
+    </details>
+  </section>
+
+  <div class="sum">
+    <ul>
+      <li>0/1 변수가 n개면 조합은 2<sup>n</sup>가지라서, 전부 넣어 보는 방법은 변수 수십 개에서 막힙니다.</li>
+      <li>정수 조건을 지운 LP 완화는 빨리 풀리고, 그 값은 원래 문제의 하한입니다. 찾는 범위를 넓히면 최솟값이 나빠질 수 없기 때문입니다.</li>
+      <li>솔버는 상한(현재 최선해의 값)과 하한(최선 하한)을 들고 다니며, 둘의 차이인 gap이 기준 아래로 내려가면 멈춥니다.</li>
+      <li>분지한계법은 소수로 나온 변수를 기준으로 문제를 둘로 나누고, LP 값이 상한보다 좋지 않은 가지를 버립니다.</li>
+      <li>목적함수 값이 띄엄띄엄하면(예: 항상 정수, 항상 짝수) gap이 그 간격보다 작아질 때 멈춰도 됩니다.</li>
+      <li>모형이 아주 크면 뿌리의 LP부터 오래 걸립니다. NoRel은 LP 없이 가능해를 찾는 Gurobi의 휴리스틱입니다.</li>
+      <li>좋은 모형은 작고(변수·제약식이 적고) 강합니다(LP 완화가 실제 값에 가깝습니다).</li>
+    </ul>
+  </div>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">교재</span>교재 6장(LP를 그림으로), 8장(심플렉스법), 10장(내부점법과 크로스오버), 13장(완화와 분지한계법), 14장(강한 정식화와 절단평면).</li>
+      <li><span class="tagc">무료</span><a href="https://www.gurobi.com/resources/blog/mixed-integer-programming-an-introduction-to-the-basics">Gurobi, 「Mixed-Integer Programming: The Basics Explained Well」</a> — 이 장과 같은 범위(분지한계법, 상한·하한·gap, 전처리, 절단평면, 휴리스틱)를 솔버 제작사가 설명한 글. 영어입니다.</li>
+      <li><span class="tagc">무료</span><a href="https://docs.gurobi.com/projects/optimizer/en/12.0/concepts/logging/mip.html">Gurobi 문서 「MIP Logging」</a> — 로그의 각 열과 H, * 표시의 뜻. 영어입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://www.kocw.net/home/cview.do?cid=354bd1bd6e92a4e3">KOCW 「경영과학」 (중앙대학교)</a> — 대학 학부 강의 동영상. 선형계획과 정수계획을 한국어 강의로 듣고 싶을 때.</li>
+      <li><span class="tagc">실습</span><span class="mono">examples/mini_model_enumerate.py</span>, <span class="mono">examples/roro_model_ortools.py</span>, <span class="mono">examples/roro_model_gurobipy.py</span>, <span class="mono">examples/gurobi_log_demo.py</span> — 이 장의 숫자와 로그를 만든 프로그램. 앞의 하나는 Python만으로 돌고, 나머지는 <code>pip install ortools</code> 또는 <code>pip install gurobipy</code>가 필요합니다.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch4">← 이전: 4장 식으로 적는 법</a><a href="#ch6">다음: 6장 높이 매기기 →</a></div>
+</article>

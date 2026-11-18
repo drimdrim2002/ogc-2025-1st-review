@@ -1,0 +1,397 @@
+<article class="chapter" id="ch5">
+  <header>
+    <div class="kicker">5 / 16</div>
+    <h1>높이, 방향, 이분 그래프</h1>
+  </header>
+
+  <section>
+    <p class="lead">4장에서 배를 그래프로 보고 너비 우선 탐색(BFS)을 했습니다. 이제 한 걸음 더 나아갑니다. BFS에서 방문한 순번을 각 칸의 <strong>높이</strong>로 삼아 간선에 방향을 주면, "출입구로 내려가는 길이 있는가"를 이웃만 보고 판정할 수 있습니다. 또 이 판정 때문에 잃는 길은 무엇인지, 그리고 어떤 모양의 배에서 모형의 비용과 실제 비용이 정확히 같아지는지를 <strong>이분 그래프</strong>로 설명합니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 4장(그래프, 이웃, 경로, 순환, BFS, 층, 최단거리 <code>dist</code>, 부모, 칸을 지운 그래프의 BFS).</li>
+      <li><strong>이 장을 읽고 나면.</strong> 높이 <code>h(i)</code>와 방향 그래프·DAG의 뜻, 아래 이웃 <code>pred(i)</code>와 접근 가능 규칙이 왜 "서로 받쳐 주는 섬"을 막는지, 그리고 홀수 순환이 없는 이분 그래프에서 모형 비용과 실제 비용이 왜 같은지 설명할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 높이와 방향 그래프</div>
+
+  <section>
+    <h2>간선에 방향을 주기: 높이 h(i)</h2>
+    <p>물은 높은 곳에서 낮은 곳으로 흐릅니다. 자동차 운반선에서 차를 내리는 일도 이 비유로 생각해 봅시다. 출입구(노드 0)를 가장 낮은 곳으로 두고, 모든 칸에 "높이" 숫자를 매겨서 차를 내릴 때는 항상 높이가 <em>낮아지는</em> 이웃으로만 움직이게 규칙을 정하는 것입니다.</p>
+    <p>가장 쉬운 방법은 4장의 BFS에서 <strong>방문한 순번</strong>을 그대로 높이로 쓰는 것입니다. 출입구 0의 높이가 0, 첫 번째로 방문한 노드의 높이가 1, 두 번째가 2, 이런 식입니다. 노드 i의 높이를 <strong>h(i)</strong>라고 적습니다.</p>
+    <p>3 × 3 격자 배(4장과 같은 간선 순서)를 봅니다. 4장에서 구한 방문 순서는 <code>[0, 1, 2, 3, 4, 5, 6, 7, 8]</code>이었으므로, 이 배에서는 우연히 노드 번호와 높이 h(i)가 같습니다. 이제 12개 간선마다 높이가 <strong>큰 쪽에서 작은 쪽으로</strong> 화살표를 그려 봅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 275" role="img" aria-label="3 곱하기 3 격자 배에 높이가 큰 노드에서 작은 노드로 화살표를 그린 방향 그래프. 모든 화살표는 왼쪽이나 위쪽인 출입구 0을 향하고, 오른쪽에 각 노드의 아래 이웃 pred 목록이 적혀 있다">
+        <defs>
+          <marker id="ar5a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker>
+        </defs>
+        <g class="s-line" stroke-width="1.5" marker-end="url(#ar5a)">
+          <line x1="181" y1="55" x2="122" y2="55"/>
+          <line x1="281" y1="55" x2="222" y2="55"/>
+          <line x1="181" y1="135" x2="122" y2="135"/>
+          <line x1="281" y1="135" x2="222" y2="135"/>
+          <line x1="181" y1="215" x2="122" y2="215"/>
+          <line x1="281" y1="215" x2="222" y2="215"/>
+          <line x1="100" y1="116" x2="100" y2="77"/>
+          <line x1="100" y1="196" x2="100" y2="157"/>
+          <line x1="200" y1="116" x2="200" y2="77"/>
+          <line x1="200" y1="196" x2="200" y2="157"/>
+          <line x1="300" y1="116" x2="300" y2="77"/>
+          <line x1="300" y1="196" x2="300" y2="157"/>
+        </g>
+        <g font-size="14" text-anchor="middle">
+          <circle cx="100" cy="55" r="18" class="f-crane"/><text x="100" y="60">0</text>
+          <circle cx="200" cy="55" r="18" class="f-steel"/><text x="200" y="60">1</text>
+          <circle cx="300" cy="55" r="18" class="f-steel"/><text x="300" y="60">3</text>
+          <circle cx="100" cy="135" r="18" class="f-steel"/><text x="100" y="140">2</text>
+          <circle cx="200" cy="135" r="18" class="f-steel"/><text x="200" y="140">4</text>
+          <circle cx="300" cy="135" r="18" class="f-steel"/><text x="300" y="140">6</text>
+          <circle cx="100" cy="215" r="18" class="f-steel"/><text x="100" y="220">5</text>
+          <circle cx="200" cy="215" r="18" class="f-steel"/><text x="200" y="220">7</text>
+          <circle cx="300" cy="215" r="18" class="f-steel"/><text x="300" y="220">8</text>
+        </g>
+        <text x="72" y="60" font-size="12.5" class="t-crane" text-anchor="end">출입구</text>
+        <g font-size="13" text-anchor="start">
+          <text x="375" y="48" class="t-muted">화살표는 높이가 큰 쪽 → 작은 쪽</text>
+          <text x="375" y="80">pred(1) = {0}</text><text x="530" y="80">pred(2) = {0}</text>
+          <text x="375" y="108">pred(3) = {1}</text><text x="530" y="108">pred(4) = {1, 2}</text>
+          <text x="375" y="136">pred(5) = {2}</text><text x="530" y="136">pred(6) = {3, 4}</text>
+          <text x="375" y="164">pred(7) = {4, 5}</text><text x="530" y="164">pred(8) = {6, 7}</text>
+          <text x="375" y="204" class="t-muted" font-size="12.5">원래 그래프에는 1–3–6–4–1 같은 순환이 있지만,</text>
+          <text x="375" y="224" class="t-muted" font-size="12.5">화살표만 따라가서는 절대 1로 돌아올 수 없습니다.</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>3 × 3 격자 배의 방향 그래프. 모든 화살표가 높이가 줄어드는 쪽을 가리키므로, 어느 칸에서 화살표만 따라가도 반드시 높이 0인 출입구에 닿습니다.</figcaption>
+    </figure>
+    <p>4장의 그래프는 방향이 없어서 양쪽으로 다닐 수 있었습니다. 이렇게 간선마다 화살표를 하나씩 달아 둔 그래프에 이름을 붙입니다.</p>
+    <div class="defn"><b>정의</b>
+      <ul>
+        <li><strong>높이(height) h(i)</strong>: 노드마다 붙인 서로 다른 번호입니다. 이 책에서는 BFS 방문 순번을 씁니다(출입구 h(0) = 0).</li>
+        <li><strong>방향 그래프(directed graph)</strong>: 간선마다 방향(화살표 i → j)이 정해져 있는 그래프입니다.</li>
+        <li><strong>DAG(directed acyclic graph, 유향 비순환 그래프)</strong>: 화살표 방향만 따라가서는 출발한 노드로 절대 되돌아올 수 없는 방향 그래프입니다.</li>
+      </ul>
+    </div>
+    <p>원래의 3 × 3 격자 배에는 1–3–6–4–1처럼 순환이 있습니다. 하지만 위 그림에서 화살표를 따라가 보세요. 6에서는 3이나 4로만 갈 수 있고, 3과 4에서는 1이나 2로만 갑니다. 화살표 방향만 따라가서는 절대로 제자리로 돌아올 수 없습니다.</p>
+    <div class="thm"><b>핵심 사실</b> 노드들에 서로 다른 숫자 h(i)를 매기고 모든 간선에 "h가 큰 쪽에서 작은 쪽으로" 방향을 주면, 그 방향 그래프는 언제나 DAG가 됩니다. 따라서 화살표만 따라가면 유한 번 만에 반드시 멈춥니다.</div>
+    <div class="why">
+      <p>화살표를 한 번 따라갈 때마다 높이 h가 1 이상 줄어듭니다. 만약 화살표만 따라 한 바퀴 돌아서 출발한 노드로 돌아왔다면, 높이가 계속 줄어든 끝에 처음과 같은 높이가 되었다는 뜻이니 모순입니다. 또 같은 곳을 맴돌 수 없으므로 노드가 유한한 그래프에서는 반드시 더 갈 화살표가 없는 노드에서 멈춥니다.</p>
+    </div>
+    <p>그렇다면 왜 처음부터 최단거리 <code>dist(i)</code>를 높이로 쓰지 않고, 굳이 BFS 방문 순번을 높이로 쓸까요? 이유는 거리가 같은 두 이웃이 있을 수 있기 때문입니다. 예를 들어 노드 5개가 둥글게 이어진 <strong>5칸 고리</strong>(0-1-2-3-4-0)를 생각해 봅시다. 출입구 0에서 거리가 1인 노드는 1과 4이고, 거리가 2인 노드는 2와 3입니다. 그런데 2와 3이 서로 이웃입니다. <code>dist(2) = dist(3) = 2</code>로 높이가 같으니, 간선 {2, 3}에 어느 쪽으로 화살표를 그려야 할지 정할 수 없습니다. 양방향을 허용하면 2 → 3 → 2 → 3 … 하고 맴돌게 되어 DAG가 깨집니다. 반면 BFS 방문 순번은 모든 노드에 서로 다른 번호를 붙이므로(예: 0, 1, 4, 2, 3 순서라면 h(2) = 3, h(3) = 4), 어떤 그래프라도 간선마다 단 하나의 방향을 주어 DAG를 만들 수 있습니다.</p>
+  </section>
+
+  <div class="part">2부 · 아래 이웃과 접근 가능 규칙</div>
+
+  <section>
+    <h2>아래 이웃 pred(i)</h2>
+    <p>높이가 정해지면 각 노드 i에서 화살표가 나가는 이웃들, 즉 i보다 높이가 낮은 이웃들을 따로 묶어 부를 수 있습니다.</p>
+    <div class="defn"><b>정의</b> 노드 i의 <strong>아래 이웃 pred(i)</strong>(predecessor, 앞선 것)는 i의 이웃 가운데 높이가 h(i)보다 작은 노드들의 집합입니다.</div>
+    <p>앞의 3 × 3 격자 배 그림 오른쪽에 적은 목록이 바로 <code>pred(i)</code>입니다. 예를 들어 노드 4의 이웃은 1, 2, 6, 7이고 높이는 차례로 1, 2, 6, 7입니다. h(4) = 4보다 작은 것은 1과 2뿐이므로 <code>pred(4) = {1, 2}</code>입니다.</p>
+    <p>여기서 중요한 성질이 하나 있습니다. <strong>출입구 0이 아닌 모든 노드 i는 pred(i)가 절대 비어 있지 않습니다.</strong> 왜냐하면 4장의 BFS에서 노드 i를 처음 발견해 준 부모 노드가 반드시 i의 이웃이고, 부모는 i보다 앞 층에서 먼저 방문되었으므로 높이가 i보다 낮기 때문입니다. 그러므로 빈 배에서는 어느 칸에서 출발하든 아래 이웃을 하나씩 골라 내려가다 보면, 높이가 계속 줄어들어 결국 높이 0인 출입구 0에 닿습니다.</p>
+  </section>
+
+  <section>
+    <h2>접근 가능 규칙 (가)(나)(다)와 전파</h2>
+    <p>이제 배 안에 <strong>머무는 차</strong>가 서 있는 상황을 생각합니다. 어떤 항구에서 일부 칸에 머무는 차가 서 있어서 지나갈 수 없습니다(출입구 0은 늘 비어 있습니다). 이때 어떤 칸 i가 <strong>접근 가능</strong>하다는 것은, 머무는 차가 있는 칸을 피하면서 높이가 낮아지는 쪽(<code>pred</code>)으로만 내려가 출입구 0까지 닿는 경로가 있다는 뜻입니다.</p>
+    <p>4장처럼 그래프 전체를 다시 탐색하지 않고, 각 칸이 자기 바로 아래 이웃 <code>pred(i)</code>만 보고 접근 가능 여부를 판정하는 규칙을 세울 수 있을까요? 1등 팀은 노드마다 0 또는 1의 딱지 <code>a(i)</code>를 붙이는 다음 세 규칙을 썼습니다.</p>
+    <div class="defn"><b>정의 (접근 가능 규칙)</b> 노드마다 딱지 a(i) ∈ {0, 1}을 붙일 때 다음 세 가지를 지킵니다.
+      <ul>
+        <li><strong>(가)</strong> 출입구에는 1을 붙인다: a(0) = 1.</li>
+        <li><strong>(나)</strong> 머무는 차가 있는 칸에는 0을 붙인다: a(i) = 0.</li>
+        <li><strong>(다)</strong> 출입구가 아닌 칸 i에 a(i) = 1을 붙이려면, 아래 이웃 pred(i) 안에 a(j) = 1인 노드 j가 적어도 하나 있어야 한다.</li>
+      </ul>
+    </div>
+    <p>이 세 규칙만으로 정말 "길이 있다"가 보장될까요?</p>
+    <div class="thm"><b>핵심 사실</b> 규칙 (가)(나)(다)를 지키는 딱지에서 a(i) = 1인 칸 i마다, 머무는 차가 없는 칸만 지나며 높이가 계속 줄어들어 출입구 0에 닿는 경로가 반드시 있습니다. 거꾸로, 그런 경로가 있는 칸을 모두 1로, 나머지를 0으로 둔 딱지는 규칙 (가)(나)(다)를 지키며, 규칙을 지키는 어떤 딱지보다도 1이 많거나 같습니다.</div>
+    <div class="why">
+      <p>a(i) = 1인 칸 i에서 출발해 봅시다. 규칙 (다) 덕분에 pred(i) 안에 a(j) = 1인 아래 이웃 j가 있습니다. 그 j로 한 걸음 이동합니다. j가 출입구 0이 아니라면, 규칙 (다)에 의해 또 a = 1인 아래 이웃이 있어 한 걸음 더 내려갑니다. 한 걸음마다 높이 h가 1 이상 줄어드는데 높이는 0보다 작아질 수 없으므로, 유한 번 만에 높이 0인 출입구 0에서 멈출 수밖에 없습니다. 지나온 칸은 모두 a = 1이었으니 규칙 (나)에 의해 머무는 차가 없습니다.</p>
+    </div>
+    <div class="warn">
+      <p><strong>규칙 (다)는 한 방향 조건입니다.</strong> 규칙 (다)는 "a(i) = 1이려면 pred(i)에 1이 하나 있어야 한다"일 뿐, "pred(i)에 1이 있으면 반드시 a(i) = 1이어야 한다"가 아닙니다. 즉 길이 있는 칸이라도 실제로 차를 싣거나 내리지 않는다면 딱지 0을 붙여도 규칙 위반은 아닙니다. 모형에서는 차를 싣거나 내리는 칸만 1이 강제됩니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>높이가 없으면 왜 안 되는가: 서로 받쳐 주는 섬</h2>
+    <p>규칙 (다)에서 왜 굳이 "아래 이웃 <code>pred(i)</code>"만 보라고 했을까요? 그냥 "모든 이웃 가운데 a(j) = 1인 j가 적어도 하나 있어야 한다"고 적으면 훨씬 간단해 보입니다. 하지만 그렇게 하면 치명적인 허점이 생깁니다.</p>
+    <p>노드 6개가 0-1-2-3-4-5-0으로 둥글게 이어진 <strong>6칸 고리</strong>를 봅니다. 간선이 <code>0-1, 1-2, 2-3, 3-4, 4-5, 5-0</code> 순서로 적혀 있다면 BFS 방문 순서는 <code>0, 1, 5, 2, 4, 3</code>입니다. 따라서 높이는 h(1) = 1, h(5) = 2, h(2) = 3, h(4) = 4, h(3) = 5이고, 아래 이웃은 <code>pred(2) = {1}</code>, <code>pred(4) = {5}</code>, <code>pred(3) = {2, 4}</code>입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 290" role="img" aria-label="6칸 고리 두 개. 왼쪽은 칸 1과 5에 머무는 차가 있어 안쪽 칸 2, 3, 4가 고립된 그림이고, 오른쪽은 칸 1에만 머무는 차가 있어 칸 2가 3, 4, 5를 거쳐 나갈 수 있지만 높이를 거슬러 접근 불가로 판정되는 그림이다">
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <polygon points="160,230 95,192 95,118 160,80 225,118 225,192"/>
+            <polygon points="560,230 495,192 495,118 560,80 625,118 625,192"/>
+          </g>
+          <circle cx="160" cy="230" r="17" class="f-ok" stroke-width="1.8"/><text x="160" y="235">0</text>
+          <circle cx="95" cy="192" r="17" class="f-crane"/><text x="95" y="197">1</text>
+          <circle cx="95" cy="118" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="95" y="123">2</text>
+          <circle cx="160" cy="80" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="160" y="85">3</text>
+          <circle cx="225" cy="118" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="225" y="123">4</text>
+          <circle cx="225" cy="192" r="17" class="f-crane"/><text x="225" y="197">5</text>
+          <text x="160" y="34" font-size="13" font-weight="500">(가) 칸 1과 5가 막힘</text>
+          <text x="160" y="272" font-size="12" class="t-muted">2, 3, 4는 고립된 섬 (접근 불가)</text>
+
+          <circle cx="560" cy="230" r="17" class="f-ok" stroke-width="1.8"/><text x="560" y="235">0</text>
+          <circle cx="495" cy="192" r="17" class="f-crane"/><text x="495" y="197">1</text>
+          <circle cx="495" cy="118" r="17" class="f-bay" stroke-dasharray="4 3"/><text x="495" y="123">2</text>
+          <circle cx="560" cy="80" r="17" class="f-ok" stroke-width="1.8"/><text x="560" y="85">3</text>
+          <circle cx="625" cy="118" r="17" class="f-ok" stroke-width="1.8"/><text x="625" y="123">4</text>
+          <circle cx="625" cy="192" r="17" class="f-ok" stroke-width="1.8"/><text x="625" y="197">5</text>
+          <text x="560" y="34" font-size="13" font-weight="500">(나) 칸 1만 막힘</text>
+          <text x="560" y="272" font-size="12" class="t-muted">2는 3–4–5–0 길이 있지만 2→3이 올라가서 포기</text>
+
+          <g font-size="12" class="t-muted">
+            <text x="360" y="75" font-weight="500">높이 h(i)</text>
+            <text x="360" y="97">h(1) = 1, h(5) = 2</text>
+            <text x="360" y="116">h(2) = 3, h(4) = 4</text>
+            <text x="360" y="135">h(3) = 5</text>
+            <text x="360" y="168" font-weight="500">아래 이웃</text>
+            <text x="360" y="189">pred(2) = {1}</text>
+            <text x="360" y="208">pred(4) = {5}</text>
+            <text x="360" y="227">pred(3) = {2, 4}</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption>6칸 고리의 두 가지 상황. 주황색은 머무는 차가 있는 칸, 초록색은 규칙상 접근 가능한 칸, 점선은 접근 불가로 판정되는 칸입니다.</figcaption>
+    </figure>
+    <p>왼쪽 그림 (가)에서 칸 1과 5가 모두 막히면, 칸 2, 3, 4는 출입구와 완전히 끊긴 섬이 됩니다. 그런데 만약 "모든 이웃 중 하나가 1이면 된다"는 느슨한 규칙을 쓰면 어떻게 될까요? a(2) = a(3) = a(4) = 1이라고 놓아도, 2는 이웃 3을 보고, 3은 이웃 2(또는 4)를 보고, 4는 이웃 3을 보며 <strong>서로가 서로를 받쳐 주면서</strong> 규칙을 통과해 버립니다! 이런 엉터리 섬을 막아 주는 장치가 바로 "아래 이웃 <code>pred(i)</code>"입니다. 높이를 적용하면 <code>pred(2) = {1}</code>(막힘)이라 a(2) = 0이고, <code>pred(4) = {5}</code>(막힘)이라 a(4) = 0이므로, <code>pred(3) = {2, 4}</code>가 모두 0이 되어 a(3) = 0이 강제됩니다.</p>
+  </section>
+
+  <section>
+    <h2>규칙 때문에 잃는 것, 그리고 Python 확인</h2>
+    <p>오른쪽 그림 (나)처럼 칸 1만 막힌 경우를 봅시다. 실제로는 칸 2에서 <code>2 → 3 → 4 → 5 → 0</code>으로 돌아 나가는 길이 살아 있습니다. 하지만 2에서 3으로 가는 첫걸음이 높이 3에서 높이 5로 <em>올라가는</em> 방향이라 허용되지 않습니다. <code>pred(2) = {1}</code>뿐인데 1이 막혔으므로, 규칙 (가)(나)(다)는 칸 2를 접근 불가(<code>a(2) = 0</code>)로 판정합니다.</p>
+    <p>4장의 3 × 3 격자 배에서 칸 1과 4가 막혔을 때도 똑같은 일이 벌어졌습니다. 4장에서 칸을 지운 그래프의 BFS로는 칸 3과 6까지 닿을 수 있었지만(<code>3 → 6 → 8 → 7 → 5 → 2 → 0</code>), 높이를 따라 보면 3 → 6 → 8에서 높이가 커지므로 규칙 (가)(나)(다)는 칸 3과 6을 접근 불가로 놓아 버립니다. 이처럼 <strong>높이를 도입해 식을 단순하게 만드는 대가로, 높이를 거슬러 돌아가는 우회 경로는 포기</strong>합니다.</p>
+    <p>방금 본 6칸 고리의 두 상황을 Python 코드로 확인해 봅니다. 높이가 낮은 칸부터 차례로 훑으면, 자기 차례가 왔을 때 아래 이웃의 딱지가 이미 정해져 있으므로 한 번의 반복문으로 가장 큰 딱지를 구할 수 있습니다.</p>
+<pre class="py">
+def check_access(N, nbr, order, blocked):
+    h = [0] * N
+    for k in range(N):
+        h[order[k]] = k
+    pred = []
+    for i in range(N):
+        low = []
+        for j in nbr[i]:
+            if h[j] &lt; h[i]:
+                low.append(j)
+        pred.append(low)
+    ok = [False] * N
+    ok[0] = True
+    for k in range(1, N):
+        i = order[k]
+        if i not in blocked:
+            for j in pred[i]:
+                if ok[j]:
+                    ok[i] = True
+    return pred, ok
+
+nbr6 = [[1, 5], [0, 2], [1, 3], [2, 4], [3, 5], [4, 0]]
+order6 = [0, 1, 5, 2, 4, 3]
+pred6, ok_a = check_access(6, nbr6, order6, [1, 5])
+pred6b, ok_b = check_access(6, nbr6, order6, [1])
+print("pred:", pred6)
+print("1·5 막힘:", ok_a)
+print("1만 막힘:", ok_b)
+</pre>
+<pre class="out">
+pred: [[], [0], [1], [2, 4], [5], [0]]
+1·5 막힘: [True, False, False, False, False, False]
+1만 막힘: [True, False, False, True, True, True]
+</pre>
+    <ul class="code">
+      <li><b>2~4행</b> 방문 순서 <code>order</code>로부터 높이 <code>h[i]</code>를 계산합니다.</li>
+      <li><b>5~11행</b> 각 노드 <code>i</code>의 이웃 가운데 높이가 더 낮은 것만 골라 <code>pred[i]</code>를 만듭니다.</li>
+      <li><b>12~13행</b> 모든 노드를 <code>False</code>로 둔 뒤, 규칙 (가)에 따라 출입구 0만 <code>True</code>로 둡니다.</li>
+      <li><b>14~19행</b> 높이가 낮은 칸(<code>order[1]</code>부터 <code>order[N-1]</code>) 순서로 확인합니다. 규칙 (나)로 막힌 칸은 건너뛰고, 규칙 (다)로 아래 이웃 중 하나라도 <code>True</code>이면 <code>True</code>로 바꿉니다.</li>
+      <li><b>22~28행</b> 6칸 고리에서 실행합니다. (가)는 0만 <code>True</code>가 되어 2, 3, 4 섬이 걸러지고, (나)는 2도 <code>False</code>가 되어 우회 경로를 포기함을 확인합니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">3부 · 세 길이의 부등식, 이분 그래프, 홀수 순환</div>
+
+  <section>
+    <h2>세 길이의 부등식과 5칸 고리</h2>
+    <p>이제 어떤 칸 i에 머무는 차를 피해 높이를 따라 출입구까지 내려가는 경로가 존재한다고 합시다. 이때 칸 i에서 출입구 0까지 가는 길의 길이에는 세 가지가 있습니다.</p>
+    <div class="formula">dist(i) ≤ 막힌 칸을 지운 그래프의 최단거리 ≤ 높이를 따라 내려가는 경로의 길이</div>
+    <div class="why">
+      <p>왼쪽 부등호가 성립하는 이유는, 막힌 칸을 피해서 가는 길은 원래 빈 배 그래프의 길이기도 하므로 빈 배의 최단거리 <code>dist(i)</code>보다 짧을 수 없기 때문입니다. 오른쪽 부등호가 성립하는 이유는, 높이를 따라 내려가는 경로 역시 막힌 칸을 지운 그래프 위의 경로 중 하나이므로 그 그래프의 최단거리보다 짧을 수 없기 때문입니다.</p>
+    </div>
+    <p>앞에서 본 <strong>5칸 고리</strong>(0-1-2-3-4-0, 간선 순서 <code>0-1, 1-2, 2-3, 3-4, 4-0</code>)에서 이 세 값이 실제로 달라지는 장면을 봅시다. BFS 방문 순서는 <code>0, 1, 4, 2, 3</code>이므로 높이는 h(1) = 1, h(4) = 2, h(2) = 3, h(3) = 4입니다. 노드 3의 원래 최단거리는 <code>dist(3) = 2</code>(3 → 4 → 0)이고, 아래 이웃은 <code>pred(3) = {2, 4}</code>입니다.</p>
+    <p>이제 칸 4에 머무는 차가 서 있다고 합시다. 칸 3은 막히지 않은 아래 이웃 2를 따라 <code>3 → 2 → 1 → 0</code>으로 내려갈 수 있습니다(높이 4 → 3 → 1 → 0). 그런데 이 경로의 길이는 <strong>3</strong>입니다! 즉 세 길이의 부등식에 숫자를 넣으면 <code>2 ≤ 3 ≤ 3</code>이 됩니다.</p>
+    <p>왜 이 차이가 중요할까요? 1등 팀의 최적화 모형은 칸 i에 차를 싣고 내리는 경로의 비용을 언제나 빈 배의 최단거리 <code>F + dist(i)</code>로 계산합니다. 칸 3에 대해서는 길이를 2로 계산한다는 뜻입니다. 하지만 실제로 칸 4가 막혀 있을 때 차가 달리는 길이는 3입니다. 즉 5칸 고리 같은 배에서는 <strong>모형이 계산하는 비용이 실제 비용보다 작게 잡힐 수 있습니다.</strong></p>
+  </section>
+
+  <section>
+    <h2>이분 그래프와 홀수 순환</h2>
+    <p>방금 5칸 고리에서 길이가 2에서 3으로 늘어난 원인은 딱 하나, <code>3 → 2</code> 걸음이 <strong>같은 층(L₂) 안을 옆으로 이동한 걸음</strong>이었기 때문입니다. 만약 모든 간선이 서로 다른 층만 잇는다면, 아래 이웃으로 한 걸음 내려갈 때마다 층(즉 거리)이 정확히 1씩 줄어들어 언제나 <code>dist(i)</code>걸음 만에 출입구에 닿을 것입니다.</p>
+    <p>그러면 어떤 그래프에 "같은 층 간선"이 없고, 어떤 그래프에 있을까요? 4장에서 3 × 3 격자 배를 색칠했던 생각을 확장해 봅시다. 체스판은 검은 칸과 흰 칸이 번갈아 놓여서, 어떤 두 이웃 칸도 서로 색이 다릅니다. 이렇게 노드를 두 편으로 갈라 모든 간선이 서로 다른 편만 잇게 할 수 있는 그래프에 이름을 붙입니다.</p>
+    <div class="defn"><b>정의</b>
+      <ul>
+        <li><strong>이분 그래프(bipartite graph)</strong>: 노드를 두 집합(두 편)으로 나누어, 모든 간선이 서로 다른 편에 있는 두 노드를 잇게 할 수 있는 그래프입니다.</li>
+        <li><strong>홀수 순환(odd cycle)</strong>: 지나는 간선의 개수가 홀수인 순환입니다(삼각형 길이 3, 5칸 고리 길이 5 등).</li>
+      </ul>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 270" role="img" aria-label="5칸 고리의 이분 그래프 실패와 비용 차이. 왼쪽은 짝수 층 파란색과 홀수 층 주황색으로 칠했을 때 같은 층 간선 2-3이 같은 색끼리 부딪히는 그림이고, 오른쪽은 칸 4가 막혔을 때 내려가는 경로 3-2-1-0의 길이 3이 원래 최단거리 2보다 긴 그림이다">
+        <defs>
+          <marker id="ar5b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ok)"/></marker>
+        </defs>
+        <g font-size="14" text-anchor="middle">
+          <g class="s-line" stroke-width="1.5">
+            <line x1="175" y1="220" x2="95" y2="155"/><line x1="175" y1="220" x2="255" y2="155"/>
+            <line x1="95" y1="155" x2="125" y2="75"/><line x1="255" y1="155" x2="225" y2="75"/>
+          </g>
+          <line x1="125" y1="75" x2="225" y2="75" class="s-crane" stroke-width="3.2"/>
+          <circle cx="175" cy="220" r="17" class="f-steel"/><text x="175" y="225">0</text>
+          <circle cx="95" cy="155" r="17" class="f-crane"/><text x="95" y="160">1</text>
+          <circle cx="255" cy="155" r="17" class="f-crane"/><text x="255" y="160">4</text>
+          <circle cx="125" cy="75" r="17" class="f-steel"/><text x="125" y="80">2</text>
+          <circle cx="225" cy="75" r="17" class="f-steel"/><text x="225" y="80">3</text>
+          <text x="175" y="28" font-size="13" font-weight="500">(가) 5칸 고리: 홀수 순환</text>
+          <text x="175" y="50" font-size="12" class="t-crane">같은 층 L₂ 간선 {2, 3} 충돌</text>
+          <text x="175" y="256" font-size="12" class="t-muted">두 색으로 나눌 수 없다 (이분 그래프 아님)</text>
+
+          <g class="s-line" stroke-width="1.4" opacity=".45">
+            <line x1="515" y1="220" x2="435" y2="155"/><line x1="515" y1="220" x2="595" y2="155"/>
+            <line x1="435" y1="155" x2="465" y2="75"/><line x1="595" y1="155" x2="565" y2="75"/>
+            <line x1="465" y1="75" x2="565" y2="75"/>
+          </g>
+          <g class="s-ok" stroke-width="3" marker-end="url(#ar5b)">
+            <line x1="546" y1="75" x2="484" y2="75"/>
+            <line x1="458" y1="93" x2="442" y2="136"/>
+            <line x1="450" y1="167" x2="499" y2="207"/>
+          </g>
+          <circle cx="515" cy="220" r="17" class="f-ok" stroke-width="1.8"/><text x="515" y="225">0</text>
+          <circle cx="435" cy="155" r="17" class="f-ok" stroke-width="1.8"/><text x="435" y="160">1</text>
+          <circle cx="595" cy="155" r="17" class="f-crane"/><text x="595" y="160">4</text>
+          <circle cx="465" cy="75" r="17" class="f-ok" stroke-width="1.8"/><text x="465" y="80">2</text>
+          <circle cx="565" cy="75" r="17" class="f-ok" stroke-width="1.8"/><text x="565" y="80">3</text>
+          <g class="s-crane" stroke-width="2">
+            <line x1="581" y1="141" x2="609" y2="169"/><line x1="609" y1="141" x2="581" y2="169"/>
+          </g>
+          <text x="515" y="28" font-size="13" font-weight="500">(나) 칸 4가 막혔을 때</text>
+          <text x="515" y="50" font-size="12" class="t-ok">내려가는 길 3→2→1→0 (길이 3)</text>
+          <text x="515" y="256" font-size="12" class="t-muted">모형은 dist(3) = 2로 셈해 1만큼 적게 계산</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>5칸 고리(0-1-2-3-4-0). (가) 층 2의 두 노드 2와 3이 간선으로 이어져 있어 두 색으로 칠하기가 깨집니다. (나) 칸 4가 막히면 내려가는 길이 3걸음이 되어 dist(3) = 2보다 깁니다.</figcaption>
+    </figure>
+    <div class="thm"><b>핵심 사실</b> 연결된 그래프에서 다음 세 가지는 언제나 같은 뜻입니다.
+      <ul>
+        <li><strong>①</strong> 그래프가 이분 그래프이다.</li>
+        <li><strong>②</strong> 그래프에 홀수 순환이 하나도 없다.</li>
+        <li><strong>③</strong> 출입구에서 BFS를 했을 때, 같은 층의 두 노드를 잇는 간선이 하나도 없다.</li>
+      </ul>
+    </div>
+    <div class="why">
+      <p><strong>① ⇒ ②</strong>: 두 색으로 칠해진 그래프에서 순환을 따라가면 한 걸음마다 색이 바뀝니다. 출발한 색으로 다시 돌아오려면 바뀐 횟수, 즉 순환의 간선 수가 짝수여야 합니다.<br>
+      <strong>③ ⇒ ①</strong>: 같은 층 간선이 없다면, 4장에서 보았듯이 모든 간선은 바로 이웃한 두 층(예: 짝수 층과 홀수 층)만 잇습니다. 그러니 짝수 층을 파란색, 홀수 층을 주황색으로 칠하면 자연스럽게 이분 그래프가 됩니다.<br>
+      <strong>② ⇒ ③ (거꾸로 보기)</strong>: 만약 같은 층 L<sub>d</sub>에 있는 두 노드 u와 v를 잇는 간선이 있다면, 출입구에서 u까지와 v까지의 길이 d짜리 경로 두 개에 간선 {u, v}를 붙이면 총 2d + 1걸음, 즉 홀수 길이로 제자리로 돌아오는 고리가 만들어집니다. (5칸 고리에서는 d = 2이므로 2 × 2 + 1 = 5인 순환이 되었습니다.)</p>
+    </div>
+    <div class="aside">
+      <p><strong>조금 더 엄밀하게(공통 조상).</strong> u에서 0까지의 부모 경로와 v에서 0까지의 부모 경로가 중간 노드 w(층 t)에서 이미 만날 수 있습니다. 이때는 w에서 갈라져 u와 v로 가는 두 갈래 길(각각 길이 d − t)에 간선 {u, v}를 더하면, 중간에 겹치는 노드 없이 진짜 길이 2(d − t) + 1인 홀수 순환이 나옵니다.</p>
+    </div>
+    <p>Python으로 간선 목록과 <code>dist</code>만 보고 같은 층 간선이 있는지(즉 이분 그래프가 깨지는지) 확인하는 것도 몇 줄이면 됩니다.</p>
+<pre class="py">
+def same_layer_edges(E, dist):
+    bad = []
+    for e in E:
+        if dist[e[0]] == dist[e[1]]:
+            bad.append(e)
+    return bad
+
+E5 = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]
+dist5 = [0, 1, 2, 2, 1]
+E6 = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]
+dist6 = [0, 1, 2, 3, 2, 1]
+print("5칸 고리:", same_layer_edges(E5, dist5))
+print("6칸 고리:", same_layer_edges(E6, dist6))
+</pre>
+<pre class="out">
+5칸 고리: [[2, 3]]
+6칸 고리: []
+</pre>
+    <ul class="code">
+      <li><b>1~6행</b> 모든 간선 <code>[u, v]</code>를 훑으며 양 끝 노드의 거리(층 번호)가 같으면 <code>bad</code>에 담습니다.</li>
+      <li><b>8~13행</b> 5칸 고리에서는 <code>[2, 3]</code>이 잡히고(이분 그래프 아님), 6칸 고리에서는 하나도 안 잡힙니다(이분 그래프임).</li>
+    </ul>
+    <p>이제 이 장 전체의 결론에 이릅니다.</p>
+    <div class="thm"><b>핵심 사실 (이분 그래프에서는 모형 비용 = 실제 비용)</b> 대각선 없는 격자 배, 트리, 6칸 고리처럼 홀수 순환이 없는 이분 그래프에서는 모든 아래 이웃이 바로 앞 층(거리가 1 작은 층)에 있습니다. 따라서 접근 가능한 칸에서 높이를 따라 내려가는 경로의 길이는 언제나 <code>dist(i)</code>와 같고, 세 길이의 부등식 양쪽이 모두 같아져 모형이 계산하는 비용과 실제 경로 비용이 정확히 일치합니다.</div>
+    <div class="why">
+      <p>이분 그래프에서는 같은 층 간선이 없으므로, 노드 i의 아래 이웃은 모두 거리가 정확히 <code>dist(i) − 1</code>인 이웃뿐입니다. 한 걸음 내려갈 때마다 거리가 1씩 줄어드니, 0까지 내려가는 경로의 길이는 언제나 <code>dist(i)</code>일 수밖에 없습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref">
+      <p>가이드의 「높이 매기기」 절에서 <code>getBFSOrientation</code>이 매기는 <code>_position</code>이 이 장의 높이 <code>h(i)</code>이고, 각 간선에 큰 높이에서 작은 높이로 방향을 주는 것이 DAG 만들기입니다. 가이드가 "왜 거리를 그대로 높이로 쓰지 않는가"를 설명하며 5칸 고리를 드는 것도 이 장 1부의 내용입니다.</p>
+    </div>
+    <div class="gref">
+      <p>가이드의 「풀이의 아이디어」 절에서 나오는 접근 가능 규칙 (가)(나)(다)와 6칸 고리 "서로 받쳐 주는 섬" 반례, 그리고 높이를 거스르는 우회 경로를 포기하는 "규칙 때문에 잃는 것"이 이 장 2부 전체와 맞닿아 있습니다.</p>
+    </div>
+    <div class="gref">
+      <p>가이드의 「모형 한 줄씩」 절 마지막 부분에서 "모형과 실제 문제의 차이"를 짚을 때 나오는 세 길이의 부등식, 5칸 고리의 비용 차이, 그리고 "홀수 고리가 없는 이분 그래프에서는 모형 비용과 실제 비용이 같다"는 결론이 이 장 3부의 핵심 사실들입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>BFS 방문 순번을 높이 <code>h(i)</code>로 삼아 큰 쪽에서 작은 쪽으로 화살표를 주면, 제자리로 돌아올 수 없는 방향 그래프(DAG)가 됩니다.</li>
+        <li>아래 이웃 <code>pred(i)</code>는 이웃 중 높이가 <code>h(i)</code>보다 작은 노드들입니다. 출입구가 아닌 노드는 부모를 포함하므로 <code>pred(i)</code>가 비지 않습니다.</li>
+        <li>접근 가능 규칙 (가)(나)(다)를 지키며 딱지 1이 붙은 칸은, 머무는 차를 피해 높이를 따라 출입구까지 내려가는 길이 보장됩니다.</li>
+        <li><code>pred(i)</code> 대신 모든 이웃을 쓰면 출입구와 끊긴 칸들이 서로를 받쳐 주는 "섬"이 생깁니다(6칸 고리 반례). 대신 높이를 거스르는 우회 경로는 잃습니다.</li>
+        <li>세 길이의 부등식: <code>dist(i) ≤ 지운 그래프 최단거리 ≤ 내려가는 경로 길이</code>.</li>
+        <li>이분 그래프(홀수 순환 없음, 같은 층 간선 없음)에서는 모든 아래 이웃의 거리가 1씩 작아, 모형 비용과 실제 비용이 정확히 일치합니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>3 × 3 격자 배(높이 = 노드 번호)에서 화살표 방향만 따라 노드 8에서 출입구 0까지 내려가는 경로를 모두 적어 보세요.</summary>
+      <p><code>pred(8) = {6, 7}</code>, <code>pred(6) = {3, 4}</code>, <code>pred(7) = {4, 5}</code>, <code>pred(3) = {1}</code>, <code>pred(4) = {1, 2}</code>, <code>pred(5) = {2}</code>입니다. 모두 6가지입니다: 8 → 6 → 3 → 1 → 0, 8 → 6 → 4 → 1 → 0, 8 → 6 → 4 → 2 → 0, 8 → 7 → 4 → 1 → 0, 8 → 7 → 4 → 2 → 0, 8 → 7 → 5 → 2 → 0. 이 배는 이분 그래프이므로 6가지 모두 길이가 4 = <code>dist(8)</code>입니다.</p>
+    </details>
+    <details>
+      <summary>노드 0-1-2-3이 일렬로 이어진 배에서 높이, 아래 이웃 <code>pred(i)</code>, 그리고 칸 2에 머무는 차가 있을 때 규칙 (가)(나)(다)를 만족하는 가장 큰 딱지를 구하세요.</summary>
+      <p>높이는 h(0) = 0, h(1) = 1, h(2) = 2, h(3) = 3이고, <code>pred(1) = {0}</code>, <code>pred(2) = {1}</code>, <code>pred(3) = {2}</code>입니다. 칸 2가 막히면 a(2) = 0이고, 칸 3의 유일한 아래 이웃 2가 0이므로 a(3) = 0입니다. 따라서 a(0) = a(1) = 1, a(2) = a(3) = 0입니다.</p>
+    </details>
+    <details>
+      <summary>3 × 3 격자 배에서 칸 1과 칸 4에 머무는 차가 있을 때, 접근 가능 규칙으로 딱지 1을 붙일 수 있는 칸을 모두 찾으세요. 4장의 "칸을 지운 그래프 BFS" 결과와 비교하면 어떤 칸이 빠졌나요?</summary>
+      <p>출입구 0은 1, 칸 1과 4는 막혀서 0입니다. 칸 2는 0을 근거로 1. 칸 3은 <code>pred(3) = {1}</code>이 0이므로 0. 칸 5는 2를 근거로 1. 칸 6은 <code>pred(6) = {3, 4}</code>가 모두 0이므로 0. 칸 7은 5를 근거로 1. 칸 8은 7을 근거로 1입니다. 따라서 0, 2, 5, 7, 8만 접근 가능합니다. 4장의 지운 그래프 BFS에서는 닿았던 칸 3과 6이 빠졌는데, <code>3 → 6 → 8 → 7 → 5 → 2 → 0</code>이 높이를 거슬러 올라가는(3 → 6 → 8) 경로이기 때문입니다.</p>
+    </details>
+    <details>
+      <summary>6칸 고리(0-1-2-3-4-5-0, 간선 순서 0-1, 1-2, 2-3, 3-4, 4-5, 5-0)에서 칸 5에만 머무는 차가 있을 때, 접근 가능한 칸과 "실제로는 길이 있지만 규칙 때문에 잃는 칸"을 찾으세요.</summary>
+      <p>방문 순서는 0, 1, 5, 2, 4, 3입니다. a(0) = 1, a(1) = 1(0이 1), a(5) = 0(막힘), a(2) = 1(<code>pred(2) = {1}</code>), a(4) = 0(<code>pred(4) = {5}</code>가 0), a(3) = 1(<code>pred(3) = {2, 4}</code> 중 2가 1)입니다. 따라서 0, 1, 2, 3이 접근 가능합니다. 잃는 칸은 칸 4입니다. 실제로는 <code>4 → 3 → 2 → 1 → 0</code>으로 나갈 수 있지만 4에서 3으로 갈 때 높이가 4에서 5로 커지기 때문입니다.</p>
+    </details>
+    <details>
+      <summary>접근 가능 규칙 (다)를 "<code>pred(i)</code> 안의 <em>모든</em> j가 a(j) = 1이어야 한다"로 잘못 바꾸면 3 × 3 격자 배에서 어떤 일이 생기나요?</summary>
+      <p>예를 들어 칸 2에만 머무는 차가 있다고 합시다. 칸 4는 실제로 칸 1을 통해 <code>4 → 1 → 0</code>으로 거뜬히 나갈 수 있습니다. 하지만 <code>pred(4) = {1, 2}</code> 가운데 2가 막혀 a(2) = 0이므로, 바뀐 규칙 아래에서는 a(4) = 0으로 막혀 버립니다. 원래 규칙 (다)가 "적어도 하나"를 요구하는 이유입니다.</p>
+    </details>
+    <details>
+      <summary>5칸 고리(0-1-2-3-4-0)에서 칸 4가 막혀 있을 때, 칸 3에 대한 세 길이의 부등식 세 값을 각각 구하세요.</summary>
+      <p>원래 최단거리 <code>dist(3)</code>은 2(3 → 4 → 0)입니다. 칸 4를 지운 그래프에서 3에서 0까지의 최단거리는 3(3 → 2 → 1 → 0)입니다. 높이를 따라 내려가는 경로는 <code>3 → 2 → 1 → 0</code>뿐이므로 길이 3입니다. 따라서 부등식은 <code>2 ≤ 3 ≤ 3</code>이 됩니다.</p>
+    </details>
+    <details>
+      <summary>3 × 3 격자 배에 대각선 간선 {1, 2}를 하나 추가하면 이 그래프는 이분 그래프인가요? 모형 비용과 실제 비용이 달라질 가능성이 있나요?</summary>
+      <p>이분 그래프가 아닙니다. 0–1–2–0이 길이 3인 홀수 순환을 이루기 때문입니다(1과 2가 둘 다 층 L₁에 있어 같은 층 간선입니다). 방문 순서가 0, 1, 2, …라면 <code>pred(2) = {0, 1}</code>이 됩니다. 이론상 0이 막힌다면 2 → 1 → 0으로 길이 2짜리 경로를 타야 해 <code>dist(2) = 1</code>과 어긋나지만, 출입구 0은 막히지 않으므로 이 작은 예에서는 실제로 어긋나지는 않습니다. 다만 홀수 순환이 있는 그래프에서는 일반적으로 어긋날 수 있습니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/이분_그래프">위키백과 「이분 그래프」</a> — 이분 그래프의 정의와 홀수 순환이 없다는 성질을 간단히 정리합니다.</li>
+      <li><span class="tagc">무료</span><a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Wikipedia 「Directed acyclic graph」</a>, <a href="https://en.wikipedia.org/wiki/Bipartite_graph">「Bipartite graph」</a> — 영어. DAG의 위상 순서와 이분 그래프 판정 정리를 다룹니다.</li>
+      <li><span class="tagc">무료</span><a href="https://jeffe.cs.illinois.edu/teaching/algorithms/">J. Erickson, <em>Algorithms</em> (2019)</a> — 영어, 무료 PDF 교재. 6장 Depth-First Search가 DAG와 위상 순서를 다룹니다.</li>
+      <li><span class="tagc">무료</span><a href="https://diestel-graph-theory.com/">R. Diestel, <em>Graph Theory</em> (6판, Springer)</a> — 영어, 온라인 무료 열람판 제공. 1.6절 Bipartite graphs가 홀수 순환 정리를 다룹니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch4">← 이전: 4장 그래프와 너비 우선 탐색</a><a href="#ch6">다음: 6장 선형계획 ①: 그림으로 풀기 →</a></div>
+</article>

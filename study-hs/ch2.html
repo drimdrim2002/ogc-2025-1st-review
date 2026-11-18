@@ -1,0 +1,401 @@
+<article class="chapter" id="ch2">
+  <header>
+    <div class="kicker">2 / 16</div>
+    <h1>최적화 문제의 말과 기호</h1>
+  </header>
+
+  <section>
+    <p class="lead">최적화는 "조건을 지키면서 가장 좋은 선택을 찾는 일"입니다. 이 장에서는 최적화 문제를 이루는 세 가지 재료의 이름을 배우고, 작은 문제를 Python으로 직접 풀어 보고, 이 책의 식을 읽는 데 필요한 기호를 정리합니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 1차식과 부등식, 수열의 합 Σ, 집합의 기호(∈, ⊂, ∩, ∪), 경우의 수(n!, 2<sup>n</sup>). Python의 for와 if.</li>
+      <li><strong>이 장을 읽고 나면.</strong> 문제를 "결정변수, 제약, 목적함수"로 나눠 적을 수 있고, x<sub>pqi</sub>나 Σ, 「모든 i」가 들어간 식을 겁내지 않고 읽을 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 최적화 문제의 세 가지 재료</div>
+
+  <section>
+    <h2>택배 회사의 고민: 트럭 예</h2>
+    <p>택배 회사가 짐 30톤을 다른 도시로 보내야 합니다. 부를 수 있는 트럭은 두 종류입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>트럭</th><th>한 대에 싣는 양</th><th>한 대 부르는 값</th><th>1톤당 값</th></tr></thead>
+      <tbody>
+        <tr><td>큰 트럭</td><td>9톤</td><td>10만 원</td><td>10 ÷ 9 ≈ 1.11만 원</td></tr>
+        <tr><td>작은 트럭</td><td>5톤</td><td>7만 원</td><td>7 ÷ 5 = 1.4만 원</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>1톤당 값은 큰 트럭이 쌉니다. 그러면 큰 트럭만 부르면 될까요? 큰 트럭 3대는 27톤이라 모자라고, 4대를 부르면 36톤을 실을 수 있어 충분합니다. 값은 40만 원입니다.</p>
+    <p>그런데 큰 트럭 3대에 작은 트럭 1대를 더하면 27 + 5 = 32톤으로 역시 충분하고, 값은 30 + 7 = 37만 원입니다. "톤당 싼 쪽만 쓴다"는 그럴듯한 생각이 가장 좋은 답을 주지 않았습니다. 그렇다면 37만 원보다 더 싼 방법은 없을까요? 이 질문에 "없다"고 자신 있게 답하는 것이 최적화입니다.</p>
+    <p>이 문제를 앞으로 <strong>트럭 예</strong>라고 부릅니다. 이 책 끝까지 여러 번 다시 나옵니다.</p>
+  </section>
+
+  <section>
+    <h2>세 가지 재료: 결정변수, 제약, 목적함수</h2>
+    <p>트럭 예를 수학 문제로 옮겨 봅니다. 먼저 우리가 정할 수 있는 수에 이름을 붙입니다. 큰 트럭을 x대, 작은 트럭을 y대 부른다고 합시다.</p>
+    <div class="obj">
+      <div><span class="f">① 무엇을 정하는가</span><p>큰 트럭 x대, 작은 트럭 y대.<br>내가 정하는 수가 <strong>결정변수</strong>입니다.</p></div>
+      <div><span class="f">② 무엇을 지켜야 하는가</span><p>30톤을 다 실어야 한다: 9x + 5y ≥ 30.<br>트럭 대수는 0 이상의 정수.<br>지켜야 할 조건이 <strong>제약</strong>입니다.</p></div>
+      <div><span class="f">③ 무엇이 좋은 것인가</span><p>값 10x + 7y(만 원)가 작을수록 좋다.<br>좋고 나쁨을 재는 식이 <strong>목적함수</strong>입니다.</p></div>
+    </div>
+    <p>세 가지를 모아 다음처럼 적습니다. 이 책의 모든 최적화 문제는 이런 모양입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp; 10x + 7y</span><span class="all">목적함수: 트럭 값(만 원)</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp;&nbsp; 9x + 5y ≥ 30</span><span class="all">30톤을 다 싣는다</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x ≥ 0,&nbsp; y ≥ 0,&nbsp; x와 y는 정수</span><span class="all">트럭 대수</span></div>
+    </div>
+    <div class="defn"><b>정의</b> <strong>최적화 문제(optimization problem)</strong>는 다음 세 가지로 이루어집니다.
+      <ul>
+        <li><strong>결정변수(decision variable)</strong>: 내가 값을 정하는 수.</li>
+        <li><strong>제약(constraint)</strong>: 결정변수가 지켜야 하는 조건. 등식이나 부등식으로 적습니다.</li>
+        <li><strong>목적함수(objective function)</strong>: 좋고 나쁨을 재는 식. 이 값을 가장 작게 만드는 문제를 최소화 문제, 가장 크게 만드는 문제를 최대화 문제라고 합니다.</li>
+      </ul>
+    </div>
+    <p>문제를 이렇게 식으로 적은 것을 <strong>모형(model)</strong>이라고 하고, 식으로 적는 일을 <strong>정식화(formulation)</strong> 또는 모델링이라고 합니다. 이 책이 읽으려는 1등 풀이의 핵심도 "자동차 운반선 문제를 어떤 식으로 적었는가"입니다.</p>
+  </section>
+
+  <section>
+    <h2>가능해와 최적해</h2>
+    <p>변수에 값을 넣어 봅니다. (x, y) = (4, 0)이면 9·4 + 5·0 = 36 ≥ 30이라 제약을 지킵니다. (3, 1)도 27 + 5 = 32 ≥ 30이라 지킵니다. 하지만 (3, 0)은 27톤밖에 못 실어 제약을 어깁니다.</p>
+    <div class="defn"><b>정의</b> 제약을 모두 지키는 변수 값 한 벌을 <strong>가능해(feasible solution)</strong>라고 합니다. 가능해를 전부 모은 집합이 <strong>가능 영역(feasible region)</strong>입니다. 가능해 가운데 목적함수 값이 가장 좋은 것이 <strong>최적해(optimal solution)</strong>이고, 그때의 목적함수 값이 <strong>최적값(optimal value)</strong>입니다.</div>
+    <p>「해」라는 말에 주의하세요. 방정식에서는 해가 곧 답이지만, 최적화에서 가능해는 "조건을 지킨 후보"일 뿐입니다. 후보는 많고, 그중 가장 좋은 하나가 최적해입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 340" role="img" aria-label="트럭 예의 후보를 좌표평면의 격자점으로 그린 그림. 직선 9x+5y=30 위쪽의 격자점이 가능해이고, 그중 (3,1)의 값 37이 가장 작다">
+      <polygon class="f-steel" opacity=".45" points="80,28 80,96 313.3,300 472,300 472,28"/>
+      <g class="s-line" stroke-width="1.2"><line x1="80" y1="300" x2="486" y2="300"/><line x1="80" y1="300" x2="80" y2="17.8"/></g>
+      <g class="s-crane" stroke-width="1.8"><line x1="80" y1="96" x2="313.3" y2="300"/></g>
+      <g class="f-fg"><circle cx="80" cy="96" r="4"/><circle cx="80" cy="62" r="4"/><circle cx="150" cy="130" r="4"/><circle cx="150" cy="96" r="4"/><circle cx="150" cy="62" r="4"/><circle cx="220" cy="198" r="4"/><circle cx="220" cy="164" r="4"/><circle cx="220" cy="130" r="4"/><circle cx="220" cy="96" r="4"/><circle cx="220" cy="62" r="4"/><circle cx="290" cy="266" r="4"/><circle cx="290" cy="232" r="4"/><circle cx="290" cy="198" r="4"/><circle cx="290" cy="164" r="4"/><circle cx="290" cy="130" r="4"/><circle cx="290" cy="96" r="4"/><circle cx="290" cy="62" r="4"/><circle cx="360" cy="300" r="4"/><circle cx="360" cy="266" r="4"/><circle cx="360" cy="232" r="4"/><circle cx="360" cy="198" r="4"/><circle cx="360" cy="164" r="4"/><circle cx="360" cy="130" r="4"/><circle cx="360" cy="96" r="4"/><circle cx="360" cy="62" r="4"/><circle cx="430" cy="300" r="4"/><circle cx="430" cy="266" r="4"/><circle cx="430" cy="232" r="4"/><circle cx="430" cy="198" r="4"/><circle cx="430" cy="164" r="4"/><circle cx="430" cy="130" r="4"/><circle cx="430" cy="96" r="4"/><circle cx="430" cy="62" r="4"/></g>
+      <g class="f-bay" stroke-width="1.1"><circle cx="80" cy="300" r="3.5"/><circle cx="80" cy="266" r="3.5"/><circle cx="80" cy="232" r="3.5"/><circle cx="80" cy="198" r="3.5"/><circle cx="80" cy="164" r="3.5"/><circle cx="80" cy="130" r="3.5"/><circle cx="150" cy="300" r="3.5"/><circle cx="150" cy="266" r="3.5"/><circle cx="150" cy="232" r="3.5"/><circle cx="150" cy="198" r="3.5"/><circle cx="150" cy="164" r="3.5"/><circle cx="220" cy="300" r="3.5"/><circle cx="220" cy="266" r="3.5"/><circle cx="220" cy="232" r="3.5"/><circle cx="290" cy="300" r="3.5"/></g>
+      <g font-size="12"><text x="89" y="89">42</text><text x="159" y="123">45</text><text x="229" y="191">41</text><text x="369" y="293">40</text></g>
+      <g class="f-crane"><circle cx="290" cy="266" r="6.5"/></g>
+      <g font-size="12.5"><text x="302" y="258" class="t-crane" font-weight="500">(3, 1): 37 최적</text></g>
+      <g font-size="12" text-anchor="middle" class="t-muted"><text x="80" y="318">0</text><text x="150" y="318">1</text><text x="220" y="318">2</text><text x="290" y="318">3</text><text x="360" y="318">4</text><text x="430" y="318">5</text><text x="66" y="270">1</text><text x="66" y="236">2</text><text x="66" y="202">3</text><text x="66" y="168">4</text><text x="66" y="134">5</text><text x="66" y="100">6</text><text x="66" y="66">7</text><text x="66" y="32">8</text></g>
+      <g font-size="12.5"><text x="492" y="304">x (큰 트럭)</text><text x="88" y="21.8">y (작은 트럭)</text></g>
+      <g font-size="12.5"><circle cx="560" cy="96" r="4" class="f-fg"/><text x="572" y="100">가능해</text><circle cx="560" cy="122" r="3.5" class="f-bay" stroke-width="1.1"/><text x="572" y="126">짐을 다 못 실음</text><line x1="552" y1="148" x2="568" y2="148" class="s-crane" stroke-width="1.8"/><text x="572" y="152">9x + 5y = 30</text><text x="556" y="178" class="t-muted" font-size="11.5">숫자는 값(만 원)</text></g>
+      </svg>
+      </div>
+      <figcaption>트럭 예의 후보들. 가로축은 큰 트럭 x대, 세로축은 작은 트럭 y대입니다. 직선 9x + 5y = 30의 위쪽(직선 포함)에 있는 격자점(채운 점)이 가능해이고, 아래쪽의 빈 점은 짐을 다 싣지 못합니다. 채운 점 옆의 숫자는 값(만 원)입니다. 가장 싼 점은 (3, 1)의 37입니다.</figcaption>
+    </figure>
+    <p>그림에서 가능해는 끝없이 많습니다(트럭을 필요 이상으로 많이 불러도 조건은 지키니까요). 하지만 쓸데없이 많이 부른 해는 비싸기만 하므로, 살펴볼 가치가 있는 것은 직선 바로 위쪽의 점들입니다. x를 하나 정하면 필요한 y의 최솟값이 정해집니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>큰 트럭 x</th><th>큰 트럭이 싣는 양</th><th>남은 짐</th><th>필요한 작은 트럭 y</th><th>값 10x + 7y</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>30</td><td>30 ÷ 5 = 6 → 6대</td><td>42</td></tr>
+        <tr><td>1</td><td>9</td><td>21</td><td>21 ÷ 5 = 4.2 → 5대</td><td>45</td></tr>
+        <tr><td>2</td><td>18</td><td>12</td><td>12 ÷ 5 = 2.4 → 3대</td><td>41</td></tr>
+        <tr class="piv"><td>3</td><td>27</td><td>3</td><td>3 ÷ 5 = 0.6 → 1대</td><td>37</td></tr>
+        <tr><td>4</td><td>36</td><td>0</td><td>0대</td><td>40</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>큰 트럭을 5대 넘게 부르면 50만 원 이상이라 볼 필요가 없습니다. 따라서 최적해는 (3, 1), 최적값은 37입니다. 넷째 열에서 4.2를 5로, 0.6을 1로 <em>올린</em> 것을 기억해 두세요. 트럭은 0.2대만 부를 수 없기 때문입니다. 이 "정수 쪽으로 올리기"가 이 장 끝과 13장에서 중요한 도구가 됩니다.</p>
+  </section>
+
+  <div class="part">2부 · 다 해 보기와 그 한계</div>
+
+  <section>
+    <h2>다 해 보기: 전수 탐색</h2>
+    <p>방금 한 일은 후보를 하나도 빠짐없이 살펴본 것입니다. 이런 방법을 <strong>전수 탐색(brute force)</strong>이라고 합니다. 컴퓨터에게 시키기 좋은 일입니다. x는 0부터 4까지, y는 0부터 6까지만 보면 충분하므로(그보다 많이 부르는 것은 낭비) 후보는 5 × 7 = 35개입니다.</p>
+<pre class="py">
+best = 1000
+best_x = -1
+best_y = -1
+for x in range(0, 5):
+    for y in range(0, 7):
+        if 9 * x + 5 * y &gt;= 30:
+            cost = 10 * x + 7 * y
+            if cost &lt; best:
+                best = cost
+                best_x = x
+                best_y = y
+print(best_x, best_y, best)
+</pre>
+<pre class="out">
+3 1 37
+</pre>
+    <ul class="code">
+      <li><b>1~3행</b> 지금까지 찾은 가장 싼 값과 그때의 x, y를 기억할 변수입니다. 처음에는 어떤 후보보다도 큰 값 1000을 넣어 둡니다.</li>
+      <li><b>4~5행</b> x를 0, 1, 2, 3, 4로, 그 안에서 y를 0부터 6까지 바꿉니다. 후보 35개를 모두 지나갑니다.</li>
+      <li><b>6행</b> 제약 검사입니다. 30톤을 다 싣는 후보, 곧 가능해만 통과합니다.</li>
+      <li><b>7행</b> 목적함수 값을 계산합니다.</li>
+      <li><b>8~11행</b> 지금까지의 최고 기록보다 싸면 기록을 바꿉니다.</li>
+      <li><b>12행</b> 다 돌고 나면 기록에 남은 것이 최적해입니다. 손으로 구한 (3, 1), 37과 같습니다.</li>
+    </ul>
+    <p>코드의 6행이 제약, 7행이 목적함수, 4~5행의 x와 y가 결정변수입니다. 세 가지 재료가 코드에도 그대로 보입니다.</p>
+  </section>
+
+  <section>
+    <h2>다 해 볼 수 없는 문제: 조합 폭발</h2>
+    <p>전수 탐색은 확실하지만 후보가 많아지면 쓸 수 없습니다. 후보의 수는 생각보다 훨씬 빨리 늘어납니다.</p>
+    <p>택배 트럭 한 대가 고객 20명의 집을 한 번씩 들른다고 합시다. 들르는 순서에 따라 달리는 거리가 달라지니, 가장 짧은 순서를 찾고 싶습니다. 순서의 수는 20명을 한 줄로 세우는 경우의 수, 곧 20!입니다.</p>
+    <div class="formula">20! = 2,432,902,008,176,640,000 ≈ 2.4 × 10<sup>18</sup></div>
+    <p>1초에 10억 개의 순서를 검사하는 컴퓨터로도 약 77년이 걸립니다. 고객이 25명이면 25! ≈ 1.6 × 10<sup>25</sup>이라 약 4억 9천만 년입니다. 고객 다섯 명이 늘었을 뿐인데 시간은 600만 배가 넘게 늘었습니다.</p>
+    <p>"한다, 안 한다"를 고르는 선택이 n개 있는 문제도 마찬가지입니다. 후보가 2<sup>n</sup>개입니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>n</th><th>순서의 수 n!</th><th>0/1 선택 n개의 후보 2<sup>n</sup></th><th>1초에 10억 개씩 볼 때 2<sup>n</sup>개를 다 보는 시간</th></tr></thead>
+      <tbody>
+        <tr><td>10</td><td>3,628,800</td><td>1,024</td><td>0.000001초</td></tr>
+        <tr><td>20</td><td>약 2.4 × 10<sup>18</sup></td><td>1,048,576</td><td>0.001초</td></tr>
+        <tr><td>40</td><td>약 8.2 × 10<sup>47</sup></td><td>약 1.1 × 10<sup>12</sup></td><td>약 18분</td></tr>
+        <tr><td>60</td><td>약 8.3 × 10<sup>81</sup></td><td>약 1.2 × 10<sup>18</sup></td><td>약 37년</td></tr>
+        <tr><td>100</td><td>약 9.3 × 10<sup>157</sup></td><td>약 1.3 × 10<sup>30</sup></td><td>약 4 × 10<sup>13</sup>년</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이렇게 후보의 수가 걷잡을 수 없이 늘어나는 현상을 <strong>조합 폭발</strong>이라고 합니다. 이 책이 읽으려는 자동차 운반선 문제의 모형에는 0/1 선택이 수만 개 있습니다. 다 해 보는 것은 불가능합니다.</p>
+    <p>그런데도 솔버라는 프로그램은 이런 문제의 최적해를 찾아냅니다. 후보를 다 보지 않고도 "이쪽에는 더 좋은 답이 없다"는 것을 <em>증명</em>해서 통째로 건너뛰기 때문입니다. 그 원리가 이 책의 6장부터 14장까지의 내용입니다.</p>
+  </section>
+
+  <section>
+    <h2>두 가지 길: 휴리스틱과 정확한 방법</h2>
+    <p>큰 최적화 문제를 푸는 길은 크게 둘입니다.</p>
+    <ul class="plain">
+      <li><strong>휴리스틱(heuristic).</strong> 그럴듯한 규칙으로 괜찮은 답을 빨리 만드는 방법입니다. "톤당 싼 큰 트럭부터 부른다"가 그 예입니다. 빠르지만 답이 최적이라는 보장이 없습니다. 실제로 이 규칙은 40을 내놓고, 최적값 37을 놓칩니다. 더 곤란한 점은 40이 최적에서 얼마나 먼지도 알려 주지 않는다는 것입니다.</li>
+      <li><strong>정확한 방법.</strong> 최적해를 찾고, 그것이 최적이라는 증명까지 함께 내놓는 방법입니다. 시간이 모자라 끝까지 못 가더라도 "지금 답은 최적보다 많아야 3% 나쁘다" 같은 보증을 줍니다. 이 책이 다루는 것은 이쪽입니다.</li>
+    </ul>
+    <p>정확한 방법은 직접 짜기 어렵습니다. 그래서 보통은 문제를 식으로 적어서 <strong>솔버(solver)</strong>라는 프로그램에 넘깁니다. 솔버는 정해진 모양의 최적화 문제를 풀어 주는 프로그램이고, 1등 팀이 쓴 Gurobi가 그중 하나입니다. 이 책은 솔버를 쓰는 법이 아니라 솔버 속에서 무슨 일이 일어나는지를 설명합니다.</p>
+  </section>
+
+  <section>
+    <h2>문제의 종류: LP, IP, MIP</h2>
+    <p>솔버가 받는 문제는 목적함수와 제약이 모두 <strong>1차식</strong>이어야 합니다. 10x + 7y처럼 변수에 수를 곱해 더한 식만 쓸 수 있고, x², xy, 1/x 같은 것은 쓸 수 없습니다. 제약의 부등호는 ≤, ≥, =만 씁니다. 그 안에서 변수가 어떤 수여야 하는가에 따라 이름이 갈립니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>이름</th><th>변수</th><th>예</th><th>풀기</th></tr></thead>
+      <tbody>
+        <tr><td><strong>선형계획</strong> (LP, linear programming)</td><td>모두 실수(소수 허용)</td><td>재료를 몇 kg씩 섞을까</td><td>쉽다. 변수가 수백만 개여도 풀린다</td></tr>
+        <tr><td><strong>정수계획</strong> (IP, integer programming)</td><td>모두 정수</td><td>트럭을 몇 대 부를까</td><td>어렵다</td></tr>
+        <tr><td><strong>혼합정수계획</strong> (MIP, mixed-integer programming)</td><td>일부는 정수, 일부는 실수</td><td>창고를 열지 말지(0/1)와 보낼 양(실수)</td><td>어렵다</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>「계획」은 programming을 옮긴 말인데, 컴퓨터 프로그래밍이 아니라 "계획 세우기"라는 옛 뜻입니다. 트럭 예는 정수계획입니다. 자동차 운반선 문제의 1등 풀이는 혼합정수계획입니다.</p>
+    <p>변수가 실수이면 쉽고 정수이면 어렵다는 것이 이상하게 들릴 수 있습니다. 후보의 수로 보면 실수 쪽이 무한히 많으니까요. 이유는 6장(실수이면 그림에 빈틈이 없어 "더 좋은 쪽으로 미끄러져 가기"가 통한다)과 11장에서 설명합니다. 지금은 이름만 기억하면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>두 번째 예: 공방 예</h2>
+    <p>변수가 실수인 예도 하나 정해 둡니다. 작은 가구 공방이 책상과 의자를 만듭니다. 책상 하나를 팔면 5만 원, 의자 하나를 팔면 4만 원이 남습니다. 재료와 시간에는 한계가 있습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>책상 1개</th><th>의자 1개</th><th>쓸 수 있는 양</th></tr></thead>
+      <tbody>
+        <tr><td>목재</td><td>6</td><td>4</td><td>24</td></tr>
+        <tr><td>작업 시간</td><td>1</td><td>2</td><td>6</td></tr>
+        <tr><td>이익(만 원)</td><td>5</td><td>4</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>책상을 x<sub>1</sub>개, 의자를 x<sub>2</sub>개 만든다고 하면 모형은 다음과 같습니다. 이번에는 "이번 주에 1.5개 만든다"(다음 주에 마저 만든다)를 허용해서 변수를 실수로 둡니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp; 5x<sub>1</sub> + 4x<sub>2</sub></span><span class="all">이익</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp;&nbsp; 6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24</span><span class="all">목재</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>1</sub> + 2x<sub>2</sub> ≤ 6</span><span class="all">작업 시간</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>1</sub> ≥ 0,&nbsp; x<sub>2</sub> ≥ 0</span><span class="all">개수는 0 이상</span></div>
+    </div>
+    <p>이 문제를 <strong>공방 예</strong>라고 부릅니다. 변수가 실수이고 식이 모두 1차식이므로 선형계획(LP)입니다. (2, 1)은 목재 16, 시간 4를 써서 가능해이고 이익은 14입니다. (4, 1)은 목재가 28이라 가능해가 아닙니다. 최적해는 (3, 1.5), 최적값 21인데, 왜 그런지는 6장에서 그림으로 찾습니다. 실수 변수는 후보가 무한히 많아서 전수 탐색을 쓸 수 없다는 점만 지금 봐 두세요.</p>
+  </section>
+
+  <div class="part">3부 · 이 책의 기호</div>
+
+  <section>
+    <h2>첨자: 변수에 번호 붙이기</h2>
+    <p>변수가 둘이면 x, y로 충분하지만 수만 개면 글자가 모자랍니다. 그래서 수열 a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, …처럼 번호를 붙입니다. 이 번호를 <strong>첨자</strong>라고 합니다. 공방 예의 x<sub>1</sub>, x<sub>2</sub>가 그 예입니다.</p>
+    <p>첨자는 여러 개일 수도 있습니다. 교실 자리를 "3분단 2번째 줄"처럼 두 수로 가리키듯, x<sub>ij</sub>는 "i와 j로 정해지는 변수"입니다. 이 책에서 가장 자주 볼 변수는 첨자가 셋인 x<sub>pqi</sub>입니다.</p>
+    <div class="formula">x<sub>pqi</sub> = "항구 p에서 칸 i에 실려 항구 q에서 내리는 차가 있으면 1, 없으면 0"</div>
+    <p>첨자에 수를 넣을 때 헷갈릴 것 같으면 쉼표를 찍습니다. x<sub>02,1</sub>은 p = 0, q = 2, i = 1, 곧 "항구 0에서 칸 1에 실려 항구 2에서 내리는 차"입니다. Python으로 치면 3중 리스트의 한 칸 <code>x[0][2][1]</code>입니다.</p>
+  </section>
+
+  <section>
+    <h2>합의 기호 Σ</h2>
+    <div class="recall"><p>수열의 합을 Σ<sub>k=1</sub><sup>n</sup> a<sub>k</sub> = a<sub>1</sub> + a<sub>2</sub> + … + a<sub>n</sub>으로 적었습니다. Σ 아래와 위에 k가 어디서 어디까지 움직이는지를 적습니다.</p></div>
+    <p>이 책은 같은 기호를 조금 더 자유롭게 씁니다. 범위가 분명하면 Σ 아래에 첨자 글자만 적고, 범위에 조건이 있으면 그 조건을 적습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>적는 법</th><th>뜻</th><th>예</th></tr></thead>
+      <tbody>
+        <tr><td>Σ<sub>i</sub> a<sub>i</sub></td><td>모든 i에 대해 a<sub>i</sub>를 더한다(i의 범위는 앞에서 정한 대로)</td><td>i = 1, 2, 3이면 a<sub>1</sub> + a<sub>2</sub> + a<sub>3</sub></td></tr>
+        <tr><td>Σ<sub>i∈S</sub> a<sub>i</sub></td><td>집합 S에 든 i에 대해서만 더한다</td><td>S = {2, 5}이면 a<sub>2</sub> + a<sub>5</sub></td></tr>
+        <tr><td>Σ<sub>p&lt;q</sub> a<sub>pq</sub></td><td>p &lt; q인 모든 짝 (p, q)에 대해 더한다</td><td>p, q가 0, 1, 2에서 움직이면 a<sub>01</sub> + a<sub>02</sub> + a<sub>12</sub></td></tr>
+        <tr><td>Σ<sub>i</sub> Σ<sub>j</sub> a<sub>ij</sub></td><td>i와 j의 모든 조합에 대해 더한다</td><td>표의 모든 칸을 더한 것</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Σ는 for 문으로 합계를 내는 것과 같습니다. Σ<sub>p&lt;q</sub> a<sub>pq</sub>를 코드로 쓰면 이렇습니다(항구가 0, 1, 2 세 곳일 때).</p>
+<pre class="py">
+a = [[0, 5, 7], [0, 0, 2], [0, 0, 0]]
+total = 0
+for p in range(0, 3):
+    for q in range(p + 1, 3):
+        total = total + a[p][q]
+print(total)
+</pre>
+<pre class="out">
+14
+</pre>
+    <ul class="code">
+      <li><b>1행</b> a[p][q]에 a<sub>pq</sub>를 담은 표입니다. a<sub>01</sub> = 5, a<sub>02</sub> = 7, a<sub>12</sub> = 2.</li>
+      <li><b>3~4행</b> q를 p + 1부터 시작하게 해서 p &lt; q인 짝만 지나갑니다. (0, 1), (0, 2), (1, 2) 세 번 돕니다.</li>
+      <li><b>5~6행</b> 5 + 7 + 2 = 14.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>「모든 i」: 한 줄로 여러 줄 적기</h2>
+    <p>창고 하나가 고객 10명에게 물건을 보내는 문제를 생각합니다. y는 "창고를 연다"(1) 또는 "안 연다"(0), x<sub>i</sub>는 "고객 i에게 이 창고에서 보낸다"(1) 또는 "안 보낸다"(0)입니다. 창고를 열어야만 보낼 수 있다는 조건은 고객마다 한 줄씩, 모두 10줄입니다.</p>
+    <div class="eq">
+      <div class="row"><span>x<sub>1</sub> ≤ y,&nbsp; x<sub>2</sub> ≤ y,&nbsp; …,&nbsp; x<sub>10</sub> ≤ y</span><span class="all">10줄</span></div>
+    </div>
+    <p>이것을 한 줄로 줄여 적습니다. 식 오른쪽에 첨자의 범위를 적으면 "그 범위의 값마다 이 줄이 하나씩 있다"는 뜻입니다.</p>
+    <div class="eq">
+      <div class="row"><span>x<sub>i</sub> ≤ y</span><span class="all">모든 고객 i = 1, …, 10</span></div>
+    </div>
+    <p>수학 책이나 논문은 「모든」을 기호 <strong>∀</strong>로 씁니다(∀ i는 "모든 i에 대해"). 이 책은 한글로 적지만, 다른 자료에서 ∀를 만나면 같은 뜻으로 읽으면 됩니다.</p>
+    <p>Σ와 「모든」은 둘 다 첨자를 움직이지만 하는 일이 다릅니다. Σ<sub>i</sub>는 <em>한 줄 안에서</em> 더하는 것이고, 「모든 i」는 <em>줄 자체를</em> 여러 개 만드는 것입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>식</th><th>줄 수</th><th>풀어 쓰면</th></tr></thead>
+      <tbody>
+        <tr><td>Σ<sub>i</sub> x<sub>i</sub> ≤ 3&nbsp; (i = 1, 2, 3)</td><td>1줄</td><td>x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 3</td></tr>
+        <tr><td>x<sub>i</sub> ≤ 3&nbsp; (모든 i = 1, 2, 3)</td><td>3줄</td><td>x<sub>1</sub> ≤ 3,&nbsp; x<sub>2</sub> ≤ 3,&nbsp; x<sub>3</sub> ≤ 3</td></tr>
+        <tr><td>Σ<sub>j</sub> x<sub>ij</sub> = 1&nbsp; (모든 i = 1, 2)&nbsp; (j = 1, 2, 3)</td><td>2줄</td><td>x<sub>11</sub> + x<sub>12</sub> + x<sub>13</sub> = 1,&nbsp; x<sub>21</sub> + x<sub>22</sub> + x<sub>23</sub> = 1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 읽는 법으로 모형의 크기를 셀 수 있습니다. 변수의 개수는 첨자 범위들의 크기를 곱한 것이고, 제약의 줄 수는 「모든」 범위들의 크기를 곱한 것입니다. x<sub>ij</sub>(i = 1, …, 5, j = 1, …, 3)는 15개이고, "x<sub>ij</sub> ≤ y<sub>j</sub> (모든 i, 모든 j)"는 15줄입니다.</p>
+  </section>
+
+  <section>
+    <h2>집합의 기호</h2>
+    <p>집합 기호는 고등학교에서 쓰던 그대로입니다. 이 책에서 쓰는 것만 모았습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>기호</th><th>읽는 법</th><th>Python으로 치면</th></tr></thead>
+      <tbody>
+        <tr><td>i ∈ S</td><td>i는 집합 S의 원소</td><td><code>i in S</code></td></tr>
+        <tr><td>S ⊂ T</td><td>S는 T의 부분집합(같아도 됨)</td><td>S의 원소가 모두 T에 있다</td></tr>
+        <tr><td>{x | 조건}</td><td>조건을 만족하는 x를 모두 모은 집합</td><td>for로 돌며 if로 거른 리스트</td></tr>
+        <tr><td>S ∩ T,&nbsp; S ∪ T,&nbsp; ∅</td><td>교집합, 합집합, 공집합</td><td>둘 다에 있는 것, 어느 한쪽에라도 있는 것, 빈 리스트</td></tr>
+        <tr><td>|S|</td><td>S의 원소 개수(고등학교의 n(S))</td><td><code>len(S)</code></td></tr>
+        <tr><td>ℝ,&nbsp; ℤ,&nbsp; {0, 1}</td><td>실수 전체, 정수 전체, "0 또는 1"</td><td>소수, 정수, 0 아니면 1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>변수의 종류도 이 기호로 적습니다. "x ∈ {0, 1}"은 x가 0 아니면 1이라는 뜻이고, "y ∈ ℤ, y ≥ 0"은 y가 0 이상의 정수라는 뜻입니다. 가능 영역도 집합입니다. 공방 예의 가능 영역은 {(x<sub>1</sub>, x<sub>2</sub>) | 6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24, x<sub>1</sub> + 2x<sub>2</sub> ≤ 6, x<sub>1</sub> ≥ 0, x<sub>2</sub> ≥ 0}입니다.</p>
+    <p>수의 범위는 [a, b]로 적습니다. a 이상 b 이하인 수 전체입니다. 이 책에서는 이것을 「범위」라고 부릅니다. 「구간」이라는 말은 12장에서 자동차 운반선 문제의 다른 뜻으로 쓰기 때문입니다.</p>
+  </section>
+
+  <section>
+    <h2>정수 쪽으로 올리고 내리기: 바닥과 천장</h2>
+    <p>트럭 예의 표에서 4.2대를 5대로 올렸습니다. 이런 올림과 내림에 기호를 붙입니다.</p>
+    <div class="recall"><p>x를 넘지 않는 가장 큰 정수를 [x]로 적고 가우스 기호라고 불렀습니다. [3.7] = 3, [−1.2] = −2입니다. 아래의 「바닥」이 바로 이것입니다.</p></div>
+    <div class="defn"><b>정의</b> 실수 a에 대해 <strong>바닥(floor)</strong> ⌊a⌋는 a를 넘지 않는 가장 큰 정수이고, <strong>천장(ceiling)</strong> ⌈a⌉는 a보다 작지 않은 가장 작은 정수입니다. a에서 바닥을 뺀 a − ⌊a⌋를 <strong>분수 부분</strong>이라 하고 frac(a)로 적습니다. 분수 부분은 항상 0 이상 1 미만입니다.</div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 170" role="img" aria-label="수직선 위에 마이너스 9분의 1과 3분의 10이 찍혀 있다. 마이너스 9분의 1의 바닥은 마이너스 1, 천장은 0이고, 3분의 10의 바닥은 3, 천장은 4이다">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g class="s-line" stroke-width="1.3"><line x1="20" y1="100" x2="705" y2="100" marker-end="url(#ar2)"/></g>
+        <g class="s-line" stroke-width="1.2"><line x1="50" y1="94" x2="50" y2="106"/><line x1="175" y1="94" x2="175" y2="106"/><line x1="300" y1="94" x2="300" y2="106"/><line x1="425" y1="94" x2="425" y2="106"/><line x1="550" y1="94" x2="550" y2="106"/><line x1="675" y1="94" x2="675" y2="106"/></g>
+        <g font-size="13" text-anchor="middle" class="t-muted"><text x="50" y="124">−1</text><text x="175" y="124">0</text><text x="300" y="124">1</text><text x="425" y="124">2</text><text x="550" y="124">3</text><text x="675" y="124">4</text></g>
+        <g class="s-ok" stroke-width="1.4"><path d="M158.1,92 Q105.6,32 52.0,91" marker-end="url(#ar2)"/><path d="M588.7,92 Q570.8,61 552.0,91" marker-end="url(#ar2)"/></g>
+        <g class="s-steel" stroke-width="1.4"><path d="M164.1,92 Q168.1,82 173.0,91" marker-end="url(#ar2)"/><path d="M594.7,92 Q633.3,32 673.0,91" marker-end="url(#ar2)"/></g>
+        <g class="f-crane"><circle cx="161.1" cy="100" r="5"/><circle cx="591.7" cy="100" r="5"/></g>
+        <g font-size="12.5" text-anchor="middle"><text x="161.1" y="150">−1/9</text><text x="591.7" y="150">10/3 ≈ 3.33</text></g>
+        <g font-size="12" text-anchor="middle"><text x="101.6" y="24" class="t-ok">바닥 −1</text><text x="190.1" y="74" class="t-steel">천장 0</text><text x="566.8" y="53" class="t-ok">바닥 3</text><text x="655.3" y="24" class="t-steel">천장 4</text></g>
+        </svg>
+      </div>
+      <figcaption>바닥은 수직선에서 왼쪽으로 가장 가까운 정수, 천장은 오른쪽으로 가장 가까운 정수입니다. 정수에서는 바닥과 천장이 그 수 자신입니다.</figcaption>
+    </figure>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>a</th><th>⌊a⌋</th><th>⌈a⌉</th><th>frac(a)</th></tr></thead>
+      <tbody>
+        <tr><td>10/3 ≈ 3.33</td><td>3</td><td>4</td><td>1/3</td></tr>
+        <tr><td>4.2</td><td>4</td><td>5</td><td>0.2</td></tr>
+        <tr><td>7</td><td>7</td><td>7</td><td>0</td></tr>
+        <tr><td>−1/9 ≈ −0.11</td><td>−1</td><td>0</td><td>8/9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="warn"><p>음수에서 틀리기 쉽습니다. ⌊−1/9⌋는 0이 아니라 −1입니다(−1/9보다 작거나 같은 정수 중 가장 큰 것). 그래서 frac(−1/9) = −1/9 − (−1) = 8/9입니다. 1/9가 아닙니다.</p></div>
+    <p>Python에서 정수 나눗셈 <code>//</code>는 바닥입니다. <code>10 // 3</code>은 3이고 <code>-1 // 9</code>는 −1입니다. 천장은 따로 없어서 <code>-(-10 // 3)</code>처럼 부호를 두 번 뒤집어 구합니다(결과 4).</p>
+    <p>이 기호가 최적화에서 쓰이는 곳은 "값이 정수라는 것을 이용해 한계를 한 칸 더 미는" 자리입니다.</p>
+    <div class="thm"><b>핵심 사실</b> z가 정수이고 z ≥ L이면 z ≥ ⌈L⌉입니다. 더 일반적으로, z가 양의 정수 k의 배수이고 z ≥ L이면 z ≥ k⌈L/k⌉입니다.</div>
+    <div class="why"><p>⌈L⌉은 L 이상인 정수 중 가장 작은 것입니다. z도 L 이상인 정수이니 그보다 작을 수 없습니다. k의 배수 z = k × m이라면 m ≥ L/k이고 m은 정수이므로 m ≥ ⌈L/k⌉, 양변에 k를 곱하면 됩니다.</p></div>
+    <ul class="plain">
+      <li>트럭 값은 정수(만 원)입니다. 어떤 방법으로 "값은 36.8 이상"임을 알아냈다면, 사실은 37 이상입니다.</li>
+      <li>값이 언제나 짝수인 문제에서 "값은 1000.3 이상"임을 알아냈다면, 2 × ⌈1000.3 ÷ 2⌉ = 2 × 501 = 1002 이상입니다. 1001은 홀수라 될 수 없기 때문입니다.</li>
+    </ul>
+    <p>두 번째 예가 뜬금없어 보이겠지만, 자동차 운반선 문제의 1등 풀이가 바로 "목적함수 값이 언제나 짝수"인 모형이고, 이 성질을 이용해 계산을 일찍 끝냅니다. 13장에서 자세히 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드는 자동차 운반선 문제를 이 장의 세 가지 재료로 적습니다. 결정변수는 x<sub>pqi</sub>(어느 차를 어느 칸에 싣는가) 등 세 종류이고, 제약은 여섯 종류, 목적함수는 차를 싣고 내리는 경로의 비용 합입니다. 가이드의 식에는 Σ와 「모든 i」가 한 줄에 함께 나오므로, 이 장 3부의 읽는 법이 그대로 쓰입니다.</p></div>
+    <div class="gref"><p>가이드가 "변수 몇 개, 제약 몇 줄"이라고 모형의 크기를 말할 때는 「모든 i」 절의 세는 법(범위의 크기를 곱한다)을 쓴 것입니다. 12장에서 직접 세어 봅니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>최적화 문제 = 결정변수(무엇을 정하나) + 제약(무엇을 지키나) + 목적함수(무엇이 좋은가).</li>
+        <li>제약을 지키는 값 한 벌이 가능해, 그중 가장 좋은 것이 최적해입니다.</li>
+        <li>다 해 보기(전수 탐색)는 확실하지만 조합 폭발 때문에 큰 문제에는 쓸 수 없습니다.</li>
+        <li>변수가 실수면 LP, 정수면 IP, 섞이면 MIP. 식은 모두 1차식이어야 합니다.</li>
+        <li>Σ는 한 줄 안에서 더하기, 「모든 i」는 줄을 여러 개 만들기.</li>
+        <li>정수이고 L 이상이면 ⌈L⌉ 이상입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>트럭 예에서 보낼 짐이 40톤으로 늘었습니다. 본문의 표처럼 큰 트럭 대수 x마다 필요한 작은 트럭 대수와 값을 구해 최적해를 찾으세요.</summary>
+      <p>제약은 9x + 5y ≥ 40입니다. x = 0: 남은 짐 40, y = 8, 값 56. x = 1: 남은 짐 31, 31 ÷ 5 = 6.2이므로 y = 7, 값 59. x = 2: 22 ÷ 5 = 4.4, y = 5, 값 55. x = 3: 13 ÷ 5 = 2.6, y = 3, 값 51. x = 4: 4 ÷ 5 = 0.8, y = 1, 값 47. x = 5: y = 0, 값 50. x가 6 이상이면 60 이상입니다. 최적해는 (4, 1), 최적값 47입니다.</p>
+    </details>
+    <details>
+      <summary>공방 예에서 (2, 2), (3, 2), (0, 3)이 각각 가능해인지 판정하고, 가능해이면 이익을 구하세요.</summary>
+      <p>(2, 2): 목재 6·2 + 4·2 = 20 ≤ 24, 시간 2 + 4 = 6 ≤ 6. 가능해이고 이익 10 + 8 = 18. (3, 2): 목재 18 + 8 = 26 &gt; 24라 가능해가 아닙니다. (0, 3): 목재 12 ≤ 24, 시간 6 ≤ 6. 가능해이고 이익 12.</p>
+    </details>
+    <details>
+      <summary>공방 예에서 책상과 의자를 정수 개만 만들 수 있다고 하면 최적해는 무엇인가요? 본문의 전수 탐색 코드를 어떻게 고치면 되는지도 말해 보세요. 소수를 허용한 최적해 (3, 1.5)를 반올림하면 이 답이 나오나요?</summary>
+      <p>목재 때문에 x<sub>1</sub> ≤ 4, 시간 때문에 x<sub>2</sub> ≤ 3이므로 후보는 5 × 4 = 20개입니다. 코드는 범위를 <code>range(0, 5)</code>, <code>range(0, 4)</code>로, 6행의 조건을 <code>6 * x + 4 * y &lt;= 24 and x + 2 * y &lt;= 6</code>으로, 7행을 <code>5 * x + 4 * y</code>로, 최소 대신 최대를 찾도록 처음 값을 −1로, 8행의 부등호를 <code>&gt;</code>로 바꾸면 됩니다. 답은 (4, 0), 이익 20입니다. (3, 1.5)를 반올림한 (3, 2)는 목재가 26이라 가능해가 아니고, 내린 (3, 1)은 이익 19로 최적이 아닙니다. 정수 문제의 답은 실수 문제의 답을 반올림한다고 나오지 않습니다.</p>
+    </details>
+    <details>
+      <summary>항구가 0, 1, 2, 3 네 곳일 때 Σ<sub>p&lt;q</sub>가 더하는 짝 (p, q)는 몇 개인가요? 또 F = 10일 때 Σ<sub>i</sub> 2(F + i) (i = 1, 2, 3, 4)를 계산하세요.</summary>
+      <p>p &lt; q인 짝은 네 곳에서 둘을 고르는 경우의 수와 같으므로 C(4, 2) = 6개입니다: (0,1), (0,2), (0,3), (1,2), (1,3), (2,3). 합은 2(11 + 12 + 13 + 14) = 2 × 50 = 100.</p>
+    </details>
+    <details>
+      <summary>변수 x<sub>ij</sub>(i = 1, …, 4, j = 1, …, 6)와 y<sub>j</sub>(j = 1, …, 6)가 있습니다. 변수는 모두 몇 개인가요? 제약 "Σ<sub>j</sub> x<sub>ij</sub> = 1 (모든 i)"와 "x<sub>ij</sub> ≤ y<sub>j</sub> (모든 i, 모든 j)"는 각각 몇 줄인가요?</summary>
+      <p>x는 4 × 6 = 24개, y는 6개로 모두 30개입니다. 첫 제약은 i마다 한 줄이라 4줄(한 줄 안에 x가 6개씩 더해짐), 둘째 제약은 i와 j의 조합마다 한 줄이라 24줄입니다.</p>
+    </details>
+    <details>
+      <summary>⌈34.2⌉, ⌊−2.5⌋, frac(10/3), frac(−5/9)를 구하세요. 또 "z는 5의 배수이고 z ≥ 250.4"일 때 z의 최솟값은?</summary>
+      <p>⌈34.2⌉ = 35. ⌊−2.5⌋ = −3. frac(10/3) = 10/3 − 3 = 1/3. ⌊−5/9⌋ = −1이므로 frac(−5/9) = −5/9 + 1 = 4/9. 마지막은 5 × ⌈250.4 ÷ 5⌉ = 5 × ⌈50.08⌉ = 5 × 51 = 255.</p>
+    </details>
+    <details>
+      <summary>0/1 선택이 40개인 문제와 60개인 문제의 후보 수는 각각 얼마이고, 1초에 10억 개씩 검사하면 얼마나 걸리나요?</summary>
+      <p>2<sup>40</sup> ≈ 1.1 × 10<sup>12</sup>개, 약 1,100초(18분). 2<sup>60</sup> ≈ 1.15 × 10<sup>18</sup>개, 약 1.15 × 10<sup>9</sup>초로 약 37년입니다. 선택이 20개 늘면 시간은 2<sup>20</sup>배, 곧 약 100만 배가 됩니다.</p>
+    </details>
+    <details>
+      <summary>"1톤당 값이 싼 트럭부터 부른다"는 규칙이 최적해를 주지 못하는 이유를 트럭 예로 설명하세요.</summary>
+      <p>이 규칙은 큰 트럭 4대(40만 원)를 고릅니다. 그런데 큰 트럭 4대는 36톤을 실을 수 있어 6톤만큼의 자리를 비운 채 갑니다. 톤당 값은 "가득 실었을 때"의 값이라, 자리가 남으면 뜻이 없어집니다. 큰 트럭 3대와 작은 트럭 1대는 32톤으로 낭비가 2톤뿐이고 37만 원입니다. 정수로만 고를 수 있을 때 생기는 이런 어긋남 때문에 정수계획이 어렵습니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — LP가 무엇인지에 대한 짧은 소개. 뒤쪽 내용은 이 책의 6~10장에서 다룹니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1368479">KOCW 「선형계획의 이해」 (한국공학대 허재석)</a> — 문제를 식으로 옮기는 연습(모형화)을 여러 예로 보여 주는 대학 강의입니다. 앞쪽 강의만 봐도 이 장의 복습이 됩니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 영어, 대학 수준. 1강이 최적화 문제의 재료와 예입니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch1">← 이전: 1장 들어가며</a><a href="#ch3">다음: 3장 벡터와 행렬 첫걸음 →</a></div>
+</article>

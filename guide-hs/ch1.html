@@ -1,0 +1,462 @@
+<article class="chapter" id="ch1">
+  <header>
+    <div class="kicker">1 / 12</div>
+    <h1>문제 이해 ①: 차 두 대로 손으로 풀어 보기</h1>
+  </header>
+
+  <section>
+    <p class="lead">막다른 골목에 차를 한 줄로 세워 본 적이 있다면 이 문제를 이미 압니다. 먼저 들어간 차가 안쪽에 갇히고, 그 차를 빼려면 바깥 차를 먼저 빼야 합니다. 자동차 운반선은 이런 골목을 싣고 여러 항구를 도는 배입니다. 이 문서가 다루는 문제는 <strong>차를 배 안 어느 칸에 세우고, 항구마다 어떤 순서로 넣고 뺄지</strong>를 정해서 차를 움직이는 수고를 가장 적게 만드는 것입니다.</p>
+    <p>이 장에서는 풀이 이야기를 하지 않습니다. 칸 두 개, 차 두 대짜리 아주 작은 문제를 종이와 연필로 풀어 보면서 규칙과 비용 계산을 익힙니다. 대회에 실제로 나온 문제의 모습(입력 파일, 채점 방식)은 2장에서 봅니다.</p>
+    <div class="note">
+      <p><strong>이 문서를 읽는 법.</strong> 이 문서는 2025년 최적화 그랜드 챌린지(OGC 2025)에서 1등을 한 팀 tryAgain의 풀이를 해설합니다. 고등학교 수학(1차식과 부등식, 집합, 수열과 Σ, 경우의 수)과 Python 기초(변수, if, for, 리스트, 함수)만 안다고 보고 썼습니다. 그 밖의 말은 처음 나올 때 풀이합니다.</p>
+      <p>대회 사이트, 팀의 발표자료, 소스 코드를 보지 않아도 읽을 수 있습니다. 본문에 나오는 "발표자료 3쪽", "function.cpp 80~94줄" 같은 표시는 그 내용이 <strong>어디서 왔는지를 밝히는 출처</strong>이지, 찾아서 읽으라는 뜻이 아닙니다. 필요한 그림, 표, 식, 코드는 모두 이 문서 안에 옮겨 놓았습니다.</p>
+      <p>이론을 더 깊이 알고 싶을 때를 위해 짝이 되는 이론 교재(「처음 만나는 최적화 이론」)가 따로 있습니다. 본문의 「교재와 연결」 상자가 그 교재의 장을 가리킵니다. 상자를 건너뛰어도 이 문서는 끝까지 읽힙니다.</p>
+    </div>
+  </section>
+
+  <!-- ================= 1부 ================= -->
+  <div class="part">1부 · 무대: 배, 항구, 차</div>
+
+  <section>
+    <h2>통로가 하나뿐인 배</h2>
+    <p>자동차 운반선은 차가 제 바퀴로 굴러 들어가고 굴러 나오는 배입니다. 영어로 Roll-on Roll-off, 줄여서 RORO라고 부릅니다. 배에는 문이 하나 있고, 차는 그 문으로만 드나듭니다. 가장 단순한 배부터 봅니다. 문 뒤로 차를 세울 자리가 한 줄로 두 개 있는 배입니다.</p>
+    <figure>
+      <div class="scroll">
+<svg viewBox="0 0 720 245" role="img" aria-label="출입구와 칸 두 개가 한 줄로 이어진 배, 그리고 항구 0, 1, 2를 차례로 들르는 항로">
+<g font-size="13" text-anchor="middle">
+<text x="360" y="22" font-size="13" class="t-muted">배 안: 통로가 하나뿐인 일렬 배</text>
+<rect x="190" y="40" width="330" height="70" rx="34" class="f-bay" stroke-dasharray="4 3"/>
+<line x1="250" y1="75" x2="450" y2="75" class="s-line" stroke-width="1.5"/>
+<circle cx="250" cy="75" r="13" class="f-crane"/><text x="250" y="79.5" font-size="12">0</text>
+<rect x="330" y="61" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="430" y="61" width="40" height="28" rx="6" class="f-bay"/>
+<text x="250" y="130" font-size="12" class="t-crane">출입구 (노드 0)</text>
+<text x="350" y="130" font-size="12" class="t-muted">칸 1</text><text x="450" y="130" font-size="12" class="t-muted">칸 2</text>
+<text x="130" y="72" font-size="12.5" class="t-muted">항구 쪽</text><text x="130" y="89" font-size="12.5" class="t-muted">(배 밖)</text>
+<path d="M165 75 H228" class="s-muted" stroke-width="1.2" marker-end="url(#ah1)"/>
+<text x="600" y="72" font-size="12.5" class="t-muted">안쪽은</text><text x="600" y="89" font-size="12.5" class="t-muted">막다른 길</text>
+<defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="f-mut"/></marker></defs>
+<text x="360" y="172" font-size="13" class="t-muted">배가 들르는 순서: 항구 0 → 항구 1 → 항구 2</text>
+<circle cx="220" cy="205" r="6" class="f-fg"/><text x="220" y="232" font-size="12.5">항구 0</text>
+<circle cx="360" cy="205" r="6" class="f-fg"/><text x="360" y="232" font-size="12.5">항구 1</text>
+<circle cx="500" cy="205" r="6" class="f-fg"/><text x="500" y="232" font-size="12.5">항구 2</text>
+<line x1="220" y1="205" x2="500" y2="205" class="s-line" stroke-width="1.5"/>
+</g>
+</svg>
+      </div>
+      <figcaption>이 장에서 쓰는 배입니다. 동그라미가 문(출입구), 네모가 차를 세우는 자리(칸)입니다. 칸 2로 가려면 반드시 칸 1을 지나야 합니다. 배는 항구 0, 1, 2를 이 순서로 한 번씩 들릅니다.</figcaption>
+    </figure>
+    <p>앞으로 쓸 말을 정해 둡니다. 대회 문제 설명이 쓰는 말을 따랐습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>말</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>칸</td><td>차 한 대를 세우는 자리. 한 칸에는 차가 한 대만 들어갑니다. 번호는 1, 2, …입니다.</td></tr>
+        <tr><td>출입구</td><td>배와 항구를 잇는 하나뿐인 문. 번호는 항상 0입니다. 출입구에는 차를 세울 수 없습니다.</td></tr>
+        <tr><td>노드, 간선</td><td>출입구와 칸을 통틀어 <strong>노드</strong>(node)라고 하고, 차가 지나다닐 수 있게 두 노드를 이은 통로를 <strong>간선</strong>(edge)이라고 합니다. 위 배에는 노드가 셋(0, 1, 2), 간선이 둘(0과 1 사이, 1과 2 사이) 있습니다. 간선의 길이는 모두 1입니다.</td></tr>
+        <tr><td>항구</td><td>배가 들르는 곳. 0번부터 차례로 한 번씩 들릅니다. 순서는 정해져 있고 바꿀 수 없습니다.</td></tr>
+        <tr><td>수요</td><td>"항구 0에서 실어 항구 2에서 내릴 차 1대" 같은 운송 주문. (실을 항구, 내릴 항구, 대수)로 주어집니다.</td></tr>
+        <tr><td>선적, 하역</td><td>항구에서 출입구를 지나 배 안의 빈칸까지 차를 몰고 들어가는 것이 선적, 칸에서 출입구를 지나 항구로 몰고 나오는 것이 하역입니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>움직임 하나는 「경로」 하나</h2>
+    <p>차 한 대를 한 번 움직이는 것을 <strong>경로</strong>(route)라고 하고, 지나가는 노드 번호를 차례로 적어 나타냅니다. Python의 리스트처럼 대괄호로 적겠습니다.</p>
+    <ul class="plain">
+      <li><code>[0, 1, 2]</code>: 출입구에서 들어와 칸 1을 지나 칸 2에 세운다. 선적입니다.</li>
+      <li><code>[1, 0]</code>: 칸 1의 차가 출입구로 나간다. 하역입니다.</li>
+    </ul>
+    <p>경로에는 지켜야 할 규칙이 있습니다. 차는 다른 차를 뛰어넘을 수 없습니다.</p>
+    <div class="defn"><b>길이 비어 있어야 한다</b>
+      <p>선적 경로 <code>[0, …, i]</code>는 지나가는 칸과 도착하는 칸 i가 모두 비어 있어야 합니다. 하역 경로 <code>[i, …, 0]</code>는 칸 i에 내릴 차가 있고, 나가는 길 위의 칸은 모두 비어 있어야 합니다.</p>
+    </div>
+    <p>경로에는 비용이 듭니다. 차를 한 번 움직일 때마다 기본요금이 붙고, 거기에 이동한 거리가 더해집니다.</p>
+    <div class="formula">경로 하나의 비용 = F + (경로가 지난 간선의 수)</div>
+    <p>F는 문제마다 주어지는 수이고 <strong>고정비</strong>라고 부릅니다. 이 장에서는 F = 10으로 둡니다. 경로 <code>[0, 1, 2]</code>는 간선 두 개(0→1, 1→2)를 지나므로 비용이 10 + 2 = 12입니다. <code>[1, 0]</code>은 간선 하나라 11입니다. 간선의 수는 경로에 적힌 노드의 수에서 1을 뺀 것과 같습니다.</p>
+    <p>고정비가 거리보다 훨씬 크다는 점을 기억해 두세요. 차를 한 번 더 움직이면 10이 넘게 들고, 한 칸 더 깊이 넣으면 1이 듭니다. <strong>움직이는 횟수를 줄이는 것이 먼저</strong>이고, 가까운 칸을 쓰는 것은 그다음입니다.</p>
+  </section>
+
+  <!-- ================= 2부 ================= -->
+  <div class="part">2부 · 미니 문제 A: 싣는 자리가 비용을 정한다</div>
+
+  <section>
+    <h2>문제</h2>
+    <p>위의 배에 차 두 대를 실어 나릅니다. 이 문제를 <strong>미니 문제 A</strong>라고 부르겠습니다.</p>
+    <ul class="plain">
+      <li>차 A: 항구 0에서 실어 항구 2에서 내린다.</li>
+      <li>차 B: 항구 0에서 실어 항구 1에서 내린다.</li>
+      <li>고정비 F = 10. 모든 경로의 비용을 더한 <strong>총비용</strong>을 가장 작게 만들어라.</li>
+    </ul>
+    <p>두 대 모두 항구 0에서 탑니다. 정할 것은 누구를 칸 1에, 누구를 칸 2에 세우느냐입니다.</p>
+    <div class="hand">
+      <p>더 읽기 전에 직접 풀어 보세요. A를 칸 2에 세울 때와 칸 1에 세울 때, 항구 0, 1, 2에서 필요한 경로를 차례로 적고 비용을 더해 봅니다. 답은 바로 아래에 있습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>두 가지 싣는 법</h2>
+    <figure>
+      <div class="scroll">
+<svg viewBox="0 0 720 245" role="img" aria-label="미니 문제 A에서 차 A를 안쪽에 실은 경우와 바깥쪽에 실은 경우의 항구별 배 상태">
+<g font-size="13" text-anchor="middle">
+<text x="234" y="22" font-size="13.5" font-weight="500">잘 실은 경우: A를 안쪽에</text>
+<text x="170" y="48" font-size="11.5" class="t-crane">출입구</text>
+<text x="234" y="48" font-size="11.5" class="t-muted">칸 1</text>
+<text x="298" y="48" font-size="11.5" class="t-muted">칸 2</text>
+<line x1="170" y1="78" x2="298" y2="78" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="78" r="13" class="f-crane"/><text x="170" y="82.5" font-size="12">0</text>
+<rect x="214" y="64" width="40" height="28" rx="6" class="f-hull"/>
+<text x="234" y="83" font-size="13.5" font-weight="500">B</text>
+<rect x="278" y="64" width="40" height="28" rx="6" class="f-steel"/>
+<text x="298" y="83" font-size="13.5" font-weight="500">A</text>
+<text x="142" y="82.5" font-size="12.5" text-anchor="end" class="t-muted">항구 0을 떠날 때</text>
+<line x1="170" y1="124" x2="298" y2="124" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="124" r="13" class="f-crane"/><text x="170" y="128.5" font-size="12">0</text>
+<rect x="214" y="110" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="278" y="110" width="40" height="28" rx="6" class="f-steel"/>
+<text x="298" y="129" font-size="13.5" font-weight="500">A</text>
+<text x="142" y="128.5" font-size="12.5" text-anchor="end" class="t-muted">항구 1을 떠날 때</text>
+<line x1="170" y1="170" x2="298" y2="170" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="170" r="13" class="f-crane"/><text x="170" y="174.5" font-size="12">0</text>
+<rect x="214" y="156" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="278" y="156" width="40" height="28" rx="6" class="f-bay"/>
+<text x="142" y="174.5" font-size="12.5" text-anchor="end" class="t-muted">항구 2를 떠날 때</text>
+<text x="234" y="220" font-size="13">경로 4개, 총비용 46</text>
+<text x="234" y="239" font-size="12" class="t-muted">B가 먼저 내리니 바깥쪽에</text>
+<text x="594" y="22" font-size="13.5" font-weight="500">잘못 실은 경우: A를 바깥에</text>
+<text x="530" y="48" font-size="11.5" class="t-crane">출입구</text>
+<text x="594" y="48" font-size="11.5" class="t-muted">칸 1</text>
+<text x="658" y="48" font-size="11.5" class="t-muted">칸 2</text>
+<line x1="530" y1="78" x2="658" y2="78" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="78" r="13" class="f-crane"/><text x="530" y="82.5" font-size="12">0</text>
+<rect x="574" y="64" width="40" height="28" rx="6" class="f-steel"/>
+<text x="594" y="83" font-size="13.5" font-weight="500">A</text>
+<rect x="638" y="64" width="40" height="28" rx="6" class="f-hull"/>
+<text x="658" y="83" font-size="13.5" font-weight="500">B</text>
+<text x="502" y="82.5" font-size="12.5" text-anchor="end" class="t-muted">항구 0을 떠날 때</text>
+<line x1="530" y1="124" x2="658" y2="124" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="124" r="13" class="f-crane"/><text x="530" y="128.5" font-size="12">0</text>
+<rect x="574" y="110" width="40" height="28" rx="6" class="f-steel"/>
+<text x="594" y="129" font-size="13.5" font-weight="500">A</text>
+<rect x="638" y="110" width="40" height="28" rx="6" class="f-bay"/>
+<text x="502" y="128.5" font-size="12.5" text-anchor="end" class="t-muted">항구 1을 떠날 때</text>
+<line x1="530" y1="170" x2="658" y2="170" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="170" r="13" class="f-crane"/><text x="530" y="174.5" font-size="12">0</text>
+<rect x="574" y="156" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="638" y="156" width="40" height="28" rx="6" class="f-bay"/>
+<text x="502" y="174.5" font-size="12.5" text-anchor="end" class="t-muted">항구 2를 떠날 때</text>
+<text x="594" y="220" font-size="13">경로 6개, 총비용 68</text>
+<text x="594" y="239" font-size="12" class="t-muted">항구 1에서 A가 B의 길을 막는다</text>
+<line x1="360" y1="12" x2="360" y2="232" class="s-muted" stroke-width="1" stroke-dasharray="3 4"/>
+</g>
+</svg>
+      </div>
+      <figcaption>각 항구를 떠나는 순간의 배 안 모습입니다. 왼쪽은 나중에 내릴 A를 안쪽(칸 2)에, 오른쪽은 A를 바깥쪽(칸 1)에 세운 경우입니다.</figcaption>
+    </figure>
+    <p><strong>잘 실은 경우.</strong> 나중에 내릴 A를 안쪽에, 먼저 내릴 B를 바깥쪽에 세웁니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>경로</th><th>무슨 일인가</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>[0, 1, 2]</code><br><code>[0, 1]</code></td><td>A를 칸 2에 싣는다<br>B를 칸 1에 싣는다</td><td class="num">12<br>11</td></tr>
+        <tr><td>1</td><td><code>[1, 0]</code></td><td>B를 내린다. 출입구 바로 앞이라 막는 차가 없다</td><td class="num">11</td></tr>
+        <tr><td>2</td><td><code>[2, 1, 0]</code></td><td>A를 내린다. 칸 1은 항구 1에서 비었다</td><td class="num">12</td></tr>
+        <tr><td colspan="3"><strong>총비용</strong> (경로 4개)</td><td class="num"><strong>46</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><strong>잘못 실은 경우.</strong> A를 바깥쪽에, B를 안쪽에 세웁니다. 항구 1에서 B를 내려야 하는데 칸 1의 A가 길을 막습니다. A는 아직 내릴 항구가 아니지만 비켜 줘야 합니다. 배 안에는 비킬 빈칸이 없으니, A를 항구로 잠깐 내렸다가 B가 나간 뒤 다시 싣습니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>경로</th><th>무슨 일인가</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>[0, 1, 2]</code><br><code>[0, 1]</code></td><td>B를 칸 2에 싣는다<br>A를 칸 1에 싣는다</td><td class="num">12<br>11</td></tr>
+        <tr><td>1</td><td><code>[1, 0]</code><br><code>[2, 1, 0]</code><br><code>[0, 1]</code></td><td>A를 잠깐 내린다 (길을 비켜 주려고)<br>B를 내린다<br>A를 다시 싣는다</td><td class="num">11<br>12<br>11</td></tr>
+        <tr><td>2</td><td><code>[1, 0]</code></td><td>A를 내린다</td><td class="num">11</td></tr>
+        <tr><td colspan="3"><strong>총비용</strong> (경로 6개)</td><td class="num"><strong>68</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>차 두 대를 싣고 내리는 데 꼭 필요한 경로는 네 개입니다(한 대에 선적 하나, 하역 하나). 잘못 실으면 경로가 두 개 더 생기고 비용이 22 늘어납니다. 같은 배, 같은 차인데 <strong>어느 칸에 세웠느냐</strong> 하나로 46과 68이 갈렸습니다.</p>
+    <p>이렇게 내릴 항구가 아닌 곳에서 차를 움직이는 것을 <strong>재배치</strong>(rehandling)라고 합니다. 재배치를 줄이는 것이 이 문제의 핵심입니다.</p>
+  </section>
+
+  <section>
+    <h2>순서도 답의 일부다</h2>
+    <p>잘 실은 경우의 항구 0을 다시 봅니다. 경로 두 개 <code>[0, 1, 2]</code>와 <code>[0, 1]</code>을 어느 쪽부터 실행하느냐에 따라 결과가 달라집니다.</p>
+    <div class="obj">
+      <div><div class="f">[0, 1, 2] 먼저, [0, 1] 나중</div><p>안쪽 칸 2부터 채웁니다. 둘 다 길이 비어 있어 문제가 없습니다.</p></div>
+      <div><div class="f">[0, 1] 먼저, [0, 1, 2] 나중</div><p>칸 1에 B가 먼저 들어갑니다. 두 번째 경로는 칸 1을 지나야 하는데 이미 차가 있습니다. 규칙 위반입니다.</p></div>
+    </div>
+    <p>경로의 목록이 같아도 순서가 틀리면 답이 아닙니다. 경로 하나를 실행할 때마다 배 안의 모습이 바뀌고, 다음 경로가 규칙을 지키는지는 그 순간의 모습으로 따지기 때문입니다. 일렬 배에서는 "실을 때는 안쪽부터, 내릴 때는 바깥쪽부터"가 당연한 순서입니다. 배 모양이 복잡해지면 이 순서를 정하는 일도 어려워집니다.</p>
+    <p>정리하면 이 문제에서 정해야 하는 것은 세 가지입니다.</p>
+    <ul class="plain">
+      <li><strong>배치</strong>: 어느 차를 어느 칸에 세울까. 어느 차를 어느 항구에서 재배치할까.</li>
+      <li><strong>경로</strong>: 그 칸까지 어떤 길로 갈까. (일렬 배에서는 길이 하나뿐이라 고민이 없습니다.)</li>
+      <li><strong>순서</strong>: 한 항구 안에서 경로들을 어떤 차례로 실행할까.</li>
+    </ul>
+  </section>
+
+  <!-- ================= 3부 ================= -->
+  <div class="part">3부 · 미니 문제 B: 피할 수 없는 재배치</div>
+
+  <section>
+    <h2>문제</h2>
+    <p>같은 배에 항구를 하나 늘리고, 차 B가 타는 항구를 바꿉니다. 이 문제를 <strong>미니 문제 B</strong>라고 부르겠습니다. 이 문서 끝까지 되풀이해서 쓰는 예입니다.</p>
+    <ul class="plain">
+      <li>배는 항구 0, 1, 2, 3을 차례로 들른다. 고정비 F = 10.</li>
+      <li>차 A: 항구 0에서 실어 항구 2에서 내린다.</li>
+      <li>차 B: 항구 1에서 실어 항구 3에서 내린다.</li>
+    </ul>
+    <figure>
+      <div class="scroll">
+<svg viewBox="0 0 720 150" role="img" aria-label="미니 문제 A와 B에서 차 A와 차 B가 배에 타고 있는 기간을 항구 축 위에 막대로 그린 그림">
+<g font-size="13" text-anchor="middle">
+<text x="180.0" y="22" font-size="13.5" font-weight="500">미니 문제 A</text>
+<text x="110" y="48" font-size="12" class="t-muted">항구 0</text>
+<line x1="110" y1="56" x2="110" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="180" y="48" font-size="12" class="t-muted">항구 1</text>
+<line x1="180" y1="56" x2="180" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="250" y="48" font-size="12" class="t-muted">항구 2</text>
+<line x1="250" y1="56" x2="250" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<rect x="110" y="67" width="140" height="22" rx="5" class="f-steel"/>
+<text x="180.0" y="82.5" font-size="12.5">차 A</text>
+<rect x="110" y="101" width="70" height="22" rx="5" class="f-hull"/>
+<text x="145.0" y="116.5" font-size="12.5">차 B</text>
+<text x="515.0" y="22" font-size="13.5" font-weight="500">미니 문제 B</text>
+<text x="410" y="48" font-size="12" class="t-muted">항구 0</text>
+<line x1="410" y1="56" x2="410" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="480" y="48" font-size="12" class="t-muted">항구 1</text>
+<line x1="480" y1="56" x2="480" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="550" y="48" font-size="12" class="t-muted">항구 2</text>
+<line x1="550" y1="56" x2="550" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<text x="620" y="48" font-size="12" class="t-muted">항구 3</text>
+<line x1="620" y1="56" x2="620" y2="140" class="s-muted" stroke-width="1" stroke-dasharray="2 4"/>
+<rect x="410" y="67" width="140" height="22" rx="5" class="f-steel"/>
+<text x="480.0" y="82.5" font-size="12.5">차 A</text>
+<rect x="480" y="101" width="140" height="22" rx="5" class="f-hull"/>
+<text x="550.0" y="116.5" font-size="12.5">차 B</text>
+</g>
+</svg>
+      </div>
+      <figcaption>막대는 그 차가 배에 타고 있어야 하는 기간입니다. 미니 문제 A에서는 두 차가 함께 탔다가 B가 먼저 내립니다. 미니 문제 B에서는 A가 먼저 타고 먼저 내립니다. 두 막대가 겹치는 동안(미니 문제 A는 항구 0과 1 사이, 미니 문제 B는 항구 1과 2 사이)에는 두 대가 함께 타고 있어 칸 두 개가 꽉 찹니다.</figcaption>
+    </figure>
+    <p>미니 문제 A에서는 "먼저 내릴 차를 바깥에"라는 요령으로 재배치를 피했습니다. 이번에는 그 요령이 통하지 않습니다. 먼저 내릴 차는 A인데, A는 B보다 <strong>먼저 탑니다</strong>.</p>
+    <ul class="plain">
+      <li>A를 바깥쪽(칸 1)에 세워 두면, 항구 1에서 B가 안쪽(칸 2)으로 들어갈 길이 막힙니다.</li>
+      <li>A를 안쪽(칸 2)에 세워 두면, 항구 1에서 B는 칸 1에 들어갈 수 있지만, 항구 2에서 A가 나갈 길을 B가 막습니다.</li>
+    </ul>
+    <p>어느 쪽이든 한 번은 누군가 비켜 줘야 합니다. 일렬 배는 접시를 쌓아 올린 더미와 같아서, 나중에 넣은 것을 먼저 꺼낼 수밖에 없기 때문입니다.</p>
+    <div class="hand">
+      <p>재배치를 한 번 하는 방법은 두 가지가 있습니다. 하나는 항구 1에서 A를 잠깐 내리는 것, 다른 하나는 항구 2에서 B를 잠깐 내리는 것입니다. 각각의 경로를 항구별로 적고 총비용을 구해 보세요. 어느 쪽이 쌀까요?</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>두 가지 해</h2>
+    <figure>
+      <div class="scroll">
+<svg viewBox="0 0 720 275" role="img" aria-label="미니 문제 B의 두 가지 해. 항구 1에서 A를 잠깐 내리는 방법과 항구 2에서 B를 잠깐 내리는 방법">
+<g font-size="13" text-anchor="middle">
+<text x="234" y="22" font-size="13.5" font-weight="500">(가) 항구 1에서 A를 잠깐 내린다</text>
+<text x="170" y="48" font-size="11.5" class="t-crane">출입구</text>
+<text x="234" y="48" font-size="11.5" class="t-muted">칸 1</text>
+<text x="298" y="48" font-size="11.5" class="t-muted">칸 2</text>
+<line x1="170" y1="78" x2="298" y2="78" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="78" r="13" class="f-crane"/><text x="170" y="82.5" font-size="12">0</text>
+<rect x="214" y="64" width="40" height="28" rx="6" class="f-steel"/>
+<text x="234" y="83" font-size="13.5" font-weight="500">A</text>
+<rect x="278" y="64" width="40" height="28" rx="6" class="f-bay"/>
+<text x="142" y="82.5" font-size="12.5" text-anchor="end" class="t-muted">항구 0을 떠날 때</text>
+<line x1="170" y1="122" x2="298" y2="122" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="122" r="13" class="f-crane"/><text x="170" y="126.5" font-size="12">0</text>
+<rect x="214" y="108" width="40" height="28" rx="6" class="f-steel"/>
+<text x="234" y="127" font-size="13.5" font-weight="500">A</text>
+<rect x="278" y="108" width="40" height="28" rx="6" class="f-hull"/>
+<text x="298" y="127" font-size="13.5" font-weight="500">B</text>
+<text x="142" y="126.5" font-size="12.5" text-anchor="end" class="t-muted">항구 1을 떠날 때</text>
+<line x1="170" y1="166" x2="298" y2="166" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="166" r="13" class="f-crane"/><text x="170" y="170.5" font-size="12">0</text>
+<rect x="214" y="152" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="278" y="152" width="40" height="28" rx="6" class="f-hull"/>
+<text x="298" y="171" font-size="13.5" font-weight="500">B</text>
+<text x="142" y="170.5" font-size="12.5" text-anchor="end" class="t-muted">항구 2를 떠날 때</text>
+<line x1="170" y1="210" x2="298" y2="210" class="s-line" stroke-width="1.5"/>
+<circle cx="170" cy="210" r="13" class="f-crane"/><text x="170" y="214.5" font-size="12">0</text>
+<rect x="214" y="196" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="278" y="196" width="40" height="28" rx="6" class="f-bay"/>
+<text x="142" y="214.5" font-size="12.5" text-anchor="end" class="t-muted">항구 3을 떠날 때</text>
+<text x="234" y="258" font-size="13">경로 6개, 총비용 68</text>
+<text x="594" y="22" font-size="13.5" font-weight="500">(나) 항구 2에서 B를 잠깐 내린다</text>
+<text x="530" y="48" font-size="11.5" class="t-crane">출입구</text>
+<text x="594" y="48" font-size="11.5" class="t-muted">칸 1</text>
+<text x="658" y="48" font-size="11.5" class="t-muted">칸 2</text>
+<line x1="530" y1="78" x2="658" y2="78" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="78" r="13" class="f-crane"/><text x="530" y="82.5" font-size="12">0</text>
+<rect x="574" y="64" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="638" y="64" width="40" height="28" rx="6" class="f-steel"/>
+<text x="658" y="83" font-size="13.5" font-weight="500">A</text>
+<text x="502" y="82.5" font-size="12.5" text-anchor="end" class="t-muted">항구 0을 떠날 때</text>
+<line x1="530" y1="122" x2="658" y2="122" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="122" r="13" class="f-crane"/><text x="530" y="126.5" font-size="12">0</text>
+<rect x="574" y="108" width="40" height="28" rx="6" class="f-hull"/>
+<text x="594" y="127" font-size="13.5" font-weight="500">B</text>
+<rect x="638" y="108" width="40" height="28" rx="6" class="f-steel"/>
+<text x="658" y="127" font-size="13.5" font-weight="500">A</text>
+<text x="502" y="126.5" font-size="12.5" text-anchor="end" class="t-muted">항구 1을 떠날 때</text>
+<line x1="530" y1="166" x2="658" y2="166" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="166" r="13" class="f-crane"/><text x="530" y="170.5" font-size="12">0</text>
+<rect x="574" y="152" width="40" height="28" rx="6" class="f-hull"/>
+<text x="594" y="171" font-size="13.5" font-weight="500">B</text>
+<rect x="638" y="152" width="40" height="28" rx="6" class="f-bay"/>
+<text x="502" y="170.5" font-size="12.5" text-anchor="end" class="t-muted">항구 2를 떠날 때</text>
+<line x1="530" y1="210" x2="658" y2="210" class="s-line" stroke-width="1.5"/>
+<circle cx="530" cy="210" r="13" class="f-crane"/><text x="530" y="214.5" font-size="12">0</text>
+<rect x="574" y="196" width="40" height="28" rx="6" class="f-bay"/>
+<rect x="638" y="196" width="40" height="28" rx="6" class="f-bay"/>
+<text x="502" y="214.5" font-size="12.5" text-anchor="end" class="t-muted">항구 3을 떠날 때</text>
+<text x="594" y="258" font-size="13">경로 6개, 총비용 68</text>
+<line x1="360" y1="12" x2="360" y2="262" class="s-muted" stroke-width="1" stroke-dasharray="3 4"/>
+</g>
+</svg>
+      </div>
+      <figcaption>미니 문제 B의 두 가지 해입니다. (가)는 A를 처음에 바깥쪽에 실었다가 항구 1에서 자리를 내주고, (나)는 A를 안쪽에 실었다가 항구 2에서 B가 자리를 비켜 줍니다.</figcaption>
+    </figure>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>항구</th><th>(가) 항구 1에서 A를 잠깐 내린다</th><th class="num">비용</th><th>(나) 항구 2에서 B를 잠깐 내린다</th><th class="num">비용</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>[0, 1]</code> A를 칸 1에</td><td class="num">11</td><td><code>[0, 1, 2]</code> A를 칸 2에</td><td class="num">12</td></tr>
+        <tr><td>1</td><td><code>[1, 0]</code> A를 잠깐 내림<br><code>[0, 1, 2]</code> B를 칸 2에<br><code>[0, 1]</code> A를 다시 칸 1에</td><td class="num">11<br>12<br>11</td><td><code>[0, 1]</code> B를 칸 1에</td><td class="num">11</td></tr>
+        <tr><td>2</td><td><code>[1, 0]</code> A를 내림</td><td class="num">11</td><td><code>[1, 0]</code> B를 잠깐 내림<br><code>[2, 1, 0]</code> A를 내림<br><code>[0, 1]</code> B를 다시 칸 1에</td><td class="num">11<br>12<br>11</td></tr>
+        <tr><td>3</td><td><code>[2, 1, 0]</code> B를 내림</td><td class="num">12</td><td><code>[1, 0]</code> B를 내림</td><td class="num">11</td></tr>
+        <tr><td><strong>합</strong></td><td>경로 6개</td><td class="num"><strong>68</strong></td><td>경로 6개</td><td class="num"><strong>68</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>두 방법의 비용이 68로 같습니다. 어느 쪽이든 경로가 여섯 개이고, 지나간 간선의 수를 모두 더하면 8입니다(6 × 10 + 8 = 68). 이 문제에서는 68보다 싼 해가 없습니다. 이유를 따져 보면 이렇습니다. 일렬 배 안에서는 두 차가 서로를 지나칠 수 없으니, 안팎을 바꾸려면 한 대가 배 밖으로 나갔다 와야 합니다. 그래서 경로는 적어도 4 + 2 = 6개입니다. 그리고 두 대가 함께 타고 있는 동안 한 대는 칸 2에 있어야 하므로, 칸 2로 들어가는 경로와 나오는 경로가 간선을 둘씩 지납니다. 간선은 적어도 2 + 2 + 1 + 1 + 1 + 1 = 8개입니다. 8장에서는 컴퓨터로 경우를 모두 넣어 보아 같은 값을 다시 확인합니다.</p>
+    <p>(가)에서 A를 다시 실을 때 꼭 원래 자리로 돌아갈 필요는 없습니다. 잠깐 내린 차는 항구에 서 있다가, 같은 항구를 떠나기 전에 아무 빈칸에나 다시 실으면 됩니다. 다만 싣지 않고 떠날 수는 없습니다.</p>
+  </section>
+
+  <section>
+    <h2>비켜 주는 두 가지 방법</h2>
+    <p>지금까지는 길을 막는 차를 항구로 내렸다가 다시 실었습니다. 문제는 한 가지 방법을 더 허용합니다. 배 안에 빈칸이 있으면 그리로 옮기는 것입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>방법</th><th>어떻게</th><th>경로 수</th><th>비용 (F = 10)</th></tr></thead>
+      <tbody>
+        <tr><td>임시 하역 후 재적재</td><td>항구로 내렸다가(하역 경로) 나중에 다시 싣는다(선적 경로). 지금까지 쓴 방법</td><td>2</td><td>적어도 11 + 11 = 22</td></tr>
+        <tr><td>위치변경(relocation)</td><td>배 안에서 다른 빈칸으로 바로 옮긴다. 경로는 <code>[1, 3]</code>처럼 양 끝이 모두 칸이다</td><td>1</td><td>적어도 11</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>위치변경이 더 쌉니다. 하지만 옮길 빈칸이 있어야 하고, 그 칸까지 가는 길이 비어 있어야 합니다. 일렬 배에서는 쓸모가 거의 없습니다. 미니 문제 B에 칸이 하나 더 있어도(출입구-칸 1-칸 2-칸 3) 안쪽 차와 바깥쪽 차의 자리를 배 안에서 맞바꿀 방법은 없기 때문입니다.</p>
+    <p>이 사실을 미리 적어 두는 이유가 있습니다. 1등 팀의 풀이는 <strong>위치변경을 아예 쓰지 않습니다.</strong> 재배치는 언제나 임시 하역 후 재적재로만 합니다. 왜 그런 선택을 했는지는 3장과 7장에서 봅니다.</p>
+  </section>
+
+  <!-- ================= 4부 ================= -->
+  <div class="part">4부 · 배 모양이 달라지면</div>
+
+  <section>
+    <h2>갈림길이 하나 있으면</h2>
+    <p>미니 문제 B에서 재배치를 피할 수 없었던 까닭은 배가 일렬이기 때문입니다. 칸 수는 그대로 두고 배 모양만 바꿔 봅니다. 칸 1 뒤에서 통로가 두 갈래로 갈라져 칸 2와 칸 3이 따로 있는 배입니다.</p>
+    <figure>
+      <div class="scroll">
+<svg viewBox="0 0 720 165" role="img" aria-label="일렬 배에서는 차 B가 차 A의 길을 막지만, 칸 1에서 두 갈래로 갈라지는 배에서는 서로 막지 않는다">
+<g font-size="13" text-anchor="middle">
+<text x="190" y="22" font-size="13.5" font-weight="500">일렬 배</text>
+<line x1="110" y1="80" x2="270" y2="80" class="s-line" stroke-width="1.5"/>
+<circle cx="110" cy="80" r="13" class="f-crane"/><text x="110" y="84.5" font-size="12">0</text>
+<rect x="170" y="66" width="40" height="28" rx="6" class="f-hull"/>
+<text x="190" y="85" font-size="13.5" font-weight="500">B</text>
+<rect x="250" y="66" width="40" height="28" rx="6" class="f-steel"/>
+<text x="270" y="85" font-size="13.5" font-weight="500">A</text>
+<text x="190" y="118" font-size="12" class="t-muted">B가 A의 길 위에 있다</text>
+<text x="530" y="22" font-size="13.5" font-weight="500">갈림길이 있는 배</text>
+<line x1="430" y1="80" x2="510" y2="80" class="s-line" stroke-width="1.5"/><line x1="510" y1="80" x2="590" y2="50" class="s-line" stroke-width="1.5"/><line x1="510" y1="80" x2="590" y2="110" class="s-line" stroke-width="1.5"/>
+<circle cx="430" cy="80" r="13" class="f-crane"/><text x="430" y="84.5" font-size="12">0</text>
+<rect x="490" y="66" width="40" height="28" rx="6" class="f-bay"/><text x="510" y="112" font-size="11.5" class="t-muted">칸 1</text>
+<rect x="570" y="36" width="40" height="28" rx="6" class="f-steel"/><text x="590" y="55" font-size="13.5" font-weight="500">A</text><text x="638" y="55" font-size="11.5" class="t-muted">칸 2</text>
+<rect x="570" y="96" width="40" height="28" rx="6" class="f-hull"/><text x="590" y="115" font-size="13.5" font-weight="500">B</text><text x="638" y="115" font-size="11.5" class="t-muted">칸 3</text>
+<text x="530" y="150" font-size="12" class="t-muted">A와 B가 서로의 길을 막지 않는다</text>
+<text x="190" y="150" font-size="12" class="t-muted">칸 1 · 칸 2</text>
+</g>
+</svg>
+      </div>
+      <figcaption>왼쪽은 미니 문제 B의 해 (나)에서 항구 1을 떠날 때의 모습입니다. 오른쪽 배에서는 A를 칸 2에, B를 칸 3에 세우면 둘 다 칸 1만 비어 있으면 나갈 수 있습니다.</figcaption>
+    </figure>
+    <p>오른쪽 배에서 미니 문제 B를 풀면 재배치가 필요 없습니다. A를 <code>[0, 1, 2]</code>로 싣고 <code>[2, 1, 0]</code>으로 내리고, B를 <code>[0, 1, 3]</code>으로 싣고 <code>[3, 1, 0]</code>으로 내립니다. 경로 네 개, 각각 간선 둘이므로 총비용은 4 × 12 = 48입니다. 일렬 배의 68보다 20이 쌉니다.</p>
+    <p>배 모양이 답을 크게 바꿉니다. 그래서 이 문제는 배 안을 "노드와 간선"으로 정확히 적어서 줍니다. 이렇게 점과 그 사이를 잇는 선으로 이루어진 것을 수학에서 <strong>그래프</strong>(graph)라고 부릅니다. 함수의 그래프와는 다른 말입니다. 지하철 노선도를 떠올리면 됩니다. 역이 노드이고 역 사이의 선로가 간선입니다.</p>
+    <p>실제 대회 문제의 배는 훨씬 복잡합니다. 칸이 수십에서 수백 개이고, 통로가 갈라졌다가 다시 만나 고리를 이루기도 합니다. 그러면 출입구에서 한 칸까지 가는 길이 여러 개가 되어 "어떤 길로 갈까"도 정해야 합니다. 그런 배를 다루는 방법은 6장에서 배웁니다.</p>
+    <div class="gref">
+      <p>그래프의 말(노드, 간선, 이웃, 경로, 순환)은 교재 4장에 정리되어 있습니다. 이 문서에서는 6장에서 필요한 만큼 다시 설명합니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이 장에서 본 규칙 모아 보기</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>규칙</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>한 칸에 한 대</td><td>칸 하나에는 차가 한 대만 설 수 있습니다. 출입구에는 세울 수 없습니다.</td></tr>
+        <tr><td>길이 비어 있어야</td><td>차는 다른 차가 서 있는 칸을 지나갈 수 없습니다.</td></tr>
+        <tr><td>모든 주문은 지킨다</td><td>모든 차는 정해진 항구에서 실려 정해진 항구에서 내려져야 합니다. 재배치가 싫다고 안 실을 수는 없습니다.</td></tr>
+        <tr><td>재배치는 자유</td><td>길을 막는 차는 잠깐 내렸다 다시 싣거나(경로 둘), 배 안의 빈칸으로 옮길 수 있습니다(경로 하나). 잠깐 내린 차는 그 항구를 떠나기 전에 다시 실어야 합니다.</td></tr>
+        <tr><td>순서도 답</td><td>한 항구에서 실행할 경로들을 차례대로 적어 내야 하고, 차례대로 실행했을 때 매 순간 규칙을 지켜야 합니다.</td></tr>
+        <tr><td>비용</td><td>경로 하나마다 F + (지난 간선의 수). 모든 경로의 비용을 더한 총비용을 최소로.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>차 한 대는 아무리 잘해도 선적 한 번, 하역 한 번, 경로 두 개가 듭니다. 그러니 줄일 수 있는 것은 두 가지뿐입니다. <strong>재배치 경로의 수</strong>, 그리고 <strong>각 경로의 길이</strong>(출입구에서 가까운 칸을 쓸수록 짧습니다)입니다.</p>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>F = 10일 때 경로 <code>[0, 1, 2, 3]</code>의 비용은 얼마인가요? F = 100이라면?</summary>
+      <p>노드가 넷이므로 간선은 셋입니다. F = 10이면 10 + 3 = 13, F = 100이면 103입니다.</p>
+    </details>
+    <details>
+      <summary>미니 문제 A에서 칸 1에 B, 칸 2에 A가 서 있습니다. 이때 경로 <code>[2, 1, 0]</code>을 실행할 수 있나요?</summary>
+      <p>없습니다. 칸 2의 A가 나가려면 칸 1을 지나야 하는데 거기에 B가 서 있습니다. B가 먼저 나간 뒤에야 실행할 수 있습니다.</p>
+    </details>
+    <details>
+      <summary>임시 하역 후 재적재 한 번에 드는 비용은 적어도 얼마인가요? 위치변경 한 번은? F를 써서 답해 보세요.</summary>
+      <p>임시 하역 후 재적재는 경로가 둘이고 각 경로는 간선을 적어도 하나 지나므로 적어도 2F + 2입니다. 위치변경은 경로 하나라 적어도 F + 1입니다.</p>
+    </details>
+    <details>
+      <summary>미니 문제 B의 해 (나)에서 항구 2의 세 경로를 <code>[2, 1, 0]</code>, <code>[1, 0]</code>, <code>[0, 1]</code> 순서로 실행하면 어떻게 되나요?</summary>
+      <p>첫 경로에서 규칙을 어깁니다. 칸 2의 A가 나가는 길(칸 1)에 B가 아직 서 있습니다. B를 먼저 내려야 합니다.</p>
+    </details>
+    <details>
+      <summary>미니 문제 A를 갈림길이 있는 배(출입구-칸 1, 칸 1에서 칸 2와 칸 3으로 갈라짐)에서 풀면, A와 B를 어디에 세우는 것이 가장 쌀까요? 총비용은?</summary>
+      <p>나중에 내릴 A를 칸 2(또는 칸 3)에, 먼저 내릴 B를 칸 1에 세웁니다. 경로는 <code>[0, 1, 2]</code>(12), <code>[0, 1]</code>(11), <code>[1, 0]</code>(11), <code>[2, 1, 0]</code>(12)로 총 46입니다. 일렬 배 때와 같습니다. A를 칸 2, B를 칸 3에 세우면 재배치는 없지만 네 경로가 모두 12라서 48이 됩니다. 갈림길이 있다고 늘 먼 칸으로 흩어 놓는 것이 좋은 것은 아닙니다.</p>
+    </details>
+    <details>
+      <summary>차가 5대인 문제에서 어떤 해의 경로가 14개입니다. 재배치 경로는 몇 개인가요?</summary>
+      <p>꼭 필요한 경로는 한 대에 둘씩 10개입니다. 나머지 4개가 재배치 경로입니다. 예를 들어 임시 하역 후 재적재를 두 번 했거나, 위치변경을 네 번 한 것입니다.</p>
+    </details>
+  </section>
+
+  <div class="sum">
+    <ul>
+      <li>배 안은 출입구(노드 0)와 칸(노드 1, 2, …), 그 사이의 통로(간선)로 이루어집니다.</li>
+      <li>차의 움직임 하나가 경로 하나이고, 비용은 F + (지난 간선의 수)입니다. 길 위에 다른 차가 있으면 지나갈 수 없습니다.</li>
+      <li>어느 칸에 세우느냐에 따라 재배치가 생기고, 재배치가 비용의 대부분을 정합니다. 미니 문제 A는 46 대 68이었습니다.</li>
+      <li>미니 문제 B는 어떻게 해도 재배치가 한 번 필요하고 가장 싼 값은 68입니다. 방법은 (가), (나) 두 가지입니다.</li>
+      <li>정해야 하는 것은 배치, 경로, 순서 세 가지입니다.</li>
+    </ul>
+  </div>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#problem-description">OGC 2025 「문제 설명 및 순위 결정 방법」</a> — 이 장과 다음 장의 원문. 미니 문제 A, B는 이 문서가 설명을 위해 만든 것이고 대회 자료에는 없습니다.</li>
+    </ul>
+  </section>
+  <div class="pager"><span></span><a href="#ch2">다음: 2장 문제 이해 ② →</a></div>
+</article>

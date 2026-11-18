@@ -1,0 +1,353 @@
+<article class="chapter" id="ch4">
+  <header>
+    <div class="kicker">4 / 12</div>
+    <h1>식으로 적는 법: 문제를 변수·제약·목적함수로 옮기기</h1>
+  </header>
+
+  <section>
+    <p class="lead">3장에서 tryAgain은 답을 찾는 절차를 직접 짜지 않고, 문제를 식으로 적어 솔버에 맡긴다고 했습니다. 이 장의 목표는 두 가지입니다. Σ가 든 식 한 줄을 보고 한국어 문장으로 읽는 것, 그리고 간단한 조건을 거꾸로 식으로 적는 것입니다.</p>
+    <p>이 장에는 배 이야기가 거의 나오지 않습니다. 트럭, 배낭, 택배 상자처럼 머릿속에 바로 그려지는 소재만 씁니다. 배 문제의 식은 8장에서 적고, 그때 이 장의 요령을 그대로 가져다 씁니다. 솔버가 식을 어떻게 푸는지는 다음 장(5장)의 주제이고, 이 장에서는 솔버를 「식을 넣으면 답이 나오는 상자」로만 생각해도 됩니다.</p>
+  </section>
+
+  <!-- ================= 1부 ================= -->
+  <div class="part">1부 · 모형의 세 요소</div>
+
+  <section>
+    <h2>미지수를 놓고 식을 세운다, 그리고 하나 더</h2>
+    <div class="recall">
+      <p>중학교에서 푼 활용 문제를 떠올려 봅니다. "닭과 토끼가 합쳐서 10마리이고 다리는 모두 28개입니다. 각각 몇 마리일까요?" 닭을 x마리, 토끼를 y마리라고 <strong>미지수를 놓고</strong>, 조건을 <strong>식으로</strong> 적었습니다. x + y = 10, 2x + 4y = 28. 그다음은 기계적인 계산이었습니다.</p>
+    </div>
+    <p>문제를 식으로 적어 솔버에 맡기는 것도 같은 일입니다. 다른 점은 하나입니다. 연립방정식은 조건에 맞는 답이 보통 하나뿐이지만, 여기서는 조건에 맞는 답이 아주 많고 그중 <strong>가장 좋은 것</strong>을 골라야 합니다. 그래서 "무엇이 좋은 답인가"를 재는 식이 하나 더 필요합니다.</p>
+    <p>예를 하나 정해서 끝까지 씁니다. 이 문서에서는 「트럭 예」라고 부르겠습니다.</p>
+    <div class="note">
+      <p><strong>트럭 예.</strong> 짐 30톤을 보내야 합니다. 큰 트럭은 9톤을 싣고 한 대에 10만 원, 작은 트럭은 5톤을 싣고 한 대에 7만 원입니다. 가장 싸게 보내려면 각각 몇 대를 불러야 할까요?</p>
+    </div>
+    <p>먼저 손으로 몇 가지를 넣어 봅니다. 큰 트럭만 4대 부르면 36톤을 실을 수 있고 40만 원입니다. 큰 트럭 3대만 부르면 27톤이라 짐이 남습니다. 큰 트럭 3대에 작은 트럭 1대를 더하면 32톤, 37만 원입니다. 이것을 식으로 정리하면 다음과 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>결정변수&nbsp;&nbsp; x = 큰 트럭 대수,&nbsp; y = 작은 트럭 대수</span><span class="all">내가 정하는 수</span></div>
+      <div class="row"><span>최소화&nbsp;&nbsp; 10x + 7y</span><span class="all">목적함수: 총비용(만 원)</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; 9x + 5y ≥ 30</span><span class="all">짐을 다 실을 수 있어야 한다</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x ≥ 0,&nbsp; y ≥ 0,&nbsp; x와 y는 정수</span><span class="all">트럭은 반 대를 부를 수 없다</span></div>
+    </div>
+    <p>이렇게 문제를 식으로 적은 것을 <strong>모형</strong>(model)이라고 하고, 적는 일을 <strong>정식화</strong>(formulation)라고 합니다. 모형에는 "어떻게 찾을지"가 한 줄도 없습니다. "무엇을 정하는지, 무엇을 지켜야 하는지, 무엇이 좋은 답인지"만 있습니다. tryAgain의 발표자료 2쪽은 이 과정을 네 단계로 적고 있습니다. 앞의 셋이 사람의 일이고 넷째가 솔버의 일입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>단계</th><th>이름</th><th>하는 일</th><th>트럭 예에서</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>결정변수(decision variable)</td><td>내가 정할 수 있는 것을 숫자 변수로 둡니다.</td><td>x, y</td></tr>
+        <tr><td>2</td><td>제약(constraint)</td><td>변수가 지켜야 하는 조건을 등식이나 부등식으로 적습니다. 그 식 하나하나를 제약식이라고 합니다.</td><td>9x + 5y ≥ 30 등</td></tr>
+        <tr><td>3</td><td>목적함수(objective function)</td><td>좋고 나쁨을 재는 식 하나를 적고, 최소화할지 최대화할지 정합니다.</td><td>최소화 10x + 7y</td></tr>
+        <tr><td>4</td><td>풀이</td><td>제약을 모두 지키는 변수 값 가운데 목적함수가 가장 좋은 것을 찾습니다.</td><td>답 x = 3, y = 1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>앞으로 계속 쓸 말 네 개를 정해 둡니다.</p>
+    <div class="defn"><b>파라미터</b> 문제에서 주어진 숫자입니다. 트럭의 용량 9와 5, 값 10과 7, 짐의 양 30이 파라미터입니다. 내가 바꿀 수 없으므로, 식에서 문자로 적혀 있어도 변수가 아닙니다.</div>
+    <div class="defn"><b>가능해</b>(feasible solution) 제약을 모두 지키는 변수 값 한 벌입니다. (x, y) = (4, 0)도 (3, 1)도 (0, 6)도 가능해입니다. 좋은지 나쁜지는 따지지 않습니다. 2장에서 대회의 말로 「유효해」라고 부른 것과 같은 개념입니다.</div>
+    <div class="defn"><b>최적해</b>(optimal solution) 가능해 가운데 목적함수 값이 가장 좋은 것입니다. 그때의 목적함수 값을 최적값이라고 합니다. 트럭 예의 최적해는 (3, 1), 최적값은 37입니다.</div>
+    <div class="defn"><b>불능</b>(infeasible) 가능해가 하나도 없는 문제를 말합니다. 변수 값 한 벌이 제약을 어길 때도 "그 값은 불능"이라고 합니다. (3, 0)은 27톤밖에 못 실으므로 불능입니다. 2장의 「무효」에 해당합니다.</div>
+  </section>
+
+  <section>
+    <h2>푸는 방법 ①: 전부 넣어 보기</h2>
+    <p>답이 (3, 1)이라는 것은 어떻게 알까요? 가장 단순한 방법은 후보를 빠짐없이 넣어 보는 것입니다. 큰 트럭만으로는 4대, 작은 트럭만으로는 6대면 30톤을 실을 수 있으니, 어느 쪽이든 6대를 넘게 부르는 답은 볼 필요가 없습니다(한 종류를 7대 이상 부르면 그것만으로 49만 원 이상이라, 큰 트럭 4대의 40만 원보다 비쌉니다). x와 y를 0부터 6까지 바꿔 가며 49가지를 모두 넣어 보는 프로그램입니다.</p>
+    <pre class="py">
+best_cost = 1000                 # 아주 큰 수로 시작
+best_x = 0
+best_y = 0
+count = 0
+for x in range(0, 7):            # 큰 트럭 0~6대
+    for y in range(0, 7):        # 작은 트럭 0~6대
+        if 9 * x + 5 * y &gt;= 30:  # 제약: 짐을 다 실을 수 있는가
+            count = count + 1
+            cost = 10 * x + 7 * y            # 목적함수: 총비용
+            if cost &lt; best_cost:             # 지금까지 본 것보다 싸면 기억
+                best_cost = cost
+                best_x = x
+                best_y = y
+print("가능해의 수:", count)
+print("최적해: 큰 트럭", best_x, "대, 작은 트럭", best_y, "대, 비용", best_cost)
+</pre>
+    <ul class="code">
+      <li><b>5~6</b> 이중 for 문이 (x, y)의 모든 조합 7 × 7 = 49가지를 만듭니다.</li>
+      <li><b>7</b> 제약식을 그대로 if 문으로 옮겼습니다. 어기는 조합은 건너뜁니다.</li>
+      <li><b>9~13</b> 목적함수 값을 계산하고, 지금까지 본 가능해 가운데 가장 싼 것을 기억합니다.</li>
+    </ul>
+    <pre class="out">
+가능해의 수: 34
+최적해: 큰 트럭 3 대, 작은 트럭 1 대, 비용 37
+</pre>
+    <p>49가지 중 34가지가 가능해이고 그중 가장 싼 것이 (3, 1), 37만 원입니다. 이렇게 후보를 다 해 보는 방법을 <strong>전수 탐색</strong>(brute force)이라고 합니다. 확실하지만, 후보가 조금만 많아져도 쓸 수 없게 됩니다. 얼마나 빨리 그렇게 되는지는 5장 첫머리에서 숫자로 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>푸는 방법 ②: 솔버에 맡기기</h2>
+    <p><strong>솔버</strong>(solver)는 모형을 받아서 최적해를 찾아 주는 프로그램입니다. 아래는 같은 트럭 예를 무료 솔버에 맡기는 코드입니다. OR-Tools는 Google이 공개한 최적화 도구 모음이고, 터미널에서 <code>pip install ortools</code> 한 줄로 설치합니다. 첫 줄의 <code>import</code>는 남이 만들어 둔 기능 꾸러미를 가져다 쓰겠다는 선언입니다.</p>
+    <pre class="py">
+from ortools.linear_solver import pywraplp
+
+s = pywraplp.Solver.CreateSolver("SCIP")
+x = s.IntVar(0, s.infinity(), "big")
+y = s.IntVar(0, s.infinity(), "small")
+s.Minimize(10 * x + 7 * y)
+s.Add(9 * x + 5 * y &gt;= 30)
+s.Solve()
+print(x.solution_value(), y.solution_value(), s.Objective().Value())
+</pre>
+    <ul class="code">
+      <li><b>3</b> 솔버를 하나 준비합니다. SCIP은 OR-Tools 안에 들어 있는 무료 솔버의 이름입니다.</li>
+      <li><b>4~5</b> 결정변수입니다. <code>IntVar(0, s.infinity(), 이름)</code>은 "0 이상이고 위로는 제한이 없는 정수 변수"를 만듭니다. 이 x는 아직 값이 없는, 말 그대로 미지수입니다.</li>
+      <li><b>6</b> 목적함수와 방향(최소화)입니다.</li>
+      <li><b>7</b> 제약식입니다.</li>
+      <li><b>8~9</b> 풀라고 시키고, 솔버가 찾은 변수 값과 목적함수 값을 꺼내 찍습니다.</li>
+    </ul>
+    <pre class="out">
+3.0 1.0 37.0
+</pre>
+    <p>두 프로그램을 나란히 놓으면 차이가 보입니다. 전수 탐색에서는 for 문으로 <strong>찾는 절차</strong>를 내가 썼습니다. 솔버 코드에는 for 문이 없고, 모형의 세 요소가 한 줄씩 적혀 있을 뿐입니다. 찾는 절차는 솔버 안에 있습니다. tryAgain이 쓴 Gurobi는 기업들이 돈을 내고 쓰는 상용 솔버이고, 하는 일의 종류는 위의 무료 솔버와 같습니다. tryAgain의 코드도 뼈대는 위의 아홉 줄과 같습니다. 변수를 만들고, 제약식을 넣고, 목적함수를 주고, 풀라고 시킵니다. 다만 변수와 제약식이 수만 개라서 for 문으로 만듭니다(8장).</p>
+    <p class="sref">위의 두 코드는 이 문서를 쓰면서 직접 실행해 결과를 확인했습니다(Python 3.13, OR-Tools 9.15). 파일은 <code>examples/truck_try_all.py</code>, <code>examples/truck_ortools.py</code>입니다.</p>
+  </section>
+
+  <section>
+    <h2>LP, IP, MIP: 솔버가 받는 식의 모양</h2>
+    <p>솔버에 아무 식이나 넣을 수 있는 것은 아닙니다. 받는 모양이 정해져 있습니다. 목적함수와 제약식이 모두 <strong>1차식</strong>이어야 합니다. 곧 (숫자 × 변수)들의 합과 숫자를 ≤, ≥, =로 비교한 식만 됩니다. 변수가 어떤 수여야 하느냐에 따라 이름이 셋으로 갈립니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>이름</th><th>변수</th><th>풀기</th></tr></thead>
+      <tbody>
+        <tr><td>선형계획 (LP)</td><td>모두 실수. 3.33 같은 소수 값도 됩니다.</td><td>쉽습니다. 변수가 수백만 개여도 풉니다.</td></tr>
+        <tr><td>정수계획 (IP)</td><td>모두 정수</td><td>어렵습니다. 변수가 늘면 시간이 폭발적으로 늘 수 있습니다.</td></tr>
+        <tr><td>혼합정수계획 (MIP)</td><td>일부는 정수, 일부는 실수</td><td>어렵습니다. IP를 포함하는 가장 넓은 이름입니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>LP는 linear programming, IP는 integer programming, MIP는 mixed-integer programming의 머리글자입니다. 여기서 programming은 코딩이 아니라 「계획 세우기」라는 옛 뜻입니다. 트럭 예는 변수가 모두 정수이므로 IP이고, 넓게는 MIP입니다. 발표자료의 「정수선형최적화」도 같은 것을 가리킵니다.</p>
+    <p>정수 변수 가운데 값이 0 아니면 1뿐인 것을 <strong>이진변수</strong>(binary variable)라고 합니다. "한다 = 1, 안 한다 = 0"을 나타내는 스위치입니다. 8장의 모형은 변수 대부분이 이진변수입니다.</p>
+    <p>1차식만 된다는 제한 때문에, 다음은 그대로는 적을 수 없습니다.</p>
+    <ul class="plain">
+      <li>변수끼리의 곱: x·y</li>
+      <li>조건문: "x가 1이면 이 제약을 적용한다"</li>
+      <li>최댓값, 최솟값, 절댓값, 변수로 나누기</li>
+      <li>"같지 않다"(≠)와 등호 없는 부등호(&lt;, &gt;). 정수 변수라면 x &lt; 5를 x ≤ 4로 바꿔 적으면 됩니다.</li>
+    </ul>
+    <p>이런 것들을 이진변수와 1차 부등식으로 돌려 적는 정해진 요령들이 있습니다. 모형을 읽고 쓰는 실력의 대부분은 그 요령을 아는 것입니다. 8장에 필요한 요령은 3부에서 다룹니다.</p>
+  </section>
+
+  <!-- ================= 2부 ================= -->
+  <div class="part">2부 · 기호 읽는 법</div>
+
+  <section>
+    <h2>첨자와 Σ: 변수가 많을 때</h2>
+    <p>트럭 예는 변수가 둘이라 x, y로 충분했습니다. 실제 모형은 변수가 수천, 수만 개라서 하나씩 이름을 붙일 수 없습니다. 그래서 수열처럼 번호를 붙입니다. 이 번호를 <strong>첨자</strong>라고 합니다.</p>
+    <p>「배낭 예」로 봅니다. 물건이 세 개 있습니다. 가치는 차례로 6, 5, 4이고 무게는 4, 3, 2 kg입니다. 배낭에는 5 kg까지만 넣을 수 있습니다. 가치의 합이 가장 크게 되도록 넣을 물건을 고릅니다. 물건마다 스위치를 하나씩 둡니다. x<sub>1</sub>은 "물건 1을 넣으면 1, 안 넣으면 0"이고 x<sub>2</sub>, x<sub>3</sub>도 같습니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp;&nbsp; 6x<sub>1</sub> + 5x<sub>2</sub> + 4x<sub>3</sub></span><span class="all">넣은 물건의 가치 합</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; 4x<sub>1</sub> + 3x<sub>2</sub> + 2x<sub>3</sub> ≤ 5</span><span class="all">넣은 물건의 무게 합이 용량 이하</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>은 0 또는 1</span><span class="all">이진변수</span></div>
+    </div>
+    <p>x<sub>2</sub> = x<sub>3</sub> = 1이고 x<sub>1</sub> = 0이면 무게는 3 + 2 = 5, 가치는 5 + 4 = 9입니다. 스위치가 1인 물건의 숫자만 합에 들어가고 0인 물건은 빠집니다. <strong>이진변수에 숫자를 곱해서 더하면 「고른 것들의 합」이 됩니다.</strong> 이 모양은 뒤에서 수없이 나옵니다.</p>
+    <p>물건이 n개이고 물건 j의 가치가 v<sub>j</sub>, 무게가 w<sub>j</sub>, 배낭 용량이 W라고 하면 같은 모형을 한 번에 적을 수 있습니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화&nbsp;&nbsp; Σ<sub>j</sub> v<sub>j</sub> x<sub>j</sub></span><span class="all">j = 1부터 n까지 더한다</span></div>
+      <div class="row"><span>제약&nbsp;&nbsp; Σ<sub>j</sub> w<sub>j</sub> x<sub>j</sub> ≤ W</span><span class="all"></span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>j</sub>는 0 또는 1</span><span class="all">모든 물건 j</span></div>
+    </div>
+    <div class="recall">
+      <p>Σ는 수열의 합에서 배운 그 기호입니다. Σ<sub>j</sub> v<sub>j</sub> x<sub>j</sub>는 고등학교 표기로 Σ<sub>j=1</sub><sup>n</sup> v<sub>j</sub> x<sub>j</sub> = v<sub>1</sub>x<sub>1</sub> + v<sub>2</sub>x<sub>2</sub> + … + v<sub>n</sub>x<sub>n</sub>입니다. 달라진 것은 둘뿐입니다. 더하는 대상에 아직 값을 모르는 변수가 들어 있고, 더하는 범위가 뻔할 때는 Σ 밑에 첨자만 적습니다.</p>
+    </div>
+    <p>식을 읽을 때 눈여겨볼 점입니다.</p>
+    <ul class="plain">
+      <li>x<sub>j</sub>는 변수 하나가 아니라 변수 n개를 한꺼번에 부르는 이름입니다.</li>
+      <li>v<sub>j</sub>와 w<sub>j</sub>는 파라미터(주어진 숫자)입니다. (숫자 × 변수)의 합이므로 1차식입니다.</li>
+      <li>Σ는 Python의 for 문입니다. 더할 것을 하나씩 꺼내 누적합니다.</li>
+    </ul>
+    <p>배낭 예를 전수 탐색으로 푸는 프로그램에서 마지막 점을 확인합니다. 스위치 세 개의 조합은 2 × 2 × 2 = 8가지입니다.</p>
+    <pre class="py">
+v = [6, 5, 4]                    # 가치
+w = [4, 3, 2]                    # 무게(kg)
+W = 5                            # 배낭 용량
+best = 0
+best_x = [0, 0, 0]
+for x1 in range(2):              # 0 또는 1
+    for x2 in range(2):
+        for x3 in range(2):
+            x = [x1, x2, x3]
+            weight = 0
+            value = 0
+            for j in range(3):                   # Σ 를 for 문으로
+                weight = weight + w[j] * x[j]
+                value = value + v[j] * x[j]
+            if weight &lt;= W and value &gt; best:     # 제약을 지키고 더 좋으면 기억
+                best = value
+                best_x = x
+print(best_x, best)
+</pre>
+    <ul class="code">
+      <li><b>6~8</b> 삼중 for 문이 스위치 세 개의 모든 조합 8가지를 만듭니다. <code>range(2)</code>는 0과 1입니다.</li>
+      <li><b>12~14</b> 이 for 문이 Σ<sub>j</sub> w<sub>j</sub> x<sub>j</sub>와 Σ<sub>j</sub> v<sub>j</sub> x<sub>j</sub>입니다. Python의 리스트는 0번부터 세므로 물건 1이 <code>x[0]</code>입니다.</li>
+      <li><b>15</b> 제약식(무게 합 ≤ W)을 지키는 조합 가운데 가치가 가장 큰 것을 남깁니다.</li>
+    </ul>
+    <pre class="out">
+[0, 1, 1] 9
+</pre>
+    <p>물건 2와 3을 넣는 것이 답이고 가치는 9입니다(<code>examples/knapsack_try_all.py</code>, 실행 확인).</p>
+  </section>
+
+  <section>
+    <h2>「모든 ~에 대해」: 식 한 줄이 여러 줄이 된다</h2>
+    <p>첨자가 둘인 변수도 씁니다. 「배정 예」로 봅니다. 택배 상자 여러 개를 트럭 여러 대에 나눠 싣습니다. 상자 i의 무게는 q<sub>i</sub>, 트럭 한 대의 용량은 Q, 상자 i를 트럭 k에 실을 때 드는 비용은 c<sub>ik</sub>입니다. 변수 x<sub>ik</sub>는 "상자 i를 트럭 k에 실으면 1, 아니면 0"입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최소화&nbsp;&nbsp; Σ<sub>i</sub> Σ<sub>k</sub> c<sub>ik</sub> x<sub>ik</sub></span><span class="all">총비용</span></div>
+      <div class="row"><span>(1)&nbsp;&nbsp; Σ<sub>k</sub> x<sub>ik</sub> = 1</span><span class="all">모든 상자 i</span></div>
+      <div class="row"><span>(2)&nbsp;&nbsp; Σ<sub>i</sub> q<sub>i</sub> x<sub>ik</sub> ≤ Q</span><span class="all">모든 트럭 k</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x<sub>ik</sub>는 0 또는 1</span><span class="all">모든 상자 i, 모든 트럭 k</span></div>
+    </div>
+    <p>오른쪽의 「모든 상자 i」는 <strong>그 줄을 상자마다 하나씩 복사해서 여러 줄로 만들라</strong>는 뜻입니다. 식 (1)은 한 줄로 적혀 있지만 실제로는 상자 수만큼의 제약식입니다. 책이나 논문에서는 「모든」을 기호 ∀로 적기도 합니다(∀ i). 이 문서는 한글로 적습니다. Σ가 둘 이어진 Σ<sub>i</sub> Σ<sub>k</sub>는 이중 for 문, 곧 모든 (i, k) 조합에 대한 합입니다.</p>
+    <p>식 (1)을 읽는 요령은 「모든」 쪽 첨자를 숫자 하나로 고정하고, Σ 쪽을 풀어 쓰는 것입니다. 상자 3번을 보고, 트럭이 A, B 두 대라고 하면</p>
+    <div class="formula">x<sub>3A</sub> + x<sub>3B</sub> = 1</div>
+    <p>둘 중 정확히 하나만 1입니다. "상자 3은 정확히 한 트럭에 실린다." 식 (2)는 반대로 트럭을 고정하고 상자 쪽으로 더합니다. "트럭 A에 실린 상자들의 무게 합이 용량 이하." 숫자를 넣어 표로 그리면 두 식이 무엇을 보는지 분명해집니다. 상자 네 개의 무게가 3, 2, 2, 1이고 트럭 두 대의 용량이 5라고 합시다. 아래는 가능해 하나입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>x<sub>ik</sub>의 값</th><th class="num">트럭 A</th><th class="num">트럭 B</th><th>식 (1): 가로줄의 합</th></tr></thead>
+      <tbody>
+        <tr><td>상자 1 (무게 3)</td><td class="num">1</td><td class="num">0</td><td>1 + 0 = 1</td></tr>
+        <tr><td>상자 2 (무게 2)</td><td class="num">1</td><td class="num">0</td><td>1 + 0 = 1</td></tr>
+        <tr><td>상자 3 (무게 2)</td><td class="num">0</td><td class="num">1</td><td>0 + 1 = 1</td></tr>
+        <tr><td>상자 4 (무게 1)</td><td class="num">0</td><td class="num">1</td><td>0 + 1 = 1</td></tr>
+        <tr><td>식 (2): 세로줄의 무게 합</td><td class="num">3 + 2 = 5 ≤ 5</td><td class="num">2 + 1 = 3 ≤ 5</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>같은 변수 x<sub>ik</sub>를 두고 (1)은 가로줄을, (2)는 세로줄을 봅니다. <strong>어느 첨자를 더하고 어느 첨자를 남기느냐가 식의 뜻을 정합니다.</strong></p>
+    <div class="note">
+      <p><strong>식을 읽는 세 단계.</strong> ① 첨자가 무엇을 가리키고 어디서 어디까지인지 확인합니다. ② 변수 하나의 뜻을 한국어 문장으로 말해 봅니다("x<sub>ik</sub> = 1은 상자 i를 트럭 k에 싣는다는 뜻"). ③ 「모든」 쪽 첨자에 숫자를 넣고 Σ를 풀어 써서, 그 한 줄이 무슨 조건인지 봅니다. 8장에서 tryAgain의 식을 읽을 때도 이 순서로 읽습니다.</p>
+    </div>
+    <p>모형의 크기도 여기서 셉니다. 상자가 100개, 트럭이 10대면 변수 x<sub>ik</sub>는 100 × 10 = 1,000개이고, 제약식은 (1)이 100줄, (2)가 10줄로 110개입니다. 변수의 수는 첨자 범위의 곱이고, 제약식의 수는 「모든」이 붙은 범위의 크기입니다.</p>
+  </section>
+
+  <!-- ================= 3부 ================= -->
+  <div class="part">3부 · 0과 1로 논리 적기</div>
+
+  <section>
+    <h2>스위치 사이의 규칙을 부등식으로</h2>
+    <p>이진변수 x, y가 있을 때 "x를 하려면 y가 켜져 있어야 한다", "둘 다는 안 된다" 같은 규칙을 1차 부등식으로 적을 수 있습니다. 가장 자주 쓰는 것이 x ≤ y입니다. 왜 이 식이 "x이면 y"가 되는지는 0과 1을 넣는 네 가지 경우를 모두 써 보면 압니다.</p>
+    <div class="scroll">
+    <table class="tt">
+      <thead><tr><th>x</th><th>y</th><th>x ≤ y</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>0 ≤ 0 성립</td><td>둘 다 안 한다. 허용</td></tr>
+        <tr><td>0</td><td>1</td><td>0 ≤ 1 성립</td><td>y만 켜져 있다. 허용</td></tr>
+        <tr><td>1</td><td>0</td><td>1 ≤ 0 <strong>위반</strong></td><td>y가 꺼져 있는데 x를 한다. 금지</td></tr>
+        <tr><td>1</td><td>1</td><td>1 ≤ 1 성립</td><td>y가 켜져 있고 x를 한다. 허용</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="recall">
+      <p>「집합과 명제」에서 "p이면 q"라는 명제는 p가 참인데 q가 거짓일 때만 거짓이라고 배웠습니다. 위 표에서 금지되는 경우가 바로 그것 하나(x = 1, y = 0)입니다. 1을 참, 0을 거짓으로 읽으면 x ≤ y는 명제 "x이면 y"와 같습니다.</p>
+    </div>
+    <p>같은 방법으로 확인할 수 있는 식들을 표로 모았습니다. 변수는 모두 이진변수입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>하고 싶은 말</th><th>식</th><th>확인</th></tr></thead>
+      <tbody>
+        <tr><td>x이면 y<br>(x를 하려면 y가 켜져 있어야)</td><td class="mono">x ≤ y</td><td>x = 1이면 y ≥ 1이어야 하므로 y = 1. x = 0이면 y는 자유.</td></tr>
+        <tr><td>x와 y를 둘 다 할 수는 없다</td><td class="mono">x + y ≤ 1</td><td>둘 다 1이면 2 ≤ 1이 되어 위반.</td></tr>
+        <tr><td>y가 켜져 있으면 x는 못 한다</td><td class="mono">x ≤ 1 − y</td><td>위의 식에서 y를 오른쪽으로 옮긴 것. y = 1이면 x ≤ 0.</td></tr>
+        <tr><td>여럿 중 많아야 하나</td><td class="mono">x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1</td><td>둘 이상이 1이면 위반.</td></tr>
+        <tr><td>여럿 중 정확히 하나</td><td class="mono">x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> = 1</td><td>배정 예의 식 (1).</td></tr>
+        <tr><td>y이면 x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub> 중 적어도 하나</td><td class="mono">y ≤ x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub></td><td>y = 1인데 오른쪽이 모두 0이면 1 ≤ 0으로 위반.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>두 가지 말을 한 줄에 합친 식도 씁니다. 8장에서 그대로 만나게 될 모양이라 미리 봐 둡니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>식</th><th>뜻 (두 가지를 동시에)</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ y</td><td>① x들 중 많아야 하나만 1이다(오른쪽이 최대 1이므로). ② 그 하나가 1이려면 y가 1이어야 한다.</td></tr>
+        <tr><td class="mono">x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1 − y</td><td>① x들 중 많아야 하나만 1이다. ② y가 1이면 x는 전부 0이다. 뒤집어 읽으면, x 중 하나라도 1이면 y는 0이다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="hand">
+      <p>둘째 식 x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> ≤ 1 − y에 직접 넣어 봅니다. y = 1이면 오른쪽이 0이므로 x<sub>1</sub> = x<sub>2</sub> = x<sub>3</sub> = 0이어야 합니다. y = 0이면 오른쪽이 1이므로 x 가운데 하나까지 1이 될 수 있습니다. 거꾸로 x<sub>2</sub> = 1이라고 하면 1 ≤ 1 − y에서 y ≤ 0, 곧 y = 0입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>한 방향만 강제한다는 점</h2>
+    <p>x ≤ y는 "x이면 y"일 뿐 "y이면 x"가 아닙니다. 진리표의 둘째 줄(x = 0, y = 1)이 허용되어 있습니다. 식을 읽을 때는 한쪽 방향만 강제하는 식인지 양쪽인지를 구별해야 합니다.</p>
+    <p>반대 방향은 대개 적을 필요가 없습니다. 「창고 예」로 봅니다. y는 "창고를 연다"(여는 데 100만 원)이고 x는 "그 창고에서 물건을 보낸다"입니다. x ≤ y만 적으면 "보내려면 열어야 한다"는 강제됩니다. 물건을 보내지도 않으면서 창고를 여는 답(y = 1, x = 0)은 식으로는 허용되지만 100만 원이 더 드니, 비용을 최소화하는 솔버가 고르지 않습니다.</p>
+    <p>y에 비용이 붙어 있지 않은 모형에서는 사정이 조금 다릅니다. 솔버에게 y = 1, x = 0은 손해가 아니므로 그런 값이 답에 섞여 나올 수 있습니다. 그래도 해롭지 않으면 그대로 둡니다. 8장의 모형에 그런 변수가 하나 있습니다(「접근 가능」을 나타내는 y).</p>
+  </section>
+
+  <section>
+    <h2>수량 보존: 들어온 만큼 나간다</h2>
+    <p>물건이나 차처럼 「양」이 흘러 다니는 문제에서는 지점마다 다음 모양의 등식을 적습니다.</p>
+    <div class="formula">(들어오는 양의 합) − (나가는 양의 합) = (그 지점에서 쓰는 양)</div>
+    <p>숫자로 보면 이렇습니다. 어떤 물류 거점에 두 곳에서 3톤과 2톤이 들어오고, 그 거점에서 1톤을 씁니다. 그러면 나가는 양은 4톤이어야 합니다. (3 + 2) − 4 = 1. 들어오고 나가는 양이 아직 정해지지 않은 변수라면, 이 등식이 제약식이 됩니다. 구간별 운송량을 변수 f로 두면</p>
+    <div class="formula">f<sub>A→거점</sub> + f<sub>B→거점</sub> − f<sub>거점→C</sub> = 1</div>
+    <p>변수가 이진이든 정수든 실수든 모양은 같습니다. 이런 식을 읽을 때는 더해지는 항(+)과 빼지는 항(−)을 각각 「들어오는 것」과 「나가는 것」으로 나눠 봅니다. 8장의 제약 ①이 이 모양입니다. 거기서는 흘러 다니는 것이 물건이 아니라 "항구 p에서 실어 항구 q에서 내리는 차의 수"입니다.</p>
+    <div class="aside">
+      <p><strong>big-M이라는 요령.</strong> 앞에서 "x가 1이면 이 제약을 적용한다" 같은 조건문은 그대로 못 적는다고 했습니다. 흔한 우회법은 아주 큰 숫자 M을 쓰는 것입니다. 창고에서 내보내는 양 x(실수)와 창고를 여는 스위치 y(이진)가 있을 때 x ≤ M·y라고 적으면, y = 0일 때는 x ≤ 0이라 못 내보내고 y = 1일 때는 x ≤ M이라 사실상 제한이 없어집니다. 이 요령을 big-M이라고 부릅니다. 편하지만 M이 클수록 솔버가 풀기 어려워진다는 대가가 있습니다(이유는 5장 4부). 뒤에서 "tryAgain의 모형에는 big-M이 하나도 없다"는 말이 칭찬으로 나오는데, 그 배경이 이것입니다.</p>
+    </div>
+    <div class="gref">
+      <p>이 장은 8장을 읽는 데 필요한 것만 골랐습니다. 말과 기호(결정변수, 가능해, Σ, 「모든」)는 교재 2장에, 0과 1로 논리를 적는 요령 전체(big-M, 변수끼리의 곱, 절댓값, 최댓값을 돌려 적는 법)는 교재 11장에 있습니다. 수량 보존(교재에서는 「흐름 보존」)과, 순서를 변수로 적을 때 생기는 어려움(외판원 문제의 부분 순환)은 교재 12장에서 다룹니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>이해 확인</h2>
+    <details>
+      <summary>이진변수 a, b, c가 있습니다. "a를 하면 b와 c 중 적어도 하나는 해야 한다"를 식으로 적어 보세요.</summary>
+      <p>a ≤ b + c. a = 1인데 b = c = 0이면 1 ≤ 0이 되어 위반입니다. a = 0이면 오른쪽이 무엇이든 성립합니다.</p>
+    </details>
+    <details>
+      <summary>x + y ≤ 1의 진리표를 직접 만들어, 금지되는 경우가 무엇인지 말해 보세요.</summary>
+      <p>(x, y) = (0, 0)이면 0 ≤ 1, (0, 1)과 (1, 0)이면 1 ≤ 1로 성립합니다. (1, 1)이면 2 ≤ 1이 되어 위반입니다. 금지되는 것은 "둘 다 한다" 하나뿐입니다.</p>
+    </details>
+    <details>
+      <summary>[손으로 계산] 트럭 예에서 보낼 짐이 33톤으로 늘었습니다. 최적해와 최적값을 구해 보세요.</summary>
+      <p>제약이 9x + 5y ≥ 33으로 바뀝니다. 원래의 답 (3, 1)은 32톤이라 이제 불능입니다. 큰 트럭 대수별로 가장 싼 경우를 보면 x = 4이면 y = 0으로 40, x = 3이면 6톤이 남아 y = 2로 44, x = 2이면 15톤이 남아 y = 3으로 41, x = 1이면 y = 5로 45, x = 0이면 y = 7로 49입니다. 최적해는 (4, 0), 최적값은 40만 원입니다.</p>
+    </details>
+    <details>
+      <summary>[손으로 계산] 배낭 예에서 배낭 용량이 6 kg으로 늘면 답이 어떻게 바뀌나요?</summary>
+      <p>물건 1과 3을 넣을 수 있게 됩니다(무게 4 + 2 = 6, 가치 6 + 4 = 10). 물건 2와 3은 가치 9, 물건 1과 2는 무게가 7이라 불능, 셋 다 넣으면 무게 9로 불능입니다. 최적해는 x<sub>1</sub> = x<sub>3</sub> = 1, 최적값은 10입니다.</p>
+    </details>
+    <details>
+      <summary>배정 예에서 상자가 50개, 트럭이 4대이면 변수와 제약식은 각각 몇 개인가요?</summary>
+      <p>변수 x<sub>ik</sub>는 50 × 4 = 200개입니다. 제약식은 식 (1)이 상자마다 한 줄이라 50개, 식 (2)가 트럭마다 한 줄이라 4개, 합쳐서 54개입니다.</p>
+    </details>
+    <details>
+      <summary>식 x<sub>1</sub> + x<sub>2</sub> ≤ 1 − y에서 y = 0이면 무슨 조건이 남고, y = 1이면 어떻게 되나요?</summary>
+      <p>y = 0이면 x<sub>1</sub> + x<sub>2</sub> ≤ 1, 곧 둘 중 많아야 하나입니다. y = 1이면 x<sub>1</sub> + x<sub>2</sub> ≤ 0이므로 둘 다 0이어야 합니다.</p>
+    </details>
+    <details>
+      <summary>"x와 y가 달라야 한다(x ≠ y)"는 왜 그대로 못 적나요? x와 y가 이진변수라면 어떻게 적을 수 있을까요?</summary>
+      <p>솔버는 1차식을 ≤, ≥, =로 비교한 식만 받기 때문입니다. 이진변수라면 x + y = 1로 적을 수 있습니다. 합이 1이 되려면 하나는 0, 하나는 1이어야 하기 때문입니다.</p>
+    </details>
+  </section>
+
+  <div class="sum">
+    <ul>
+      <li>모형은 결정변수, 제약식, 목적함수 세 가지로 이루어집니다. 찾는 절차는 적지 않습니다.</li>
+      <li>솔버는 1차식으로 된 모형만 받습니다. 변수가 실수면 LP, 정수가 섞이면 MIP입니다.</li>
+      <li>Σ는 for 문으로 더하라는 뜻이고, 「모든 i」는 그 줄을 i마다 하나씩 만들라는 뜻입니다.</li>
+      <li>이진변수에 숫자를 곱해 더하면 「고른 것들의 합」이 됩니다.</li>
+      <li>x ≤ y는 "x이면 y", x<sub>1</sub> + x<sub>2</sub> + … ≤ y는 "많아야 하나, 그리고 그러려면 y", x<sub>1</sub> + x<sub>2</sub> + … ≤ 1 − y는 "많아야 하나, 그리고 y이면 전부 0"입니다. 모두 한 방향만 강제합니다.</li>
+      <li>(들어온 양) − (나간 양) = (쓴 양) 모양의 등식이 수량 보존입니다.</li>
+    </ul>
+  </div>
+
+  <section class="refs">
+    <h2>이 장의 참고자료</h2>
+    <ul>
+      <li><span class="tagc">교재</span>교재 2장(말과 기호), 11장(0과 1로 논리 적기), 12장(흐름 보존과 순서) — 이 장의 내용을 처음부터 더 천천히, 더 넓게 다룹니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span><a href="https://developers.google.com/optimization/introduction/python?hl=ko">Google OR-Tools 「Python용 OR-도구 시작하기」</a>, <a href="https://developers.google.com/optimization/lp?hl=ko">「선형 최적화」</a> — 이 장에서 쓴 무료 솔버의 공식 안내서. 한국어는 기계 번역이라 문장이 어색한 곳이 있습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span><a href="https://unerue.github.io/operations-research/integer-programming/integer-programming.html">강경수, 「정수 계획법」 튜토리얼</a> — 배낭 문제 같은 작은 모형을 Python으로 적어 푸는 한국어 글. 대학 수업 자료라 설명은 짧고 코드 위주입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://github.com/Gurobi/modeling-examples">Gurobi modeling-examples (GitHub)</a> — tryAgain이 쓴 솔버를 만든 회사의 예제 모음. 영어입니다.</li>
+      <li><span class="tagc">교과서</span><span class="tagc">한국어</span>우메타니 슌지, 『제대로 배우는 수학적 최적화』 (한빛미디어, 2021) — 모형을 적는 법부터 푸는 법까지 한 권으로 다루는 번역서. 대학 1~2학년 수준입니다.</li>
+    </ul>
+  </section>
+  <div class="pager"><a href="#ch3">← 이전: 3장 풀이 한눈에 보기</a><a href="#ch5">다음: 5장 솔버가 푸는 법 →</a></div>
+</article>

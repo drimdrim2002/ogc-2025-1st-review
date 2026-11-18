@@ -1,0 +1,62 @@
+/* 이 가이드에서 더한 것: 수식 블록, 참고자료 목록, 그림 글자색 */
+figure svg text { fill: var(--fg); }
+sub, sup { font-size: .72em; line-height: 0; }
+.eq { font-family: var(--font-mono); font-size: 15px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--steel); border-radius: 4px; padding: 10px 14px; overflow-x: auto; line-height: 1.9; }
+.eq .row { display: flex; gap: 18px; justify-content: space-between; align-items: baseline; flex-wrap: wrap; }
+.eq .all { color: var(--muted); font-size: 13.5px; }
+.eq .tag { color: var(--steel); font-size: 12.5px; min-width: 3.2em; }
+.refs ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 76ch; font-size: 15px; }
+.refs a, .note a, p a, td a, li a { color: var(--steel); }
+.tagc { display: inline-block; font-size: 11.5px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; color: var(--muted); margin-right: 4px; white-space: nowrap; line-height: 1.7; }
+.warn { background: var(--crane-soft); border-radius: 4px; padding: 12px 16px; max-width: 68ch; }
+.warn p + p { margin-top: 6px; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.stage h3 { margin: 0; font-size: 17px; }
+.stage .meta { font-family: var(--font-mono); font-size: 12.5px; color: var(--steel); }
+.f-fg { fill: var(--fg); }
+.f-mut { fill: var(--muted); opacity: .5; }
+.f-ok { fill: var(--hull-soft); stroke: var(--ok); }
+p, li, td, th, figcaption, summary, h1, h2, h3 { word-break: keep-all; overflow-wrap: break-word; }
+/* 교재에서 더한 것: 정의·정리 상자, 연습문제, 가이드 참조 */
+.defn, .thm { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--hull); border-radius: 4px; padding: 10px 14px; max-width: 72ch; }
+.thm { border-left-color: var(--crane); }
+.defn > b:first-child, .thm > b:first-child { color: var(--muted); font-size: 13px; letter-spacing: .02em; margin-right: 6px; }
+.defn p + p, .thm p + p { margin-top: 6px; }
+.proof { border-left: 2px dotted var(--line); padding-left: 12px; max-width: 70ch; color: var(--fg); }
+.proof::before { content: "증명. "; font-weight: 500; color: var(--muted); }
+.proof p + p { margin-top: 6px; }
+.gref { background: var(--hull-soft); border-radius: 4px; padding: 10px 14px; max-width: 72ch; }
+.gref p + p { margin-top: 6px; }
+.gref::before { content: "가이드와 연결"; display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .04em; margin-bottom: 4px; }
+ol.ex { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; max-width: 72ch; }
+.ans { margin-top: 4px; }
+.ans ol, .ans ul { margin: 4px 0 0; padding-left: 20px; }
+table.tab td, table.tab th { text-align: right; font-family: var(--font-mono); font-size: 13.5px; }
+table.tab td:first-child, table.tab th:first-child { text-align: left; }
+table.tab tr.piv td { background: var(--crane-soft); }
+/* 고3용 교재에서 더한 것: 고교 연결, 왜 그런가, 참고, 요약 상자, 줄 번호 붙은 Python 코드 */
+.recall, .why, .aside, .sum { border-radius: 4px; padding: 10px 14px; max-width: 72ch; }
+.recall { background: var(--steel-soft); }
+.why { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--steel); }
+.aside { background: transparent; border: 1px dashed var(--muted); font-size: 14.5px; }
+.sum { background: var(--crane-soft); }
+.recall::before, .why::before, .aside::before, .sum::before, .warn::before { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .04em; margin-bottom: 4px; }
+.recall::before { content: "고등학교에서 배운 것"; }
+.why::before { content: "왜 그런가"; }
+.aside::before { content: "참고 · 건너뛰어도 됩니다"; }
+.sum::before { content: "이 장에서 가져갈 것"; }
+.warn::before { content: "자주 하는 실수"; }
+.recall p + p, .why p + p, .aside p + p, .sum p + p { margin-top: 6px; }
+.recall ul, .why ul, .aside ul, .sum ul, .defn ul, .thm ul, .gref ul, .warn ul,
+.recall ol, .why ol, .aside ol, .sum ol, .defn ol, .thm ol, .gref ol, .warn ol { margin: 4px 0 0; padding-left: 20px; }
+.defn > b:first-child::after, .thm > b:first-child::after { content: ""; }
+pre.py { counter-reset: ln; }
+pre.py .ln { display: block; min-height: 1lh; }
+pre.py .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 1.8em; margin-right: 1.2em; text-align: right; color: var(--muted); user-select: none; }
+pre.out { background: transparent; border-style: dashed; }
+pre.out::before { content: "실행 결과"; display: block; font-family: var(--font-body); font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+ul.code { margin: 0; padding-left: 22px; max-width: 72ch; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+ul.code b { font-family: var(--font-mono); font-weight: 500; color: var(--steel); margin-right: 4px; }
+.star { font-size: 12px; border: 1px solid var(--crane); color: var(--crane); border-radius: 999px; padding: 0 7px; margin-left: 6px; white-space: nowrap; vertical-align: middle; font-weight: 500; }
+table.tt td, table.tt th { text-align: center; font-family: var(--font-mono); font-size: 13.5px; }

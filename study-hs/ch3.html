@@ -1,0 +1,416 @@
+<article class="chapter" id="ch3">
+  <header>
+    <div class="kicker">3 / 16</div>
+    <h1>벡터와 행렬 첫걸음</h1>
+  </header>
+
+  <section>
+    <p class="lead">자동차 운반선 문제의 모형에는 변수가 수만 개, 제약이 수만 줄 있습니다. 이것을 한 줄씩 적어서는 이야기를 할 수 없습니다. 이 장에서는 수 여러 개를 한 덩어리로 다루는 <strong>벡터</strong>와 <strong>행렬</strong>을 배워서, 제약 수만 줄을 "Ax ≤ b" 한 줄로 적는 법을 익힙니다. 그리고 연립방정식을 표로 푸는 법과, 그 해가 언제 정수가 되는지를 봅니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 2장(결정변수, 제약, 첨자, Σ), 중학교의 연립방정식(가감법), 직선의 방정식. 고등학교 「기하」 과목의 벡터는 몰라도 됩니다.</li>
+      <li><strong>이 장을 읽고 나면.</strong> 내적과 행렬 × 벡터를 손과 Python으로 계산할 수 있고, 연립방정식을 소거법과 크라메르 공식으로 풀 수 있으며, "행렬식이 ±1이면 해가 정수"라는 말을 설명할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 벡터: 수를 묶어 다루기</div>
+
+  <section>
+    <h2>수 여러 개를 한 덩어리로: 벡터</h2>
+    <p>트럭 예의 최적해를 "(3, 1)"이라고 적었습니다. 큰 트럭 3대와 작은 트럭 1대라는 두 수를 괄호로 묶은 것입니다. 좌표평면의 점 (3, 1)을 적는 것과 똑같습니다. 이렇게 수를 순서대로 묶은 것을 벡터라고 합니다.</p>
+    <div class="defn"><b>정의</b> 수 n개를 순서대로 묶은 x = (x<sub>1</sub>, x<sub>2</sub>, …, x<sub>n</sub>)을 <strong>벡터(vector)</strong>라고 합니다. 묶인 수 하나하나를 <strong>성분</strong>이라고 합니다. x<sub>j</sub>는 j번째 성분입니다.</div>
+    <p>변수가 둘이면 벡터는 평면의 점이고, 셋이면 공간의 점입니다. 변수가 수만 개면 그림은 못 그리지만, "수 수만 개의 묶음"이라는 점은 같습니다. 최적화에서는 변수 값 한 벌, 곧 해 하나가 벡터 하나입니다.</p>
+    <p>벡터끼리의 계산은 모두 <em>같은 자리끼리</em> 합니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>계산</th><th>규칙</th><th>예</th></tr></thead>
+      <tbody>
+        <tr><td>덧셈</td><td>같은 자리끼리 더한다</td><td>(3, 1) + (2, 2) = (5, 3)</td></tr>
+        <tr><td>실수배</td><td>모든 성분에 같은 수를 곱한다</td><td>2 × (3, 1) = (6, 2)</td></tr>
+        <tr><td>부등식</td><td>모든 자리에서 성립해야 한다</td><td>(3, 1) ≥ (0, 0)은 참. (3, −1) ≥ (0, 0)은 거짓</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>월요일에 큰 트럭 3대와 작은 트럭 1대를, 화요일에 2대와 2대를 불렀다면 이틀 동안 부른 트럭은 (3, 1) + (2, 2) = (5, 3)입니다. 덧셈 규칙은 이런 당연한 계산을 적은 것일 뿐입니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 290" role="img" aria-label="좌표평면 위에 벡터 (3,1)과 (2,2)가 원점에서 나가는 화살표로 그려져 있고, (3,1)의 끝에서 (2,2)를 이어 붙이면 합 (5,3)에 닿는다">
+      <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+      <g class="s-muted" stroke-width=".6" opacity=".45"><line x1="150" y1="250" x2="150" y2="34"/><line x1="210" y1="250" x2="210" y2="34"/><line x1="270" y1="250" x2="270" y2="34"/><line x1="330" y1="250" x2="330" y2="34"/><line x1="390" y1="250" x2="390" y2="34"/><line x1="450" y1="250" x2="450" y2="34"/><line x1="90" y1="190" x2="474" y2="190"/><line x1="90" y1="130" x2="474" y2="130"/><line x1="90" y1="70" x2="474" y2="70"/></g>
+      <g class="s-line" stroke-width="1.2"><line x1="90" y1="250" x2="480" y2="250"/><line x1="90" y1="250" x2="90" y2="25"/></g>
+      <g font-size="12" text-anchor="middle" class="t-muted"><text x="90" y="268">0</text><text x="150" y="268">1</text><text x="210" y="268">2</text><text x="270" y="268">3</text><text x="330" y="268">4</text><text x="390" y="268">5</text><text x="450" y="268">6</text><text x="76" y="194">1</text><text x="76" y="134">2</text><text x="76" y="74">3</text></g>
+      <g class="s-steel" stroke-width="2"><line x1="90" y1="250" x2="266" y2="191.3" marker-end="url(#ar3)"/></g>
+      <g class="s-ok" stroke-width="2"><line x1="90" y1="250" x2="207" y2="133" marker-end="url(#ar3)"/></g>
+      <g class="s-ok" stroke-width="1.6" stroke-dasharray="6 4"><line x1="270" y1="190" x2="387" y2="73" marker-end="url(#ar3)"/></g>
+      <g class="s-crane" stroke-width="2"><line x1="90" y1="250" x2="385" y2="73" marker-end="url(#ar3)"/></g>
+      <g class="f-fg"><circle cx="270" cy="190" r="3.5"/><circle cx="210" cy="130" r="3.5"/></g><g class="f-crane"><circle cx="390" cy="70" r="4.5"/></g>
+      <g font-size="12.5"><text x="278" y="206" class="t-steel">(3, 1)</text><text x="166" y="124" class="t-ok">(2, 2)</text><text x="400" y="72" class="t-crane" font-weight="500">(3, 1) + (2, 2) = (5, 3)</text><text x="344" y="142" class="t-ok" font-size="11.5">(2, 2)를 이어 붙임</text></g>
+      <g font-size="12.5"><text x="486" y="254">첫째 성분</text><text x="80" y="17">둘째 성분</text></g>
+      </svg>
+      </div>
+      <figcaption>벡터 (3, 1)과 (2, 2), 그리고 둘의 합 (5, 3). 벡터는 좌표평면의 점으로 보아도 되고, 원점에서 그 점까지의 화살표로 보아도 됩니다. 합은 한 화살표 끝에 다른 화살표를 이어 붙인 곳입니다.</figcaption>
+    </figure>
+    <p>부등식 규칙은 앞으로 계속 씁니다. "x ≥ 0"이라고 쓰면 0은 모든 성분이 0인 벡터이고, 뜻은 "x의 모든 성분이 0 이상"입니다. 트럭 예의 "x ≥ 0, y ≥ 0" 두 줄을 한 줄로 줄인 것입니다.</p>
+    <div class="aside"><p>고등학교 「기하」에서 배우는 평면벡터가 바로 성분이 둘인 벡터입니다. 그 과목을 듣지 않았어도 이 책을 읽는 데는 지장이 없습니다. 이 책은 벡터를 화살표가 아니라 "수의 묶음"으로만 씁니다.</p></div>
+  </section>
+
+  <section>
+    <h2>내적: 자리마다 곱해서 모두 더하기</h2>
+    <p>마트에서 장을 봅니다. 우유는 1,500원, 라면은 800원, 달걀은 2,000원입니다. 우유 2개, 라면 3개, 달걀 1판을 사면 얼마일까요?</p>
+    <div class="formula">1500 × 2 + 800 × 3 + 2000 × 1 = 3000 + 2400 + 2000 = 7400(원)</div>
+    <p>값의 묶음 (1500, 800, 2000)과 개수의 묶음 (2, 3, 1)을 같은 자리끼리 곱해서 모두 더했습니다. 이 계산에 이름을 붙입니다.</p>
+    <div class="defn"><b>정의</b> 성분의 개수가 같은 두 벡터 a = (a<sub>1</sub>, …, a<sub>n</sub>)과 x = (x<sub>1</sub>, …, x<sub>n</sub>)의 <strong>내적(inner product)</strong>은 같은 자리끼리 곱해서 모두 더한 수입니다. a·x로 적습니다.
+      <div class="formula">a·x = a<sub>1</sub>x<sub>1</sub> + a<sub>2</sub>x<sub>2</sub> + … + a<sub>n</sub>x<sub>n</sub> = Σ<sub>j</sub> a<sub>j</sub>x<sub>j</sub></div>
+    내적의 결과는 벡터가 아니라 수 하나입니다.</div>
+    <p>내적이 중요한 이유는 <strong>1차식이 모두 내적</strong>이기 때문입니다. 트럭 예를 다시 봅니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>식</th><th>내적으로 쓰면</th><th>(x, y) = (3, 1)일 때</th></tr></thead>
+      <tbody>
+        <tr><td>값 10x + 7y</td><td>(10, 7)·(x, y)</td><td>10·3 + 7·1 = 37</td></tr>
+        <tr><td>싣는 양 9x + 5y</td><td>(9, 5)·(x, y)</td><td>9·3 + 5·1 = 32</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>목적함수는 "값의 벡터와 변수 벡터의 내적"이고, 제약의 왼쪽은 "싣는 양의 벡터와 변수 벡터의 내적"입니다. 변수 앞에 곱해진 수들을 <strong>계수</strong>라고 부르므로, (10, 7)은 목적함수의 계수 벡터, (9, 5)는 제약의 계수 벡터입니다. 2장에서 최적화 문제의 식은 모두 1차식이어야 한다고 했으니, 이 책에 나오는 목적함수와 제약은 전부 내적으로 적을 수 있습니다.</p>
+  </section>
+
+  <div class="part">2부 · 행렬: 제약 여러 줄을 한 줄로</div>
+
+  <section>
+    <h2>행렬: 수를 표로 늘어놓기</h2>
+    <p>제약이 한 줄이면 계수 벡터 하나로 충분합니다. 제약이 여러 줄이면 계수 벡터가 여러 개 있고, 이것을 위아래로 쌓으면 표가 됩니다. 공방 예의 제약 두 줄을 봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24</span><span class="all">목재: 계수 벡터 (6, 4)</span></div>
+      <div class="row"><span>&nbsp;x<sub>1</sub> + 2x<sub>2</sub> ≤ 6</span><span class="all">작업 시간: 계수 벡터 (1, 2)</span></div>
+    </div>
+    <p>계수만 뽑아 표로 적고, 오른쪽의 수도 묶습니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>A</th><th>x<sub>1</sub>(책상)의 열</th><th>x<sub>2</sub>(의자)의 열</th><th>b</th></tr></thead>
+      <tbody>
+        <tr><td>1행 (목재)</td><td>6</td><td>4</td><td>24</td></tr>
+        <tr><td>2행 (작업 시간)</td><td>1</td><td>2</td><td>6</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="defn"><b>정의</b> 수를 가로줄과 세로줄로 늘어놓은 표를 <strong>행렬(matrix)</strong>이라고 합니다. 가로줄을 <strong>행</strong>, 세로줄을 <strong>열</strong>이라고 합니다. 행이 m개, 열이 n개인 행렬을 m × n 행렬이라고 하고, i행 j열의 수를 a<sub>ij</sub>로 적습니다.</div>
+    <p>공방 예의 A는 2 × 2 행렬이고 a<sub>11</sub> = 6, a<sub>12</sub> = 4, a<sub>21</sub> = 1, a<sub>22</sub> = 2입니다. 글 속에서는 행을 차례로 적어 A = [[6, 4], [1, 2]]라고 쓰겠습니다. Python의 이중 리스트와 같은 모양입니다. 제약이 행 하나, 변수가 열 하나라는 점을 기억하세요. 제약이 m줄, 변수가 n개인 문제의 A는 m × n 행렬입니다.</p>
+  </section>
+
+  <section>
+    <h2>행렬 × 벡터: 줄마다 내적</h2>
+    <p>행렬 A와 벡터 x의 곱 Ax는 "A의 행마다 x와 내적을 해서, 그 결과를 차례로 묶은 벡터"입니다. 책상 2개와 의자 1개, 곧 x = (2, 1)을 넣어 봅니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 200" role="img" aria-label="행렬 6 4, 1 2와 벡터 2, 1의 곱. 1행과 벡터의 내적 6 곱하기 2 더하기 4 곱하기 1은 16, 2행과 벡터의 내적 1 곱하기 2 더하기 2 곱하기 1은 4">
+      <rect x="62" y="44" width="96" height="40" rx="5" class="f-steel" opacity=".7"/><rect x="62" y="104" width="96" height="40" rx="5" class="f-hull" opacity=".7"/>
+      <rect x="204" y="44" width="42" height="100" rx="5" class="f-crane" opacity=".55"/>
+      <g class="s-line" stroke-width="1.5"><path d="M61,38 L54,38 L54,150 L61,150"/><path d="M159,38 L166,38 L166,150 L159,150"/><path d="M205,38 L198,38 L198,150 L205,150"/><path d="M245,38 L252,38 L252,150 L245,150"/><path d="M603,38 L596,38 L596,150 L603,150"/><path d="M655,38 L662,38 L662,150 L655,150"/></g>
+      <g font-size="17" text-anchor="middle" font-family="var(--font-mono)"><text x="86" y="70">6</text><text x="134" y="70">4</text><text x="86" y="130">1</text><text x="134" y="130">2</text><text x="225" y="70">2</text><text x="225" y="130">1</text><text x="629" y="70">16</text><text x="629" y="130">4</text></g>
+      <g font-size="16" text-anchor="middle"><text x="182" y="100">×</text><text x="278" y="100">=</text><text x="576" y="100">=</text></g>
+      <g font-size="15" font-family="var(--font-mono)"><text x="306" y="70">6 × 2 + 4 × 1</text><text x="306" y="130">1 × 2 + 2 × 1</text></g>
+      <g class="s-line" stroke-width="1.5"><path d="M303,38 L296,38 L296,150 L303,150"/><path d="M549,38 L556,38 L556,150 L549,150"/></g>
+      <g font-size="12" class="t-muted"><text x="470" y="70">1행 · x</text><text x="470" y="130">2행 · x</text></g>
+      <g font-size="12.5" text-anchor="middle"><text x="110" y="24">A</text><text x="225" y="24">x</text><text x="629" y="24">Ax</text><text x="110" y="176" class="t-muted">행 = 제약 한 줄</text><text x="225" y="176" class="t-muted">변수 값</text><text x="629" y="176" class="t-muted">쓰는 목재, 쓰는 시간</text></g>
+      </svg>
+      </div>
+      <figcaption>행렬 × 벡터는 행마다 내적입니다. 1행 (6, 4)와 (2, 1)의 내적이 결과의 첫 성분 16(쓰는 목재), 2행 (1, 2)와 (2, 1)의 내적이 둘째 성분 4(쓰는 시간)입니다.</figcaption>
+    </figure>
+    <div class="defn"><b>정의</b> m × n 행렬 A와 성분이 n개인 벡터 x의 곱 <strong>Ax</strong>는 성분이 m개인 벡터입니다. i번째 성분은 A의 i행과 x의 내적, 곧 a<sub>i1</sub>x<sub>1</sub> + a<sub>i2</sub>x<sub>2</sub> + … + a<sub>in</sub>x<sub>n</sub>입니다.</div>
+    <p>이제 공방 예의 제약 두 줄을 한 줄로 적을 수 있습니다. b = (24, 6)이라 하면</p>
+    <div class="formula">Ax ≤ b</div>
+    <p>입니다. 벡터의 부등식은 모든 자리에서 성립해야 하므로, 이 한 줄은 "첫 성분끼리 ≤, 둘째 성분끼리 ≤", 곧 원래의 두 줄과 같은 말입니다. x = (2, 1)이면 Ax = (16, 4) ≤ (24, 6)이라 가능해이고, x = (4, 1)이면 Ax = (28, 6)인데 28 ≤ 24가 거짓이라 가능해가 아닙니다.</p>
+    <p>Python으로는 내적 함수를 만들고, 그것을 행마다 부르면 됩니다.</p>
+<pre class="py">
+def dot(a, x):
+    total = 0
+    for j in range(len(a)):
+        total = total + a[j] * x[j]
+    return total
+
+def matvec(A, x):
+    result = []
+    for row in A:
+        result.append(dot(row, x))
+    return result
+
+A = [[6, 4], [1, 2]]
+print(dot([10, 7], [3, 1]))
+print(matvec(A, [2, 1]))
+print(matvec(A, [4, 1]))
+</pre>
+<pre class="out">
+37
+[16, 4]
+[28, 6]
+</pre>
+    <ul class="code">
+      <li><b>1~5행</b> 내적 함수입니다. j를 0부터 끝까지 움직이며 같은 자리의 수를 곱해 더합니다. 정의의 Σ<sub>j</sub> a<sub>j</sub>x<sub>j</sub>를 그대로 옮긴 것입니다.</li>
+      <li><b>7~11행</b> 행렬 × 벡터 함수입니다. A의 행을 하나씩 꺼내(<code>row</code>) x와 내적하고, 결과를 리스트 끝에 붙입니다(<code>append</code>).</li>
+      <li><b>13행</b> 공방 예의 A를 이중 리스트로 적었습니다. <code>A[0]</code>이 1행 [6, 4], <code>A[1]</code>이 2행 [1, 2]입니다.</li>
+      <li><b>14행</b> 트럭 예의 값 (10, 7)·(3, 1) = 37.</li>
+      <li><b>15~16행</b> 책상 2개·의자 1개는 목재 16, 시간 4를 씁니다. 책상 4개·의자 1개는 목재 28을 써서 한계 24를 넘습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>열로 읽기: 변수 하나가 쓰는 자원</h2>
+    <p>행렬의 행은 제약 한 줄이었습니다. 열에도 뜻이 있습니다. A = [[6, 4], [1, 2]]의 첫 열 (6, 1)은 "책상 하나가 목재 6과 시간 1을 쓴다"이고, 둘째 열 (4, 2)는 "의자 하나가 목재 4와 시간 2를 쓴다"입니다. 열 하나가 변수 하나의 명세서인 셈입니다.</p>
+    <p>이 눈으로 보면 Ax는 "열들을 x의 성분만큼씩 섞은 것"입니다.</p>
+    <div class="formula">Ax = x<sub>1</sub> × (6, 1) + x<sub>2</sub> × (4, 2)</div>
+    <p>x = (2, 1)이면 2 × (6, 1) + 1 × (4, 2) = (12, 2) + (4, 2) = (16, 4)로, 행마다 내적한 결과와 같습니다. 책상 2개가 쓰는 자원과 의자 1개가 쓰는 자원을 더한 것이니 당연합니다. 같은 계산을 행으로 읽으면 "자원마다 얼마나 쓰는가", 열로 읽으면 "물건마다 얼마나 쓰는가"입니다. 7장에서 꼭짓점을 계산할 때, 그리고 15장의 「열 생성」에서 이 열의 눈이 다시 쓰입니다.</p>
+  </section>
+
+  <section>
+    <h2>수만 줄도 한 줄로</h2>
+    <p>지금까지의 표기를 모으면, 변수가 실수인 최적화 문제(LP)는 모두 다음 모양으로 적힙니다. c는 목적함수의 계수 벡터입니다.</p>
+    <div class="eq">
+      <div class="row"><span>최대화(또는 최소화)&nbsp; c·x</span><span class="all">목적함수</span></div>
+      <div class="row"><span>제약&nbsp; Ax ≤ b</span><span class="all">제약 m줄을 한꺼번에</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x ≥ 0</span><span class="all">변수 n개가 모두 0 이상</span></div>
+    </div>
+    <p>공방 예는 c = (5, 4), A = [[6, 4], [1, 2]], b = (24, 6)입니다. 제약이 두 줄이든 2만 줄이든 모양은 같습니다. 달라지는 것은 A의 크기뿐입니다. 이론을 말할 때는 이 한 가지 모양만 상대하면 되고, 솔버에 문제를 넘길 때도 결국 c, A, b라는 수의 묶음을 넘기는 것입니다. (≥나 = 제약이 섞여 있어도 됩니다. 그때는 줄마다 부등호가 다른 표가 되고, 7장에서 이것을 한 가지 모양으로 정리합니다.)</p>
+  </section>
+
+  <div class="part">3부 · 연립방정식</div>
+
+  <section>
+    <h2>연립방정식과 소거법</h2>
+    <p>부등호를 등호로 바꾼 Ax = b는 연립방정식입니다. 공방 예에서 목재와 시간을 <em>둘 다 남김없이</em> 쓰는 생산량을 찾아봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>6x<sub>1</sub> + 4x<sub>2</sub> = 24</span><span class="tag">(가)</span></div>
+      <div class="row"><span>&nbsp;x<sub>1</sub> + 2x<sub>2</sub> = 6</span><span class="tag">(나)</span></div>
+    </div>
+    <div class="recall"><p>중학교에서 배운 가감법은 한 식에 적당한 수를 곱해 다른 식과 더하거나 빼서 미지수 하나를 없애는 방법이었습니다.</p></div>
+    <p>(가)에서 (나)의 6배를 빼면 x<sub>1</sub>이 사라집니다. 6x<sub>1</sub> + 4x<sub>2</sub> − 6x<sub>1</sub> − 12x<sub>2</sub> = 24 − 36, 곧 −8x<sub>2</sub> = −12이므로 x<sub>2</sub> = 3/2입니다. (나)에 넣으면 x<sub>1</sub> = 6 − 2 × 3/2 = 3입니다. 답은 (3, 3/2)이고, 2장에서 미리 말해 둔 공방 예의 최적해가 바로 이 점입니다. 왜 "둘 다 남김없이 쓰는 점"이 최적인지는 6장에서 그림으로 봅니다.</p>
+    <p>이렇게 "한 식의 몇 배를 다른 식에서 빼서 미지수를 하나씩 없애는" 방법을 <strong>소거법</strong>이라고 합니다. 가우스 소거라고도 부릅니다. 가감법과 같은 방법이지만, 미지수가 많아도 기계적으로 할 수 있게 순서를 정해 둔 것입니다.</p>
+    <ol class="plain">
+      <li>첫 식을 써서 나머지 식들에서 첫 미지수를 없앱니다.</li>
+      <li>남은 식들(미지수가 하나 줄었습니다)에서 같은 일을 되풀이합니다.</li>
+      <li>미지수가 하나만 남으면 값을 구하고, 거꾸로 올라가며 나머지를 구합니다.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>미지수가 셋일 때 끝까지 해 보기</h2>
+    <p>미지수가 셋인 예를 표로 따라갑니다. 계수와 오른쪽 수만 적으면 계산이 깔끔합니다.</p>
+    <div class="eq">
+      <div class="row"><span>&nbsp;x + y + z = 6</span><span class="tag">①</span></div>
+      <div class="row"><span>2x + y − z = 1</span><span class="tag">②</span></div>
+      <div class="row"><span>&nbsp;x − y + 2z = 5</span><span class="tag">③</span></div>
+    </div>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>단계</th><th>식</th><th>x</th><th>y</th><th>z</th><th>오른쪽</th><th>한 일</th></tr></thead>
+      <tbody>
+        <tr><td>처음</td><td>①</td><td>1</td><td>1</td><td>1</td><td>6</td><td></td></tr>
+        <tr><td></td><td>②</td><td>2</td><td>1</td><td>−1</td><td>1</td><td></td></tr>
+        <tr><td></td><td>③</td><td>1</td><td>−1</td><td>2</td><td>5</td><td></td></tr>
+        <tr><td>x 없애기</td><td>①</td><td>1</td><td>1</td><td>1</td><td>6</td><td>그대로</td></tr>
+        <tr><td></td><td>②′</td><td>0</td><td>−1</td><td>−3</td><td>−11</td><td>② − 2 × ①</td></tr>
+        <tr><td></td><td>③′</td><td>0</td><td>−2</td><td>1</td><td>−1</td><td>③ − ①</td></tr>
+        <tr><td>y 없애기</td><td>①</td><td>1</td><td>1</td><td>1</td><td>6</td><td>그대로</td></tr>
+        <tr><td></td><td>②′</td><td>0</td><td>−1</td><td>−3</td><td>−11</td><td>그대로</td></tr>
+        <tr class="piv"><td></td><td>③″</td><td>0</td><td>0</td><td>7</td><td>21</td><td>③′ − 2 × ②′</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>마지막 줄은 7z = 21, 곧 z = 3입니다. 거꾸로 올라갑니다. ②′에서 −y − 3 × 3 = −11이므로 y = 2. ①에서 x + 2 + 3 = 6이므로 x = 1. 답은 (1, 2, 3)입니다. 원래 식에 넣어 확인하면 1 + 2 + 3 = 6, 2 + 2 − 3 = 1, 1 − 2 + 6 = 5로 모두 맞습니다.</p>
+    <p>표에서 한 일은 "한 행의 몇 배를 다른 행에서 뺀다" 한 가지뿐입니다. 이 조작은 해를 바꾸지 않습니다. 두 식이 모두 성립하면 한 식에서 다른 식의 몇 배를 뺀 식도 성립하고, 거꾸로 되돌릴 수도 있기 때문입니다. 8장에서 배울 심플렉스법의 한 걸음(피벗)이 바로 이 표 계산입니다.</p>
+  </section>
+
+  <section>
+    <h2>해가 하나, 없음, 무수히 많음</h2>
+    <p>연립방정식의 해가 언제나 하나인 것은 아닙니다. 미지수가 둘이면 식 하나가 직선 하나이므로, 두 직선이 어떻게 놓였는지로 갈립니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 250" role="img" aria-label="세 개의 작은 좌표평면. 첫째는 두 직선이 점 (3, 1.5)에서 만나고, 둘째는 두 직선이 평행하며, 셋째는 두 직선이 겹쳐 있다">
+      <g class="s-line" stroke-width="1.1"><line x1="30" y1="200" x2="219" y2="200"/><line x1="30" y1="200" x2="30" y2="41"/></g><g class="s-steel" stroke-width="1.8"><line x1="150" y1="200" x2="50" y2="50"/></g><g class="s-crane" stroke-width="1.8"><line x1="210" y1="200" x2="30" y2="110"/></g><g class="f-fg"><circle cx="120" cy="155" r="4"/></g><text x="128" y="149" font-size="12">(3, 3/2)</text><g font-size="11" text-anchor="middle" class="t-muted"><text x="90" y="215">2</text><text x="150" y="215">4</text><text x="210" y="215">6</text><text x="20" y="144">2</text><text x="20" y="84">4</text></g><text x="120" y="24" font-size="13" text-anchor="middle" font-weight="500">해가 하나</text><text x="120" y="240" font-size="12" text-anchor="middle" class="t-crane">x₁ + 2x₂ = 6</text>
+      <g class="s-line" stroke-width="1.1"><line x1="270" y1="200" x2="459" y2="200"/><line x1="270" y1="200" x2="270" y2="41"/></g><g class="s-steel" stroke-width="1.8"><line x1="390" y1="200" x2="290" y2="50"/></g><g class="s-crane" stroke-width="1.8"><line x1="370" y1="200" x2="270" y2="50"/></g><g font-size="11" text-anchor="middle" class="t-muted"><text x="330" y="215">2</text><text x="390" y="215">4</text><text x="450" y="215">6</text><text x="260" y="144">2</text><text x="260" y="84">4</text></g><text x="360" y="24" font-size="13" text-anchor="middle" font-weight="500">해가 없음</text><text x="360" y="240" font-size="12" text-anchor="middle" class="t-crane">3x₁ + 2x₂ = 10</text>
+      <g class="s-line" stroke-width="1.1"><line x1="510" y1="200" x2="699" y2="200"/><line x1="510" y1="200" x2="510" y2="41"/></g><g class="s-steel" stroke-width="1.8"><line x1="630" y1="200" x2="530" y2="50"/></g><g class="s-crane" stroke-width="1.8" stroke-dasharray="7 6"><line x1="630" y1="200" x2="530" y2="50"/></g><g font-size="11" text-anchor="middle" class="t-muted"><text x="570" y="215">2</text><text x="630" y="215">4</text><text x="690" y="215">6</text><text x="500" y="144">2</text><text x="500" y="84">4</text></g><text x="600" y="24" font-size="13" text-anchor="middle" font-weight="500">해가 무수히 많음</text><text x="600" y="240" font-size="12" text-anchor="middle" class="t-crane">3x₁ + 2x₂ = 12</text>
+      <g class="s-muted" stroke-width=".8"><line x1="240" y1="14" x2="240" y2="236"/><line x1="480" y1="14" x2="480" y2="236"/></g>
+      </svg>
+      </div>
+      <figcaption>두 직선의 세 가지 위치 관계. 왼쪽: 한 점에서 만나면 해가 하나. 가운데: 평행하면 해가 없음. 오른쪽: 두 식이 같은 직선이면 그 직선 위의 모든 점이 해.</figcaption>
+    </figure>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>둘째 식</th><th>첫 식 6x<sub>1</sub> + 4x<sub>2</sub> = 24와의 관계</th><th>해</th></tr></thead>
+      <tbody>
+        <tr><td>x<sub>1</sub> + 2x<sub>2</sub> = 6</td><td>기울기가 다르다. 한 점에서 만난다</td><td>하나: (3, 3/2)</td></tr>
+        <tr><td>3x<sub>1</sub> + 2x<sub>2</sub> = 10</td><td>왼쪽이 첫 식의 절반인데 오른쪽은 절반(12)이 아니다. 평행</td><td>없음</td></tr>
+        <tr><td>3x<sub>1</sub> + 2x<sub>2</sub> = 12</td><td>첫 식 전체의 절반. 같은 직선</td><td>무수히 많음</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>둘째와 셋째 경우의 공통점은 두 식의 <em>왼쪽</em>이 서로의 몇 배라는 것입니다. 식이 두 줄 있어도 정보는 사실상 한 줄뿐이거나(셋째), 서로 모순입니다(둘째). 다음 절에서 이것을 수 하나로 판정하는 법을 봅니다.</p>
+  </section>
+
+  <section>
+    <h2>2 × 2 행렬식과 크라메르 공식</h2>
+    <p>미지수가 둘인 연립방정식을 문자로 풀어 봅니다. 한 번 풀어 두면 공식이 됩니다.</p>
+    <div class="eq">
+      <div class="row"><span>ax + by = p</span><span class="tag">(가)</span></div>
+      <div class="row"><span>cx + dy = q</span><span class="tag">(나)</span></div>
+    </div>
+    <p>y를 없애려면 (가)에 d를, (나)에 b를 곱해서 뺍니다. adx + bdy − bcx − bdy = pd − bq, 곧 (ad − bc)x = pd − bq입니다. x를 없애려면 (나)에 a를, (가)에 c를 곱해서 뺍니다. (ad − bc)y = aq − pc입니다. 두 식 모두 왼쪽에 같은 수 ad − bc가 나왔습니다. 이 수가 0이 아니면 나눌 수 있습니다.</p>
+    <div class="formula">x = (pd − bq) / (ad − bc),&nbsp;&nbsp; y = (aq − pc) / (ad − bc)</div>
+    <div class="defn"><b>정의</b> 2 × 2 행렬 [[a, b], [c, d]]의 <strong>행렬식(determinant)</strong>은 ad − bc입니다. 왼쪽 위에서 오른쪽 아래로 가는 대각선의 곱에서, 반대쪽 대각선의 곱을 뺀 수입니다. det로 줄여 씁니다.</div>
+    <p>분자도 같은 꼴입니다. pd − bq는 [[p, b], [q, d]]의 행렬식이고, aq − pc는 [[a, p], [c, q]]의 행렬식입니다. 계수 행렬에서 "구하려는 미지수의 열"을 오른쪽 수 (p, q)로 바꿔 끼운 행렬입니다.</p>
+    <div class="thm"><b>핵심 사실 (크라메르 공식)</b> 계수 행렬 [[a, b], [c, d]]의 행렬식이 0이 아니면, 연립방정식 ax + by = p, cx + dy = q의 해는 정확히 하나이고 다음과 같습니다.
+      <div class="formula">x = det[[p, b], [q, d]] / det[[a, b], [c, d]],&nbsp;&nbsp; y = det[[a, p], [c, q]] / det[[a, b], [c, d]]</div>
+    행렬식이 0이면 해가 없거나 무수히 많습니다.</div>
+    <div class="why"><p>앞 절반은 위에서 직접 푼 결과입니다. 뒤 절반은 이렇게 봅니다. ad − bc = 0은 ad = bc, 곧 a : c = b : d라는 뜻입니다. 두 식의 왼쪽이 서로의 몇 배라는 말이고, 앞 절에서 본 "평행하거나 같은 직선"인 경우입니다.</p></div>
+    <p>공방 예로 확인합니다. 계수 행렬은 [[6, 4], [1, 2]], 오른쪽은 (24, 6)입니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>행렬</th><th>내용</th><th>행렬식</th><th>결과</th></tr></thead>
+      <tbody>
+        <tr><td>계수 행렬</td><td>[[6, 4], [1, 2]]</td><td>6·2 − 4·1 = 8</td><td>0이 아니므로 해가 하나</td></tr>
+        <tr><td>1열을 (24, 6)으로</td><td>[[24, 4], [6, 2]]</td><td>24·2 − 4·6 = 24</td><td>x<sub>1</sub> = 24/8 = 3</td></tr>
+        <tr><td>2열을 (24, 6)으로</td><td>[[6, 24], [1, 6]]</td><td>6·6 − 24·1 = 12</td><td>x<sub>2</sub> = 12/8 = 3/2</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>소거법으로 구한 (3, 3/2)와 같습니다. 앞 절의 평행한 예 [[6, 4], [3, 2]]는 행렬식이 6·2 − 4·3 = 0입니다. 이 공식을 함수로 만들어 둡니다. 7장에서 다시 씁니다.</p>
+<pre class="py">
+def det2(a, b, c, d):
+    return a * d - b * c
+
+def solve2(A, b):
+    d = det2(A[0][0], A[0][1], A[1][0], A[1][1])
+    if d == 0:
+        return []
+    x = det2(b[0], A[0][1], b[1], A[1][1]) / d
+    y = det2(A[0][0], b[0], A[1][0], b[1]) / d
+    return [x, y]
+
+print(solve2([[6, 4], [1, 2]], [24, 6]))
+print(solve2([[2, 1], [1, 3]], [7, 11]))
+print(solve2([[6, 4], [3, 2]], [24, 10]))
+</pre>
+<pre class="out">
+[3.0, 1.5]
+[2.0, 3.0]
+[]
+</pre>
+    <ul class="code">
+      <li><b>1~2행</b> 2 × 2 행렬식 ad − bc입니다.</li>
+      <li><b>4~5행</b> 계수 행렬의 행렬식 d를 구합니다. <code>A[0][0]</code>이 a, <code>A[0][1]</code>이 b, <code>A[1][0]</code>이 c, <code>A[1][1]</code>이 d 자리입니다.</li>
+      <li><b>6~7행</b> 행렬식이 0이면 해가 하나로 정해지지 않으므로 빈 리스트를 돌려줍니다.</li>
+      <li><b>8~9행</b> 크라메르 공식입니다. 8행은 1열을, 9행은 2열을 오른쪽 수 b로 바꿔 끼운 행렬식을 d로 나눕니다.</li>
+      <li><b>12~14행</b> 공방 예는 (3, 1.5). 2x + y = 7, x + 3y = 11은 (2, 3). 평행한 두 직선은 빈 리스트.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>정수와 행렬식</h2>
+    <p>크라메르 공식에는 눈여겨볼 점이 하나 있습니다. 계수 a, b, c, d와 오른쪽 수 p, q가 모두 정수라면 분자 pd − bq와 aq − pc도 정수입니다. 정수끼리 곱하고 빼기만 했으니까요. 그러면 해는 언제나</p>
+    <div class="formula">해의 성분 = (어떤 정수) ÷ (계수 행렬의 행렬식)</div>
+    <p>꼴입니다. 분수가 생긴다면 그 분모는 행렬식에서 옵니다. 공방 예의 행렬식은 8이었고, x<sub>2</sub> = 12/8 = 3/2에서 분모 2가 남았습니다.</p>
+    <div class="thm"><b>핵심 사실</b> 계수와 오른쪽 수가 모두 정수인 연립방정식에서, 계수 행렬의 행렬식이 +1이나 −1이면 해는 반드시 정수입니다.</div>
+    <div class="why"><p>해의 성분이 (정수) ÷ (±1)이므로 정수입니다. 오른쪽 수가 무엇이든(정수이기만 하면) 성립한다는 점이 중요합니다.</p></div>
+    <p>예를 들어 [[2, 1], [1, 1]]의 행렬식은 2·1 − 1·1 = 1입니다. 2x + y = 7, x + y = 4의 해는 (3, 1)이고, 오른쪽을 (5, 9)로 바꿔도 해는 (−4, 13)으로 정수입니다. 오른쪽에 어떤 정수를 넣어도 분수는 나오지 않습니다.</p>
+    <div class="warn"><p>거꾸로 "행렬식이 ±1이 아니면 해가 분수"라고 생각하면 틀립니다. 공방 예는 행렬식이 8인데도 x<sub>1</sub> = 24/8 = 3은 정수입니다. 약분되어 분모가 사라질 수 있기 때문입니다. 행렬식이 ±1이 아닐 때는 "오른쪽 수에 따라 분수가 나올 수 있다"까지만 말할 수 있습니다.</p></div>
+    <p>이 사실이 왜 최적화 책에 나올까요? 6장과 7장에서 보겠지만 LP의 최적해는 가능 영역의 꼭짓점에 있고, 꼭짓점은 연립방정식의 해입니다. 그러니 "그 연립방정식의 행렬식이 ±1"이라는 보장이 있으면 LP만 풀어도 정수 답이 나옵니다. 정수 조건 때문에 어려워야 할 문제가 쉬워지는 것입니다. 14장에서 이 생각을 다시 꺼냅니다. 지금은 "분모는 행렬식에서 온다"만 기억하면 됩니다.</p>
+  </section>
+
+  <section>
+    <h2>계수가 0과 1뿐인데 답이 1/2: 삼각형 연립방정식</h2>
+    <p>분수가 나오는 유명한 예를 하나 봐 둡니다. 가, 나, 다 세 친구가 둘씩 짝을 지어 과제를 합니다. 가와 나가 함께 쓰는 시간을 x, 나와 다가 함께 쓰는 시간을 y, 가와 다가 함께 쓰는 시간을 z라고 합시다. 세 사람 모두 과제에 정확히 1시간씩 쓰기로 했습니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 230" role="img" aria-label="가, 나, 다 세 친구를 꼭짓점으로 하는 삼각형. 세 변에 x, y, z가 붙어 있고 값은 모두 2분의 1이다">
+      <g class="s-line" stroke-width="1.6"><line x1="250" y1="40" x2="130" y2="190"/><line x1="130" y1="190" x2="370" y2="190"/><line x1="250" y1="40" x2="370" y2="190"/></g>
+      <g class="f-steel" stroke-width="1.4"><circle cx="250" cy="40" r="17"/><circle cx="130" cy="190" r="17"/><circle cx="370" cy="190" r="17"/></g>
+      <g font-size="14" text-anchor="middle"><text x="250" y="45">가</text><text x="130" y="195">나</text><text x="370" y="195">다</text></g>
+      <g font-size="13.5" text-anchor="middle" class="t-crane" font-weight="500"><text x="160" y="108">x = 1/2</text><text x="250" y="212">y = 1/2</text><text x="344" y="108">z = 1/2</text></g>
+      <g font-size="13"><text x="450" y="78">가: x + z = 1/2 + 1/2 = 1</text><text x="450" y="112">나: x + y = 1/2 + 1/2 = 1</text><text x="450" y="146">다: y + z = 1/2 + 1/2 = 1</text><text x="450" y="184" class="t-muted" font-size="12">0과 1만으로는 세 식을 함께 맞출 수 없다</text></g>
+      </svg>
+      </div>
+      <figcaption>세 친구가 꼭짓점, 짝이 변입니다. 한 사람이 쓰는 시간은 그 꼭짓점에 닿은 두 변의 수를 더한 것입니다. 세 사람 모두 1이 되려면 세 변이 모두 1/2이어야 합니다.</figcaption>
+    </figure>
+    <div class="eq">
+      <div class="row"><span>x + z = 1</span><span class="all">가의 시간</span></div>
+      <div class="row"><span>x + y = 1</span><span class="all">나의 시간</span></div>
+      <div class="row"><span>y + z = 1</span><span class="all">다의 시간</span></div>
+    </div>
+    <p>세 식을 모두 더하면 2x + 2y + 2z = 3, 곧 x + y + z = 3/2입니다. 여기서 첫 식 x + z = 1을 빼면 y = 1/2, 둘째 식을 빼면 z = 1/2, 셋째 식을 빼면 x = 1/2입니다. 해는 (1/2, 1/2, 1/2) 하나뿐입니다.</p>
+    <p>계수는 0과 1뿐이고 오른쪽도 모두 1인데, 해는 정수가 아닙니다. "짝마다 한 시간을 통째로 쓰거나 아예 안 쓰거나"(x, y, z가 0 아니면 1)로 정하려 하면 방법이 없다는 뜻이기도 합니다. 세 식을 더한 2(x + y + z) = 3에서 왼쪽은 짝수, 오른쪽은 홀수가 되기 때문입니다. 이 작은 삼각형이 14장에서 "LP만 풀어서는 정수 답이 안 나오는 경우"의 대표 예로 다시 나옵니다.</p>
+    <div class="aside">
+      <p><strong>3 × 3 행렬식.</strong> 행렬식은 더 큰 정사각 행렬에도 있습니다. 3 × 3이면 첫 행의 수마다 "그 수가 있는 행과 열을 지운 2 × 2 행렬의 행렬식"을 곱하고, 부호를 +, −, +로 번갈아 붙여 더합니다. 삼각형 연립방정식의 계수 행렬 [[1, 0, 1], [1, 1, 0], [0, 1, 1]](열은 x, y, z 순)은 1 × (1·1 − 0·1) − 0 × (1·1 − 0·0) + 1 × (1·1 − 1·0) = 1 + 1 = 2입니다. 크라메르 공식은 미지수가 몇 개든 성립하므로, 해의 분모는 이 2에서 왔습니다.</p>
+      <p><strong>그 밖의 이름들.</strong> 대학의 선형대수 교재에서는 내적 a·x를 a<sup>T</sup>x라고 적습니다(T는 「전치」라는 조작의 기호). 같은 것입니다. 행렬식이 0이 아닌 정사각 행렬 B에는 "곱하면 원래대로 되돌리는" 역행렬 B<sup>−1</sup>이 있고, 연립방정식 Bx = b의 해를 x = B<sup>−1</sup>b로 적습니다. 식들이 "서로의 몇 배나 그 합으로 만들어지지 않는다"는 성질은 일차독립이라고 부릅니다. 이 책에서는 이 이름들을 참고 상자 밖에서 쓰지 않습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드는 1등 팀의 모형을 식 여섯 종류로 적고, 줄 수가 수만 개라고 말합니다. 그 식들을 모두 풀어 써서 계수만 모으면 행렬 A 하나가 되고, 모형 전체는 "Ax와 b를 줄마다 비교한다"는 꼴입니다. 솔버가 실제로 받는 것도 이 수의 묶음입니다.</p></div>
+    <div class="gref"><p>가이드가 1등 팀 모형의 장점으로 "모든 계수가 0, 1, −1"이라고 말하는 대목이 있습니다. 이것은 행렬 A의 성분 이야기입니다. 계수가 단순하다고 해서 답이 저절로 정수가 되지는 않는다는 것은 방금 삼각형 예에서 봤습니다. 그래도 왜 반가운 성질인지는 14장에서 설명합니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>벡터는 수의 묶음이고, 계산은 같은 자리끼리 합니다. x ≥ 0은 "모든 성분이 0 이상".</li>
+        <li>내적 a·x는 같은 자리끼리 곱해 모두 더한 수입니다. 1차식은 모두 내적입니다.</li>
+        <li>행렬 × 벡터는 행마다 내적입니다. 제약 여러 줄은 Ax ≤ b 한 줄로 적습니다. 행은 제약, 열은 변수.</li>
+        <li>연립방정식은 소거법(한 식의 몇 배를 다른 식에서 빼기)으로 풉니다.</li>
+        <li>2 × 2 행렬식은 ad − bc. 0이 아니면 해가 하나이고, 크라메르 공식으로 바로 적을 수 있습니다.</li>
+        <li>계수와 오른쪽이 정수일 때 해의 분모는 행렬식에서 옵니다. 행렬식이 ±1이면 해가 정수입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>a = (2, −1, 3), x = (1, 4, 2)일 때 a·x를 구하세요.</summary>
+      <p>2·1 + (−1)·4 + 3·2 = 2 − 4 + 6 = 4.</p>
+    </details>
+    <details>
+      <summary>트럭 예에서 큰 트럭 2대, 작은 트럭 3대를 부르면 값과 싣는 양이 얼마인지 내적으로 계산하고, 가능해인지 판정하세요.</summary>
+      <p>값은 (10, 7)·(2, 3) = 20 + 21 = 41, 싣는 양은 (9, 5)·(2, 3) = 18 + 15 = 33입니다. 33 ≥ 30이므로 가능해입니다. 2장의 표에서 x = 2일 때의 값 41과 같습니다.</p>
+    </details>
+    <details>
+      <summary>A = [[6, 4], [1, 2]], b = (24, 6)일 때 x = (1, 2)와 x = (3, 2)에 대해 Ax를 구하고 Ax ≤ b가 성립하는지 판정하세요.</summary>
+      <p>x = (1, 2): Ax = (6 + 8, 1 + 4) = (14, 5). 14 ≤ 24이고 5 ≤ 6이므로 성립합니다. x = (3, 2): Ax = (18 + 8, 3 + 4) = (26, 7). 26 ≤ 24도 7 ≤ 6도 거짓이므로 성립하지 않습니다. 벡터의 부등식은 한 자리만 어겨도 거짓입니다.</p>
+    </details>
+    <details>
+      <summary>고객 1, 2를 트럭 A, B 중 하나에 맡깁니다. 변수 벡터를 x = (x<sub>1A</sub>, x<sub>1B</sub>, x<sub>2A</sub>, x<sub>2B</sub>)로 두고, "고객마다 정확히 한 트럭"이라는 제약 두 줄을 Ax = b 꼴로 적으세요. A의 첫 열은 무슨 뜻인가요?</summary>
+      <p>제약은 x<sub>1A</sub> + x<sub>1B</sub> = 1, x<sub>2A</sub> + x<sub>2B</sub> = 1입니다. A = [[1, 1, 0, 0], [0, 0, 1, 1]], b = (1, 1)입니다. 제약이 2줄, 변수가 4개이므로 A는 2 × 4 행렬입니다. 첫 열 (1, 0)은 변수 x<sub>1A</sub>의 열이고, "이 변수는 고객 1의 식에 한 번 들어가고 고객 2의 식에는 들어가지 않는다"는 뜻입니다.</p>
+    </details>
+    <details>
+      <summary>2x + y = 7, x + 3y = 11을 소거법과 크라메르 공식으로 각각 푸세요.</summary>
+      <p>소거법: 첫 식에서 둘째 식의 2배를 빼면 y − 6y = 7 − 22, −5y = −15, y = 3. 둘째 식에 넣어 x = 11 − 9 = 2. 크라메르: 계수 행렬 [[2, 1], [1, 3]]의 행렬식은 6 − 1 = 5. x = det[[7, 1], [11, 3]] / 5 = (21 − 11)/5 = 2. y = det[[2, 7], [1, 11]] / 5 = (22 − 7)/5 = 3. 답은 (2, 3)이고, 넣어 보면 4 + 3 = 7, 2 + 9 = 11입니다.</p>
+    </details>
+    <details>
+      <summary>x + 2y + z = 8, 2x + y − z = 1, x − y + z = 2를 본문처럼 표를 만들어 소거법으로 푸세요.</summary>
+      <p>x 없애기: (둘째) − 2 × (첫째)는 −3y − 3z = −15, (셋째) − (첫째)는 −3y = −6입니다. 뒤의 식에서 바로 y = 2. 앞의 식에 넣으면 −6 − 3z = −15이므로 z = 3. 첫째 식에서 x = 8 − 4 − 3 = 1. 답은 (1, 2, 3). 확인: 1 + 4 + 3 = 8, 2 + 2 − 3 = 1, 1 − 2 + 3 = 2.</p>
+    </details>
+    <details>
+      <summary>계수 행렬이 [[2, 4], [1, 2]]인 연립방정식에서 오른쪽이 (6, 3)일 때와 (6, 4)일 때 해가 각각 어떻게 되나요? 행렬식부터 구하세요.</summary>
+      <p>행렬식은 2·2 − 4·1 = 0이므로 해가 하나로 정해지지 않습니다. 오른쪽이 (6, 3)이면 2x + 4y = 6과 x + 2y = 3은 같은 직선이라 해가 무수히 많습니다(예: (3, 0), (1, 1)). 오른쪽이 (6, 4)이면 2x + 4y = 6, 곧 x + 2y = 3과 x + 2y = 4가 동시에 성립해야 하는데 불가능하므로 해가 없습니다.</p>
+    </details>
+    <details>
+      <summary>다음 계수 행렬 가운데 "오른쪽에 어떤 정수를 넣어도 해가 정수"인 것을 고르세요. (가) [[3, 2], [1, 1]] (나) [[1, 2], [3, 4]] (다) [[5, 3], [2, 1]]. 아닌 것은 분수 해가 나오는 오른쪽 수를 하나 찾으세요.</summary>
+      <p>행렬식은 (가) 3 − 2 = 1, (나) 4 − 6 = −2, (다) 5 − 6 = −1입니다. (가)와 (다)는 ±1이므로 해가 언제나 정수입니다. (나)는 오른쪽이 (1, 0)일 때 x = det[[1, 2], [0, 4]] / (−2) = 4/(−2) = −2, y = det[[1, 1], [3, 0]] / (−2) = −3/(−2) = 3/2로 분수가 나옵니다.</p>
+    </details>
+    <details>
+      <summary>본문의 삼각형 대신 네 친구 가, 나, 다, 라가 가–나, 나–다, 다–라, 라–가로 짝을 짓는다고 합시다(사각형). 네 짝의 시간을 x, y, z, w라 하고 모두 1시간씩 쓴다는 식을 세운 뒤, 해가 정수가 될 수 있는지 보세요.</summary>
+      <p>가: x + w = 1, 나: x + y = 1, 다: y + z = 1, 라: z + w = 1. x = t라 두면 y = 1 − t, z = t, w = 1 − t이고 네 식이 모두 성립합니다. 해는 무수히 많고, 그중 t = 0인 (0, 1, 0, 1)과 t = 1인 (1, 0, 1, 0)은 정수입니다. "가–나와 다–라가 짝" 또는 "나–다와 라–가가 짝"이라는 뜻입니다. 삼각형(홀수 명의 고리)에서는 정수 해가 없었고 사각형(짝수 명의 고리)에서는 있습니다. 고리의 길이가 홀수인가 짝수인가의 이 차이를 5장과 14장에서 다시 만납니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판)</a> — 영어, 대학 수준의 무료 교재입니다. 벡터와 행렬로 LP를 다루는 책이고, 3판 기준 3장 Algebra versus Geometry가 이 책 7장의 내용으로 이어집니다. 이 링크의 PDF는 앞부분(목차)만 들어 있습니다.</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — 영어, 대학 수준. 1장이 LP를 c, A, b로 적는 여러 모양을 정리합니다. 이 책을 다 읽은 뒤에 볼 책입니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 영어, 대학 저학년 수준. 앞쪽 강의(1~3강)가 LP 모형을 세우고 그림으로 보는 내용입니다.</li>
+    </ul>
+    <p class="src">행렬식과 역행렬을 더 알고 싶다면 대학의 「선형대수」 교재 첫 두세 장이 이 장의 다음 단계입니다. 이 책을 읽는 데는 이 장의 내용으로 충분합니다.</p>
+  </section>
+
+  <div class="pager"><a href="#ch2">← 이전: 2장 최적화 문제의 말과 기호</a><a href="#ch4">다음: 4장 그래프와 너비 우선 탐색 →</a></div>
+</article>

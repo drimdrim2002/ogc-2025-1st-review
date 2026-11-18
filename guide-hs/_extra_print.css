@@ -1,0 +1,30 @@
+.eq { font-size: 9pt; padding: 5pt 8pt; line-height: 1.7; break-inside: avoid; overflow: visible !important; }
+.eq .all { font-size: 8pt; }
+.refs ul { max-width: none; font-size: 9pt; gap: 3pt; display: block; }
+.refs li + li { margin-top: 3pt; }
+.refs a, li a, p a, td a { color: inherit; text-decoration: none; }
+.refs a::after { content: " (" attr(href) ")"; font-size: 7.5pt; color: #56657a; word-break: break-all; }
+.tagc { font-size: 7pt; }
+.warn { padding: 7pt 10pt; break-inside: avoid; max-width: none; }
+.stage { padding: 8pt 10pt; break-inside: auto; display: block; }
+.stage > * + * { margin-top: 5pt; }
+td.num, th.num { white-space: nowrap; }
+.obj:has(> div:nth-child(3):last-child) { grid-template-columns: repeat(3, 1fr); }
+pre { font-size: 7.3pt; }
+.defn, .gref { padding: 6pt 9pt; max-width: none; break-inside: avoid; }
+.gref { font-size: 9pt; }
+.defn > b:first-child { font-size: 8.5pt; }
+.gref::before { font-size: 7.5pt; }
+.recall, .why, .aside, .sum { padding: 6pt 9pt; max-width: none; break-inside: avoid; }
+.aside { font-size: 9pt; }
+.recall::before, .why::before, .aside::before, .sum::before { font-size: 7.5pt; }
+pre.py, pre.out { font-size: 8pt; }
+pre.py .ln { padding-left: 0 !important; text-indent: 0 !important; white-space: pre-wrap; }
+pre.out::before { font-size: 7.5pt; }
+ul.code { display: block; max-width: none; padding-left: 16pt; font-size: 9.3pt; }
+ul.code li + li { margin-top: 2pt; }
+.star { font-size: 7.5pt; }
+table.tt td, table.tt th { font-size: 8.3pt; }
+.lbl { font-size: 7.5pt; margin-bottom: -3pt; break-after: avoid; }
+.hand { padding: 6pt 9pt; max-width: none; break-inside: avoid; }
+.hand::before { font-size: 7.5pt; }

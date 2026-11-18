@@ -1,0 +1,932 @@
+<article class="chapter" id="ch12">
+  <header>
+    <div class="kicker">12 / 12</div>
+    <h1>학습 로드맵: 이 풀이를 직접 돌려 보고, 그다음으로 가는 길</h1>
+  </header>
+
+  <section>
+    <p class="lead">앞의 열한 장은 "이 풀이가 무엇인지"를 설명했습니다. 이 장은 "나도 해 보려면 무엇을 어떤 순서로 하면 되는지"를 적습니다. 출발점은 고등학교 수학과 Python 기초입니다. 도착점은 둘입니다. 하나는 이 풀이의 모형을 자기 손으로 적어 무료 솔버로 풀고 채점해 보는 것, 다른 하나는 대학에 가서 어떤 과목을 들으면 이 이야기가 이어지는지 아는 것입니다.</p>
+    <p>여섯 단계로 나눴습니다. 0~4단계는 지금 가진 것만으로 할 수 있는 일이고, 5단계는 대학에서 배울 과목의 지도입니다. 단계마다 목표, 읽을 곳, 자료, 해 볼 것, 넘어가는 기준을 적었습니다.</p>
+    <div class="note">
+      <p><strong>읽기 전에.</strong></p>
+      <ul>
+        <li><strong>기간은 어림입니다.</strong> 수능이 끝난 뒤나 방학에 하루 한두 시간을 쓴다고 치고 이 문서의 작성자가 짐작한 값입니다. 검증된 수치가 아닙니다.</li>
+        <li><strong>링크는 2026년 11월 19일에 실제로 열어 본 것만 실었습니다.</strong> 주소가 열리는지, 제목과 본문 일부가 소개한 내용과 맞는지를 프로그램으로 확인했습니다. 강의를 끝까지 듣거나 책을 다 읽고 고른 것은 아닙니다. 열리지 않은 것은 맨 뒤 「확인하지 못한 자료」에 따로 적었습니다.</li>
+        <li><strong>딱지의 뜻.</strong> <span class="tagc">무료</span> 누구나 볼 수 있음 · <span class="tagc">한국어</span> 한국어 자료(표시가 없으면 영어) · <span class="tagc">실습</span> 코드를 따라 칠 수 있음 · <span class="tagc">책</span> 사서 봐야 하는 책 · <span class="tagc">참고</span> 꼭 볼 필요는 없는 자료.</li>
+        <li><strong>자료는 고를 수 있게 넉넉히 적었습니다.</strong> 전부 볼 필요는 없습니다. 단계마다 「먼저 볼 것」 하나만 보고 「해 볼 것」으로 넘어가도 됩니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>전체 지도</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>단계</th><th>주제</th><th>기간(어림)</th><th>끝나면 할 수 있는 것</th><th>이 문서</th><th>교재</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>지금 가진 것 점검</td><td>하루</td><td>이 문서에 쓰인 고교 수학이 어느 단원인지 안다</td><td>전체</td><td>1장</td></tr>
+        <tr><td>1</td><td>Python 한 걸음 더</td><td>1~2주</td><td>예제 파일에 나오는 문법(dict 등)을 읽는다</td><td>2장</td><td>—</td></tr>
+        <tr><td>2</td><td>그래프와 너비 우선 탐색</td><td>1~2주</td><td>BFS를 직접 짜서 높이와 거리를 구한다</td><td>6장</td><td>4, 5장</td></tr>
+        <tr><td>3</td><td>식으로 적고 무료 솔버로 풀기</td><td>2주</td><td>작은 문제를 변수·제약·목적함수로 적어 솔버로 푼다</td><td>4, 5장</td><td>2, 6, 11, 13장</td></tr>
+        <tr><td>4</td><td>이 풀이 재현하기</td><td>2~3주</td><td>tryAgain 모형을 돌리고, 고치고, 채점한다</td><td>7~10장</td><td>12장</td></tr>
+        <tr><td>5</td><td>대학에서 이어지는 과목</td><td>대학 1~3학년</td><td>무엇을 배우면 이 이야기가 깊어지는지 안다</td><td>11장</td><td>3, 7~10, 14~16장</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>1~4단계를 합치면 6~9주쯤입니다. 2단계와 3단계는 서로 기대지 않으므로 순서를 바꿔도 됩니다. 4단계 뒤의 「종합 과제」가 도착점에 왔는지를 스스로 확인하는 시험입니다.</p>
+  </section>
+
+  <div class="part">0~4단계 · 지금 할 수 있는 것</div>
+
+  <section>
+    <div class="stage">
+      <div class="meta">0단계 · 하루</div>
+      <h3>지금 가진 것 점검</h3>
+      <p><strong>목표.</strong> 이 문서가 쓴 고등학교 수학이 어느 단원이었는지 확인합니다. 새로 배울 것은 없습니다. 아래 표에서 낯선 줄이 있으면 그 단원의 교과서 예제 몇 개만 다시 풀어 보면 됩니다.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>고교에서 배운 것</th><th>이 문서에서 쓰이는 곳</th></tr></thead>
+        <tbody>
+          <tr><td>수열의 합 Σ</td><td>모형의 모든 식(4장, 8장). Σ는 for 문으로 더하는 것과 같습니다.</td></tr>
+          <tr><td>1차식과 부등식, 연립방정식</td><td>제약식은 전부 1차 등식·부등식입니다(4장, 8장). 트럭 예의 9x + 5y ≥ 30.</td></tr>
+          <tr><td>직선의 방정식과 좌표평면</td><td>트럭 예를 그림으로 볼 때(5장). 직선의 한쪽을 색칠한 영역이 "제약을 지키는 점들"입니다.</td></tr>
+          <tr><td>집합과 명제</td><td>"p이면 q"를 0과 1의 부등식으로 옮기기(4장), 아래 이웃의 집합 pred(i)(6장), "한 방향 조건인가 양방향인가"(7장, 8장).</td></tr>
+          <tr><td>경우의 수, 지수</td><td>전부 해 보기가 왜 안 되는지(5장). 0/1 변수가 n개면 조합이 2<sup>n</sup>가지입니다. 미니 문제 B에서도 5,308,416가지였습니다(8장).</td></tr>
+          <tr><td>귀류법("~라고 가정하면 모순")</td><td>한 칸에 두 대가 겹칠 수 없다는 설명(8장).</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>미적분과 확률·통계는 이 문서에서 쓰이지 않습니다. 교재 10장(내부점법)에서 미분이 한 번 나옵니다.</p>
+      <p><strong>넘어가는 기준.</strong> 8장의 제약 ② 한 줄을 보고, 항구가 5개일 때 q = 2의 왼쪽 합을 풀어 쓸 수 있습니다.</p>
+    </div>
+
+    <div class="stage">
+      <div class="meta">1단계 · 1~2주</div>
+      <h3>Python 한 걸음 더</h3>
+      <p><strong>목표.</strong> 변수, if, for, 리스트, 함수는 안다고 보고, <span class="mono">examples</span> 폴더의 파일을 읽는 데 필요한 문법 몇 가지를 더 익힙니다. 본문의 코드는 기초 문법만 쓰도록 풀어 썼지만, 부록의 예제 파일 가운데 몇 개는 짧게 쓰려고 아래 문법을 씁니다.</p>
+      <pre class="py">
+prob = {"N": 5, "P": 5, "F": 10}
+print(prob["F"])
+x = {}
+x[0, 2, 1] = 1
+print(x)
+squares = [i * i for i in range(4)]
+print(squares)
+print(sum(i * i for i in range(4)))
+from itertools import product
+print(list(product((0, 1), repeat=2)))
+for k, name in enumerate(["A", "B"]):
+    print(k, name)
+</pre>
+      <ul class="code">
+        <li><b>1~2</b> dict(딕셔너리)는 번호 대신 이름표(키)로 값을 꺼내는 자료입니다. 대회의 입력이 이 모양입니다(2장).</li>
+        <li><b>3~5</b> 키로 수 여러 개의 묶음(튜플)을 쓸 수 있습니다. <code>x[0, 2, 1]</code>은 x<sub>02,1</sub>을 담는 자리입니다. 예제 파일은 변수 x, y, z를 이렇게 담습니다.</li>
+        <li><b>6~7</b> 리스트 내포. for 문으로 리스트를 만드는 것을 한 줄로 줄여 쓴 것입니다.</li>
+        <li><b>8</b> 같은 모양을 <code>sum( )</code> 안에 쓰면 Σ가 됩니다. Σ<sub>i</sub> i² (i = 0부터 3까지)입니다.</li>
+        <li><b>9~10</b> <code>product</code>는 "0 또는 1을 두 번 고르는 모든 조합"을 만들어 줍니다. 전부 해 보기에 씁니다.</li>
+        <li><b>11~12</b> <code>enumerate</code>는 리스트를 돌면서 순번도 함께 줍니다.</li>
+      </ul>
+      <pre class="out">
+10
+{(0, 2, 1): 1}
+[0, 1, 4, 9]
+14
+[(0, 0), (0, 1), (1, 0), (1, 1)]
+0 A
+1 B
+</pre>
+      <p>하나 더, 문자열 앞에 <code>f</code>를 붙이고 중괄호 안에 변수 이름을 적으면 그 자리에 값이 들어갑니다. <code>cost = 68</code>일 때 <code>print(f"총비용 = {cost}")</code>는 <span class="mono">총비용 = 68</span>을 찍습니다.</p>
+      <p>대회 문제는 JSON이라는 글자 파일로 주어집니다. Python에서는 <code>import json</code> 뒤에 <code>prob = json.load(open("파일이름.json"))</code> 한 줄로 dict가 됩니다.</p>
+      <ul class="plain">
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://docs.python.org/ko/3/tutorial/">파이썬 자습서</a> — Python을 만든 곳의 공식 입문서 한국어판. <a href="https://docs.python.org/ko/3/tutorial/datastructures.html">「자료 구조」 장</a>에 리스트 컴프리헨션(내포)과 딕셔너리가 있습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span><a href="https://dojang.io/course/view.php?id=7">파이썬 코딩 도장</a> — 단원별로 된 온라인 강좌. 「딕셔너리 사용하기」와 「함수 사용하기」 단원, 그리고 「리스트 표현식 사용하기」 절이 이 단계에 해당합니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://opentutorials.org/course/4769">생활코딩 「Python 입문 수업」</a> — 처음부터 다시 훑고 싶을 때.</li>
+        <li><span class="tagc">무료</span><a href="https://colab.research.google.com/">Google Colab</a> — 컴퓨터에 Python을 설치하지 않고 웹 브라우저에서 코드를 돌릴 수 있는 곳(구글 계정이 필요합니다). 설치하려면 <a href="https://www.python.org/downloads/">python.org</a>에서 받습니다.</li>
+      </ul>
+      <p><strong>먼저 볼 것.</strong> 파이썬 자습서의 「자료 구조」 장. <strong>해 볼 것.</strong> ① 위 코드를 쳐서 같은 결과가 나오는지 봅니다. ② 2장의 공식 예시 입력을 dict로 적고, for 문으로 "항구마다 싣는 차의 수"를 세어 2, 2, 1, 1, 0이 나오는지 봅니다. ③ 부록의 <span class="mono">bfs_height.py</span>를 한 줄씩 읽고 모르는 문법에 표시합니다.</p>
+      <p><strong>넘어가는 기준.</strong> <code>sum(x[p, q, i] for i in cells)</code>가 어떤 Σ인지 말할 수 있습니다.</p>
+    </div>
+
+    <div class="stage">
+      <div class="meta">2단계 · 1~2주</div>
+      <h3>그래프와 너비 우선 탐색</h3>
+      <p><strong>목표.</strong> 점과 선으로 된 그림(그래프)을 Python의 리스트로 적고, 너비 우선 탐색(BFS)을 보지 않고 짤 수 있게 됩니다. 이 풀이에서 BFS는 두 번 쓰입니다. 모형을 만들기 전에 높이를 매길 때(6장), 그리고 해를 경로로 바꿀 때(9장)입니다.</p>
+      <p><strong>읽을 곳.</strong> 이 문서 6장, 교재 4장(그래프와 BFS)과 5장(높이, 이분 그래프).</p>
+      <ul class="plain">
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/너비_우선_탐색">위키백과 「너비 우선 탐색」</a> — 정의와 그림을 한 쪽으로.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span><a href="https://school.programmers.co.kr/learn/courses/30/parts/12421">프로그래머스 「깊이/너비 우선 탐색(DFS/BFS)」 문제 묶음</a> — 답을 제출하면 자동으로 채점해 주는 연습 문제. 「게임 맵 최단거리」가 BFS로 거리를 구하는 문제입니다. 풀이를 제출하려면 로그인이 필요할 수 있습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=368ed39fa8c7b6b3">KOCW 「알고리즘과 문제해결」 (고려사이버대 임철홍, 2018)</a> — 대학 공개 강의. 「재귀호출과 완전탐색」, 「깊이우선과 너비우선 탐색」 차시가 있습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=16c93f5155e50f51">KOCW 「이산수학」 (가톨릭대 황병연, 2020)</a> — 「그래프 1~4」 차시에서 그래프의 용어, 이분 그래프, 최단 경로를 다룹니다. 5단계의 맛보기로도 좋습니다.</li>
+      </ul>
+      <p><strong>먼저 볼 것.</strong> 이 문서 6장을 다시 읽고 부록의 <span class="mono">bfs_height.py</span>를 실행합니다. <strong>해 볼 것.</strong> ① 6장의 작은 격자 배(2×3)에서 BFS를 종이에 손으로 해 보고, 프로그램의 출력(방문 순서 0, 1, 2, 3, 4, 5)과 맞춥니다. ② 간선을 적는 순서를 바꾸면 높이가 달라지는 것을 확인합니다(같은 파일의 두 번째 출력). ③ 파일을 덮고 BFS를 처음부터 다시 짭니다. ④ 5칸 고리와 6칸 고리에서 높이와 아래 이웃을 구해 7장, 8장의 설명과 맞춥니다.</p>
+      <p><strong>넘어가는 기준.</strong> 처음 보는 그래프 그림을 받아 5분 안에 손으로 층을 나누고 pred(i)를 적을 수 있습니다.</p>
+    </div>
+
+    <div class="stage">
+      <div class="meta">3단계 · 2주</div>
+      <h3>식으로 적고 무료 솔버로 풀기</h3>
+      <p><strong>목표.</strong> 글로 된 작은 문제를 읽고 "무엇이 변수이고, 무엇이 제약이고, 무엇을 최소화하는가"를 가려 식으로 적은 뒤, 솔버에 넣어 답을 얻습니다. 솔버는 무료인 Google OR-Tools를 씁니다. 사용권(라이선스)이 필요 없고 <code>pip install ortools</code> 한 줄로 설치됩니다.</p>
+      <p><strong>읽을 곳.</strong> 이 문서 4장(식으로 적는 법)과 5장(솔버가 푸는 법). 교재 2장(말과 기호), 6장(LP를 그림으로), 11장(0과 1로 논리 적기), 13장(분지한계법).</p>
+      <ul class="plain">
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span>Google OR-Tools 문서: <a href="https://developers.google.com/optimization/install?hl=ko">설치</a>, <a href="https://developers.google.com/optimization/introduction/python?hl=ko">Python용 시작하기</a>, <a href="https://developers.google.com/optimization/lp?hl=ko">선형 최적화</a>, <a href="https://developers.google.com/optimization/mip/mip_example?hl=ko">MIP 문제 해결</a> — 주소 끝의 <span class="mono">?hl=ko</span>가 한국어 표시입니다. 기계 번역이라 「OR-도구」처럼 어색한 말이 섞여 있지만 코드는 그대로 따라 칠 수 있습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><span class="tagc">실습</span><a href="https://unerue.github.io/operations-research/integer-programming/integer-programming.html">강경수, 「경영과학과 컴퓨터 비전」의 「정수 계획법」 장</a> — 배낭 문제 같은 고전 문제를 Python으로 푸는 한국어 글. 설명은 짧고 코드 위주입니다. <a href="https://unerue.github.io/operations-research/000-introduction.html">첫 장</a>부터 볼 수도 있습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=42680d24aefd80c2">KOCW 「선형계획의 이해」 (한국공학대 허재석, 2020)</a> — 선형계획만 한 학기 다루는 대학 공개 강의. 앞쪽의 모형 만들기 부분이 이 단계에 해당합니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — 용어를 찾아볼 때.</li>
+        <li><span class="tagc">책</span><span class="tagc">한국어</span><a href="https://www.hanbit.co.kr/books/B3558796278?code=B3558796278">우메타니 슌지, 『제대로 배우는 수학적 최적화』 (한빛미디어, 2021)</a> — 모형 만들기부터 풀이법까지 한 권으로 다루는 번역서. 출판사 소개 페이지만 확인했습니다. 대학 교재 수준이라 지금은 앞부분만 읽어도 됩니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://github.com/Gurobi/modeling-examples">Gurobi modeling-examples</a> — 팀이 쓴 솔버 Gurobi를 만든 회사가 공개한 예제 모음(영어). <code>pip install gurobipy</code>로 깔리는 제한판은 변수 2,000개, 제약 2,000개까지 풀 수 있습니다.</li>
+      </ul>
+      <p><strong>먼저 볼 것.</strong> 이 문서 4장과, OR-Tools 문서의 「MIP 문제 해결」 한 쪽. <strong>해 볼 것.</strong> ① 4장의 트럭 예 코드를 실행해 큰 트럭 3대, 작은 트럭 1대, 37이 나오는지 봅니다. ② 실어야 할 짐을 30톤에서 33톤으로 바꿔 봅니다. 답이 큰 트럭 4대, 40으로 바뀌는지 손으로 먼저 예상한 뒤 돌려 봅니다(이 문서를 쓰면서 돌려 본 결과가 그렇습니다). ③ 아래 종합 과제 A를 식으로 적어 풉니다. ④ 같은 문제를 for 문으로 전부 해 보는 프로그램도 짜서 두 답을 맞춥니다. 솔버의 답을 믿어도 되는지 확인하는 가장 쉬운 방법입니다.</p>
+      <p><strong>넘어가는 기준.</strong> "A를 하면 B와 C 중 적어도 하나는 해야 한다"를 식으로 적을 수 있고(a ≤ b + c), 8장의 제약 ②~⑤가 각각 4장의 어느 꼴인지 말할 수 있습니다.</p>
+    </div>
+
+    <div class="stage">
+      <div class="meta">4단계 · 2~3주</div>
+      <h3>이 풀이 재현하기</h3>
+      <p><strong>목표.</strong> tryAgain의 모형을 직접 돌려 이 문서의 숫자가 나오는지 확인하고, 문제를 바꾸거나 제약을 빼 보면서 식 하나하나가 무슨 일을 하는지 손끝으로 확인합니다.</p>
+      <p><strong>읽을 곳.</strong> 이 문서 7~10장, 교재 12장(tryAgain 모형). 실습 파일은 이 문서와 함께 있는 <span class="mono">guide-hs/examples/</span> 폴더에 있고, 큰 파일 다섯 개는 이 장 끝의 부록에 전체 코드를 실었습니다.</p>
+      <ol class="plain">
+        <li><code>python3 roro_bruteforce.py</code> — 솔버 없이 돕니다. 미니 문제 A(46), 미니 문제 B(68), 갈림길 배의 미니 문제 B(48), 공식 예시(190), 가지가 있는 배(202)가 차례로 나오고, 마지막 줄의 <code>check</code>가 채점 결과입니다. 수요나 배 모양을 바꿔 보세요.</li>
+        <li><code>python3 mini_model_enumerate.py</code> — 미니 문제 B의 변수 22개에 값을 넣는 5,308,416가지 조합을 전부 해 봅니다. 1초쯤 걸리고 가능해 8개, 최적값 68이 나옵니다. 8장의 식을 하나씩 if 문으로 옮긴 것이라, 식과 코드를 나란히 놓고 읽기 좋습니다.</li>
+        <li><code>pip install ortools</code> 뒤 <code>python3 roro_model_ortools.py</code> — 같은 모형을 진짜 솔버로 풉니다. 68, 190, 202가 나오고, 정수 조건을 지운 LP 완화의 값(46, 145, 202)도 함께 나옵니다.</li>
+        <li><strong>제약을 하나씩 빼 봅니다.</strong> <span class="mono">roro_model_ortools.py</span>에서 제약을 솔버에 등록하는 줄은 <code>s.Add(…)</code>이고, 줄 끝의 주석에 「제약 ②」처럼 번호가 적혀 있습니다(제약 ①은 <code>s.Add(left == right)</code>). 그 한 줄 맨 앞에 <code>#</code>을 붙여 지운 셈 치고 다시 돌립니다. z를 0으로 고정하려면 <code>status = s.Solve()</code> 바로 위에 <code>for k in z:</code>와 <code>s.Add(z[k] == 0)</code> 두 줄을 넣습니다. 이 문서를 쓰면서 해 본 결과는 아래 표와 같습니다.</li>
+      </ol>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>바꾼 것</th><th class="num">미니 문제 B</th><th class="num">공식 예시</th><th>미니 문제 B에서 나온 엉터리 해</th></tr></thead>
+        <tbody>
+          <tr><td>원래 모형</td><td class="num">68</td><td class="num">190</td><td>(정상)</td></tr>
+          <tr><td>제약 ① (수요)를 뺌</td><td class="num">0</td><td class="num">0</td><td>차를 한 대도 싣지 않습니다. x는 모두 0이고, z에는 아무 뜻 없는 큰 수가 찍힙니다.</td></tr>
+          <tr><td>제약 ② (머무는 차)를 뺌</td><td class="num">44</td><td class="num">136</td><td>차 A와 차 B를 둘 다 칸 1에 둡니다(x<sub>02,1</sub> = x<sub>13,1</sub> = 1). 한 칸에 두 대입니다.</td></tr>
+          <tr><td>제약 ③ (하역)을 뺌</td><td class="num">46</td><td class="num">166</td><td>A를 칸 2, B를 칸 1에 두고, 항구 2에서 B를 지나쳐 A를 내립니다.</td></tr>
+          <tr><td>제약 ④ (선적)를 뺌</td><td class="num">46</td><td class="num">144</td><td>A를 칸 1에 둔 채, 항구 1에서 A를 지나쳐 B를 칸 2에 싣습니다.</td></tr>
+          <tr><td>제약 ⑤ (전파)를 뺌</td><td class="num">46</td><td class="num">144</td><td>③이나 ④를 뺐을 때와 같은 배치가 나옵니다(둘 다 46이라 어느 쪽이 나올지는 솔버에 달렸습니다). 길이 막힌 칸을 "접근 가능"이라고 적은 해입니다.</td></tr>
+          <tr><td>z를 모두 0으로 고정</td><td class="num">불능</td><td class="num">불능</td><td>임시 하역 없이는 가능해가 없습니다. 프로그램은 <code>assert</code> 줄에서 멈춥니다.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>공식 예시에서 제약 ②를 뺀 값 136은 대회 LB 137보다도 작습니다. 있을 수 없는 해라는 것을 숫자만 보고도 알 수 있습니다. 제약 ⑤를 뺐을 때 나온 해(A를 칸 2, B를 칸 1)를 경로로 적어 채점 규칙(<span class="mono">roro_bruteforce.py</span>의 <code>check</code>)에 넣으면, 항구 2의 하역 경로 [2, 1, 0]에서 "나가는 길이 막힘"으로 무효 판정이 납니다. 가지가 있는 배에서는 z를 0으로 고정해도 202가 그대로 나옵니다. 이 배의 최적해가 임시 하역을 쓰지 않기 때문입니다.</p>
+      <ol class="plain" start="5">
+        <li><strong>문제를 바꿔 봅니다.</strong> 공식 예시의 고정비를 F = 100으로 바꾸면 총비용이 1,630이 되고 배치는 그대로입니다(경로 16개 × 100 + 간선 30개). 미니 문제 B의 배를 갈림길 배(간선 0-1, 1-2, 1-3)로 바꾸면 68이 48로 줄고 임시 하역이 사라집니다. 둘 다 돌려 본 결과입니다.</li>
+        <li><strong>대회 자료로 넘어갑니다.</strong> 팀의 원래 소스와 발표자료, 대회 문제 파일은 아래 링크에서 받을 수 있습니다. 공개 연습 문제 가운데 가장 작은 것은 노드 23개, 항구 5개로 x가 220개입니다(8장의 표). 이 크기를 <span class="mono">roro_model_ortools.py</span>로 푸는 것은 이 문서에서 해 보지 않았습니다. 무료 솔버는 Gurobi보다 느리므로 제한 시간을 넉넉히 주어야 할 것입니다.</li>
+      </ol>
+      <ul class="plain">
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://www.youtube.com/watch?v=j6qsY3gzDLY">tryAgain 발표 동영상 (유튜브)</a>, <a href="https://ogchallenge.github.io/ogc/2025/slides/tryAgain_slides.pdf">발표 슬라이드 (PDF)</a> — 팀이 직접 설명하는 5분 발표. 이 문서가 「발표자료」라고 부른 것이 이 슬라이드입니다. 영상은 이 문서를 쓰면서 보지 못했습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#final-ranking">OGC 2025 「최종 순위 및 발표자료」</a> — 결선 10팀의 영상, 슬라이드, 코드. tryAgain의 C++ 소스도 여기서 받습니다.</li>
+        <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ogchallenge.github.io/ogc/2025/#instance-download">OGC 2025 「문제 다운로드 모음」</a>, <a href="https://ogchallenge.github.io/ogc/2025/#baseline-algorithm">「개발 환경 및 베이스라인 알고리즘」</a> — 평가 문제 파일, 예제 문제, 베이스라인 코드와 채점용 <span class="mono">util.py</span>.</li>
+      </ul>
+      <p><strong>먼저 할 것.</strong> 1~4번이 핵심입니다. 5~6번은 시간이 되는 만큼 합니다.</p>
+      <p><strong>넘어가는 기준.</strong> 제약 여섯 가지 각각에 대해 "이 식을 빼면 어떤 엉터리 해가 나오는가"를, 위 표를 보지 않고 미니 문제 B로 말할 수 있습니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>종합 과제: 새 문제를 적어 보기</h2>
+    <p>도착점은 "새 문제를 보고 식으로 적는 것"이었습니다. 아래 문제를 식으로 적고, 전부 해 보기 프로그램과 솔버로 각각 풀어 답을 맞춰 보세요. 실마리는 접어 두었으니 먼저 스스로 적어 본 뒤 펼칩니다. 답으로 적은 숫자는 이 문서를 쓰면서 두 방법으로 계산해 맞춰 본 것입니다.</p>
+    <div class="hand">
+      <p><strong>과제 A. 트럭 수 줄이기.</strong> 무게가 4, 8, 1, 4, 2, 1톤인 화물 여섯 개를, 한 대에 10톤까지 싣는 트럭에 나눠 싣습니다. 트럭은 세 대까지 부를 수 있습니다. 가장 적은 트럭으로 다 실으려면?</p>
+    </div>
+    <details>
+      <summary>과제 A의 실마리와 답</summary>
+      <p>변수는 두 종류입니다. x<sub>jk</sub>는 "화물 j를 트럭 k에 실으면 1", u<sub>k</sub>는 "트럭 k를 부르면 1"입니다. 제약은 "화물마다 정확히 한 트럭"(Σ<sub>k</sub> x<sub>jk</sub> = 1, 모든 화물 j)과 "부른 트럭에만, 10톤 이하로"(Σ<sub>j</sub> w<sub>j</sub> x<sub>jk</sub> ≤ 10 u<sub>k</sub>, 모든 트럭 k)입니다. 목적함수는 Σ<sub>k</sub> u<sub>k</sub>의 최소화입니다. 둘째 제약은 u<sub>k</sub> = 0이면 오른쪽이 0이 되어 그 트럭에 아무것도 못 싣게 합니다. 답은 2대입니다. 무게의 합이 20톤이라 2대가 꽉 차야 하고, 실제로 (8, 2)와 (4, 4, 1, 1)로 나눌 수 있습니다.</p>
+    </details>
+    <div class="hand">
+      <p><strong>과제 B. 버스 차고지 (순서를 없애는 연습).</strong> 버스 6대가 저녁에 1번, 2번, …, 6번 순서로 차고지에 들어옵니다. 차고지에는 한쪽으로 들어가 반대쪽으로 나가는 긴 차로가 2개 있고, 차로 하나에 3대가 들어갑니다. 아침에는 3, 1, 2, 6, 4, 5번 순서로 나가야 합니다. 같은 차로에서 앞에 선 버스가 뒤 버스보다 늦게 나가야 하면 뒤 버스가 막힙니다. 한 번도 막히지 않게 버스를 차로에 배정할 수 있을까요? 나가는 순서가 3, 2, 1, 6, 5, 4라면 어떨까요?</p>
+    </div>
+    <details>
+      <summary>과제 B의 실마리와 답</summary>
+      <p>얼핏 "차로 안에서 몇 번째 자리인가"라는 순서 변수가 필요해 보입니다. 하지만 들어오는 순서가 정해져 있으므로, 같은 차로 안의 자리 순서는 들어온 순서로 저절로 정해집니다. 정할 것은 "어느 차로인가"뿐입니다. x<sub>bl</sub>을 "버스 b를 차로 l에 넣으면 1"로 둡니다. 먼저 들어오는데 나중에 나가야 하는 쌍을 미리 찾아 두면, 제약은 "그런 쌍은 같은 차로에 둘 수 없다"(x<sub>al</sub> + x<sub>bl</sub> ≤ 1, 모든 차로 l), "버스마다 정확히 한 차로", "차로마다 3대 이하"입니다.</p>
+      <p>첫 번째 순서에서 문제가 되는 쌍은 (1, 3), (2, 3), (4, 6), (5, 6) 네 개이고, {1, 2, 6}과 {3, 4, 5}로 나누면 한 번도 막히지 않습니다. 차로 이름만 바꾼 것을 빼면 이 방법 하나뿐입니다. 두 번째 순서에서는 문제가 되는 쌍이 여섯 개로 늘어, 어떻게 배정해도 적어도 두 쌍은 막힙니다. tryAgain이 "한 항구 안의 순서는 높이로 저절로 정해진다"는 것을 써서 배치만 변수로 남긴 것(7장)과 같은 발상입니다.</p>
+    </details>
+    <div class="hand">
+      <p><strong>과제 C (선택). 순서를 없앨 수 없는 경우.</strong> 숙제 n개를 하나씩 해야 합니다. 숙제마다 걸리는 시간과 마감이 있고, 마감을 넘긴 시간의 합을 가장 작게 하고 싶습니다. 이 문제에서 "어느 것을 먼저 할지"를 변수에서 뺄 수 있을까요?</p>
+    </div>
+    <details>
+      <summary>과제 C의 실마리</summary>
+      <p>뺄 수 없습니다. 여기서는 순서 자체가 정하려는 것입니다. 식으로 적으려면 숙제 두 개의 쌍마다 "i를 j보다 먼저 한다"는 0/1 변수가 필요하고, 그 변수와 시작 시각을 잇는 데 big-M이라는 요령이 들어갑니다(교재 11장). 숙제가 n개면 쌍이 n(n−1)/2개라서 변수가 빠르게 늘고, 모형도 약해집니다. 과제 B와 견주어 보면 "순서를 없앨 수 있는 구조를 찾았는가"가 얼마나 큰 차이인지 보입니다. 숙제가 대여섯 개라면 순서 n!가지를 전부 해 보는 쪽이 더 간단합니다.</p>
+    </details>
+    <p><strong>통과 기준.</strong> 과제 A와 B에서 실마리를 보기 전에 변수와 제약의 뼈대를 적을 수 있었다면 도착점에 온 것입니다. 과제 B에서 자리 순서를 변수로 두었다면, 7장을 다시 읽고 "무엇이 정해지면 나머지가 따라오는가"를 먼저 묻는 연습을 더 합니다.</p>
+  </section>
+
+  <div class="part">5단계 · 대학에서 이어지는 과목</div>
+
+  <section>
+    <h2>무엇을 배우면 이 이야기가 깊어지는가</h2>
+    <p>이 문서와 교재가 직관으로만 설명하고 넘어간 것들은 대학의 정규 과목에서 제대로 배웁니다. 과목 이름과 배우는 학년은 학교마다 다르니, 가고 싶은 학과의 교과과정표에서 비슷한 이름을 찾아보세요.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>과목</th><th>배우는 것</th><th>이 풀이의 어디와 이어지나</th><th>미리 맛보기 (교재)</th></tr></thead>
+      <tbody>
+        <tr><td>선형대수</td><td>벡터, 행렬, 연립방정식을 표로 푸는 소거법, 행렬식</td><td>제약식 수천 줄을 Ax ≤ b 한 줄로 적는 말. LP를 계산으로 푸는 방법의 바탕</td><td>3, 7장</td></tr>
+        <tr><td>이산수학</td><td>논리와 증명, 집합, 경우의 수, 그래프와 트리</td><td>배를 그래프로 보기, 이분 그래프와 홀수 순환(8장)</td><td>4, 5장</td></tr>
+        <tr><td>자료구조·알고리즘</td><td>리스트·큐 같은 자료의 모양, 탐색(BFS 등), 최단 경로, 걸리는 시간 따지기</td><td>높이 매기기(6장), 해 복원(9장), "전부 해 보기가 왜 안 되는가"(5장)</td><td>4장</td></tr>
+        <tr><td>선형계획 · 경영과학(OR) · 최적화</td><td>LP와 심플렉스법, 쌍대성, 정수계획, 분지한계법, 모형 만들기</td><td>이 풀이 전체. 모형(8장), 솔버가 하는 일(5장, 10장), 개선 방향(11장)</td><td>6~16장</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>마지막 줄의 과목은 「경영과학」, 「OR(operations research)」, 「최적화」 같은 이름으로 주로 산업공학과에서 가르치고, 수학과·컴퓨터공학과·경영학과에도 비슷한 과목이 있습니다. tryAgain 팀도 발표자료 표지에 산업공학과의 최적화 연구실 소속이라고 적혀 있습니다(3장). 앞의 세 과목은 이공계 여러 학과에서 1~2학년에 듣는 기초 과목입니다.</p>
+    <ul class="plain">
+      <li><span class="tagc">무료</span><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">3Blue1Brown, 「Essence of linear algebra」 (유튜브 재생목록)</a> — 선형대수를 그림으로 설명하는 영어 영상 묶음. 계산보다 "행렬이 무엇을 하는 물건인가"를 보여 줍니다. 1편에는 한국어 자막이 달려 있었고 3편에는 없었습니다. 편마다 다르니 없으면 유튜브의 자동 번역 자막을 켭니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=f41a378321625410">KOCW 「선형대수학1」 (세종대 하길찬, 2014)</a> — 연립일차방정식과 행렬, 가우스 소거법, 역행렬, 행렬식 순으로 가는 대학 강의.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=16c93f5155e50f51">KOCW 「이산수학」 (가톨릭대 황병연, 2020)</a>, <a href="http://www.kocw.net/home/cview.do?cid=368ed39fa8c7b6b3">KOCW 「알고리즘과 문제해결」 (고려사이버대 임철홍, 2018)</a> — 2단계에서 소개한 두 강의의 나머지 부분.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/cview.do?cid=354bd1bd6e92a4e3">KOCW 「경영과학」 (중앙대 안봉현, 2015)</a>, <a href="http://www.kocw.net/home/cview.do?cid=a64b7ff7d23a6209">KOCW 「경영과학」 (서강대 민재형, 2021)</a> — 학부 경영과학 강의. 두 강의 모두 선형계획법과 정수계획(정수 최적화)을 다룹니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/">MIT OCW 15.053 Optimization Methods in Management Science</a> — 미국 대학의 학부 최적화 강의 자료(영어).</li>
+      <li><span class="tagc">무료</span><a href="https://www.gurobi.com/resources/blog/mixed-integer-programming-an-introduction-to-the-basics">Gurobi, 「Mixed-Integer Programming: The Basics Explained Well」</a> — 솔버를 만든 회사가 분지한계법, gap, 전처리, 절단평면, 휴리스틱을 한 쪽으로 설명한 글(영어). 이 문서 5장과 범위가 같습니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">실습</span><a href="https://scipbook.readthedocs.io/en/latest/">Kubo 외, Mathematical Optimization: Solving Problems using SCIP and Python</a> — 여러 문제의 모형을 Python 코드와 함께 보여 주는 온라인 책(영어). 대학에서 과목을 들은 뒤에 읽을 자료입니다.</li>
+    </ul>
+    <p><strong>지금 해 볼 것.</strong> 교재를 앞에서부터 읽는 것이 가장 가까운 길입니다. 영상으로 맛을 보고 싶다면 3Blue1Brown의 1~3편이 부담이 가장 적습니다.</p>
+  </section>
+
+  <section>
+    <h2>자주 막히는 곳</h2>
+    <ul class="plain">
+      <li><strong>읽기만 하지 않습니다.</strong> 식은 읽을 때는 당연해 보이고, 직접 적으려고 하면 안 떠오릅니다. 읽는 시간과 직접 적어 돌려 보는 시간을 반반으로 잡습니다.</li>
+      <li><strong>작은 예로 먼저 확인합니다.</strong> 이 문서가 미니 문제 B로 한 것처럼, 손으로 답을 알 수 있는 크기에서 모형이 맞는지 확인한 다음에 키웁니다. 전부 해 보기 프로그램과 솔버의 답이 같은지 맞춰 보는 것이 가장 든든한 검사입니다.</li>
+      <li><strong>모형이 불능으로 나올 때.</strong> 처음 적은 모형은 대개 불능이거나 엉뚱한 답을 냅니다. 제약을 절반씩 꺼 가며 범인을 찾습니다. 4단계의 "제약 빼 보기"가 그 연습입니다.</li>
+      <li><strong>계산 절차에 붙들리지 않습니다.</strong> 솔버가 LP를 푸는 절차(심플렉스법)는 교재 8장에 있지만, 모형을 적어 쓰는 것이 목표라면 "LP는 빨리 풀리고, 정수 조건이 붙으면 어려워진다"까지만 알고 넘어가도 됩니다. 궁금해질 때 돌아옵니다.</li>
+      <li><strong>영어 자료에 겁먹지 않습니다.</strong> 솔버 문서는 대부분 영어입니다. 식과 코드는 언어와 상관없이 읽히므로, 코드 예제부터 따라 치고 설명은 번역기의 도움을 받습니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>확인하지 못한 자료</h2>
+    <p>널리 추천되지만 이번에 프로그램으로 열어 확인하지 못해서 추천 목록에서 뺀 것들입니다. 쓸 수 없다는 뜻이 아니라, 이 문서가 확인하지 못했다는 뜻입니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>자료</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td>『점프 투 파이썬』 (위키독스)</td><td>많이 쓰이는 한국어 Python 입문서입니다. wikidocs.net이 자동 접속을 막아(403) 내용을 확인하지 못했습니다.</td></tr>
+        <tr><td>백준 온라인 저지 (acmicpc.net)</td><td>BFS 연습 문제로 흔히 추천되는 곳인데, 확인한 날에는 문제 페이지 대신 「서비스 재개 일정 연기 안내」가 떴습니다(404).</td></tr>
+        <tr><td>칸아카데미 한국어판 (알고리즘, 선형대수)</td><td>주소는 열리지만 자동 접속 확인 화면만 받아서, 한국어 강의가 실제로 있는지 확인하지 못했습니다.</td></tr>
+        <tr><td>K-MOOC의 선형대수·최적화 강좌</td><td>사이트 첫 화면이 열리는 것만 확인했습니다. 지금 수강할 수 있는 강좌를 하나하나 찾아보지 않았습니다.</td></tr>
+        <tr><td>3Blue1Brown 영상의 한국어 자막</td><td>재생목록의 1편과 3편만 자막 목록을 확인했습니다(1편 있음, 3편 없음). 나머지 편은 확인하지 않았습니다.</td></tr>
+        <tr><td>교보문고의 책 소개 페이지</td><td>빈 화면이 돌아와서, 책은 출판사 페이지로 링크했습니다. 재고나 가격은 확인하지 않았습니다.</td></tr>
+        <tr><td>Google Colab에서 OR-Tools 실행</td><td>Colab 첫 화면이 열리는 것만 확인했습니다. 이 문서의 예제는 모두 컴퓨터에 설치한 Python 3.13에서 돌렸습니다.</td></tr>
+        <tr><td>라그랑지 완화·분지가격법의 해설 논문 (Fisher, Feillet)</td><td>이 분야의 고전 해설로 알려져 있지만 출판사 페이지가 자동 접속을 막았고, 구독이 필요한 영어 논문이라 싣지 않았습니다. 교재 15장으로 대신합니다.</td></tr>
+        <tr><td>대회 문제 파일로 모형 풀기</td><td>대회 문제 파일은 내려받지 않았습니다. 8장의 문제 크기 표는 이전 분석에서 읽은 값이고, 무료 솔버로 그 문제들이 몇 초에 풀리는지는 재 보지 않았습니다.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>스스로 점검</h2>
+    <details>
+      <summary>Gurobi를 살 수 없어도 이 로드맵을 따라갈 수 있나요?</summary>
+      <p>따라갈 수 있습니다. 1~2단계는 Python만 있으면 되고, 3~4단계는 무료인 OR-Tools로 합니다. 이 장에서 솔버로 구한 숫자는 모두 OR-Tools로 계산했습니다. 다만 10장에서 본 NoRel 휴리스틱은 Gurobi에만 있는 기능이라, 큰 문제에서 팀이 쓴 설정을 무료 솔버로 그대로 따라 할 수는 없습니다.</p>
+    </details>
+    <details>
+      <summary>미니 문제 B에서 제약 ②를 빼면 68이 44로 줄어듭니다. 44는 어떻게 나온 값이고, 왜 엉터리인가요?</summary>
+      <p>차 A(항구 0→2)와 차 B(항구 1→3)를 둘 다 가장 가까운 칸 1에 두면 구간 두 개의 비용이 각각 2 × (10 + 1) = 22라서 합이 44입니다. 그런데 항구 1을 떠날 때부터 항구 2에 닿을 때까지 칸 1에 두 대가 함께 있어야 하므로 실제로는 불가능합니다. "머무는 차가 있는 칸에는 싣지 못한다"를 말해 주던 것이 제약 ②와 ④의 짝이었습니다(8장).</p>
+    </details>
+    <details>
+      <summary>과제 A에서 트럭을 최대 3대가 아니라 2대까지만 부를 수 있다고 하면 변수와 제약은 각각 몇 개인가요?</summary>
+      <p>x<sub>jk</sub>가 6 × 2 = 12개, u<sub>k</sub>가 2개로 변수는 14개입니다. 제약은 "화물마다 한 트럭" 6줄과 "트럭마다 용량" 2줄로 8개입니다. 3대일 때는 변수 6 × 3 + 3 = 21개, 제약 6 + 3 = 9개입니다.</p>
+    </details>
+    <details>
+      <summary>과제 B의 두 번째 순서(3, 2, 1, 6, 5, 4)에서 문제가 되는 쌍 여섯 개를 직접 찾아보세요. 왜 차로 두 개로는 부족한가요?</summary>
+      <p>먼저 들어왔는데 나중에 나가는 쌍은 (1, 2), (1, 3), (2, 3), (4, 5), (4, 6), (5, 6)입니다. 1, 2, 3번은 서로가 서로와 문제가 되므로 막히지 않으려면 셋이 모두 다른 차로에 있어야 하는데 차로가 둘뿐입니다. 4, 5, 6번도 마찬가지입니다. 그래서 묶음마다 적어도 한 쌍, 합해서 적어도 두 쌍이 막힙니다.</p>
+    </details>
+    <details>
+      <summary>이 문서를 다 읽은 지금, 2장의 공식 예시에서 194짜리 해보다 190짜리 해가 좋은 이유를 세 문장으로 말할 수 있나요?</summary>
+      <p>예를 들면 이렇습니다. 두 해 모두 차 두 대를 임시로 내렸다 다시 싣습니다. 190짜리 해는 그 재배치를 항구 2가 아니라 항구 1에서 해서, 오래 탈 차를 안쪽 칸에 먼저 넣고 곧 내릴 차를 바깥쪽에 둡니다. 그 결과 가장 싼 칸 1을 한 번 더 쓰고 먼 칸 3을 한 번 덜 써서 4만큼 쌉니다(8장).</p>
+    </details>
+  </section>
+
+  <div class="part">부록 · 예제 코드</div>
+
+  <section>
+    <h2>예제 파일 다섯 개의 전체 코드</h2>
+    <p>이 문서와 함께 있는 <span class="mono">guide-hs/examples/</span> 폴더의 파일 가운데 큰 것 다섯 개를 그대로 실었습니다. 파일이 없는 독자는 여기서 옮겨 적어 쓸 수 있습니다. 모두 Python 3.13에서 실행해 확인했고, 본문의 숫자는 이 파일들의 출력입니다. 같은 폴더에는 본문에 나온 짧은 예제들도 들어 있습니다.</p>
+
+    <h3>부록 1. bfs_height.py</h3>
+    <p>출입구에서 너비 우선 탐색을 해서 노드마다 높이, 거리, 아래 이웃을 구합니다(6장). 팀 코드의 <code>getBFSOrientation</code>을 Python으로 옮긴 것입니다. 추가로 설치할 것이 없고 <code>python3 bfs_height.py</code>로 실행합니다. 작은 격자 배(2×3), 간선 순서를 바꾼 같은 배, 격자 배(3×3), 6칸 고리, 5칸 고리의 결과가 차례로 나옵니다.</p>
+<pre>"""너비 우선 탐색(BFS)으로 노드마다 높이·거리·아래 이웃을 구한다 (6장).
+
+팀 코드 function.cpp 의 getBFSOrientation 을 Python으로 옮긴 것이다.
+실행: python3 bfs_height.py
+"""
+
+
+def bfs_height(N, E):
+    """N: 노드 수(0이 출입구), E: 간선 목록. (높이, 거리, 방문 순서, 아래 이웃)을 돌려준다."""
+    nbr = [[] for _ in range(N)]            # nbr[i] = 노드 i의 이웃 목록
+    for u, v in E:
+        nbr[u].append(v)
+        nbr[v].append(u)
+
+    height = [None] * N                     # 높이 = 방문 순번
+    dist = [None] * N                       # 출입구에서의 거리
+    order = []                              # 방문한 순서대로 노드 번호
+    dist[0] = 0
+    layer = [0]                             # 지금 층: 출입구 하나로 시작
+    while layer:
+        next_layer = []                     # 다음 층
+        for i in layer:
+            height[i] = len(order)          # 지금까지 방문한 노드 수 = 이번 노드의 순번
+            order.append(i)
+            for j in nbr[i]:
+                if dist[j] is None:         # 처음 발견한 이웃이면
+                    dist[j] = dist[i] + 1
+                    next_layer.append(j)
+        layer = next_layer
+
+    # 아래 이웃: 이웃 가운데 높이가 더 낮은 노드
+    pred = {i: [j for j in nbr[i] if height[j] &lt; height[i]] for i in range(1, N)}
+    return height, dist, order, pred
+
+
+if __name__ == "__main__":
+    # 2×3 격자 모양의 작은 배 (6장 그림)
+    E = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 4], [3, 5], [4, 5]]
+    height, dist, order, pred = bfs_height(6, E)
+    print("방문 순서:", order)
+    print("높이    :", height)
+    print("거리    :", dist)
+    print("아래 이웃:", pred)
+
+    # 같은 배인데 간선을 적은 순서만 바꾸면? ([0,2]를 [0,1]보다 먼저 적음)
+    E2 = [[0, 2], [0, 1], [1, 3], [1, 4], [2, 4], [3, 5], [4, 5]]
+    height2, dist2, order2, pred2 = bfs_height(6, E2)
+    print("간선 순서를 바꾸면 방문 순서:", order2, " 높이:", height2, " 거리:", dist2)
+
+    # 3×3 격자 (7장 그림). 노드 번호를 높이와 같게 붙여 두었다
+    E3 = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 4], [2, 5], [3, 6], [4, 6], [4, 7], [5, 7], [6, 8], [7, 8]]
+    height3, dist3, order3, pred3 = bfs_height(9, E3)
+    print("3×3 격자 높이:", height3)
+    print("3×3 격자 거리:", dist3)
+    print("3×3 격자 아래 이웃:", pred3)
+
+    # 고리 모양 배 0-1-2-3-4-5-0 (7장 「섬」 그림): 번호와 높이가 다르다
+    E4 = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]
+    height4, dist4, order4, pred4 = bfs_height(6, E4)
+    print("고리(6) 방문 순서:", order4, " 높이:", height4, " 아래 이웃:", pred4)
+
+    # 홀수 고리 0-1-2-3-4-0 (8장): 거리가 같은 이웃 2와 3
+    E5 = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]
+    height5, dist5, order5, pred5 = bfs_height(5, E5)
+    print("고리(5) 방문 순서:", order5, " 높이:", height5, " 거리:", dist5, " 아래 이웃:", pred5)</pre>
+
+    <h3>부록 2. mini_model_enumerate.py</h3>
+    <p>미니 문제 B의 모형(8장)을, 변수에 0과 1(z는 0, 1, 2)을 넣는 모든 조합 5,308,416가지를 전부 해 보는 방법으로 풉니다. 제약 ①~⑥을 if 문으로 그대로 옮겼습니다. 추가로 설치할 것이 없고 <code>python3 mini_model_enumerate.py</code>로 실행하면 1초쯤 뒤에 가능해 8개, 최적값 68, 최적해 두 개가 나옵니다.</p>
+<pre>"""미니 문제 B의 모형(8장)을 '변수 값의 모든 조합을 다 넣어 보기'로 푼다.
+
+솔버가 하는 일을 가장 무식한 방법으로 흉내 낸 것이다.
+변수에 0과 1을 넣는 모든 경우를 만들고, 제약식 ①~⑥을 전부 지키는 것만 남긴 뒤,
+그중 목적함수 값이 가장 작은 것을 고른다.
+실행: python3 mini_model_enumerate.py
+"""
+from itertools import product
+
+# ----- 문제: 일렬 배(출입구 0, 칸 1, 칸 2), 항구 0~3, 고정비 10 -----
+P, F = 4, 10
+cells = [1, 2]                      # 칸
+dist = {1: 1, 2: 2}                 # 출입구에서 칸까지의 거리
+pred = {1: [0], 2: [1]}             # 아래 이웃 (7장)
+demand = {(0, 2): 1, (1, 3): 1}     # 차 A: 항구 0→2, 차 B: 항구 1→3
+
+pairs = [(p, q) for p in range(P) for q in range(p + 1, P)]            # 항구 쌍 6개
+mid = [1, 2]                                                           # 중간 항구
+xkeys = [(p, q, i) for (p, q) in pairs for i in cells]                 # x 12개
+ykeys = [(p, i) for p in mid for i in cells]                           # y 4개 (y_p0 은 1로 고정)
+zkeys = [(p, q, r) for p in range(P) for q in range(p + 1, P) for r in range(q + 1, P)]  # z 4개
+
+
+def demand_ok(x, z):
+    """제약 ①: 항구 쌍 (p, q)마다 구간의 개수가 맞는가"""
+    for (p, q) in pairs:
+        left = sum(x[p, q, i] for i in cells)
+        right = (demand.get((p, q), 0)
+                 - sum(z[p, r, q] for r in range(p + 1, q))      # (p,q)가 r에서 쪼개져 사라진 수
+                 + sum(z[p, q, r] for r in range(q + 1, P))      # (p,r)이 q에서 쪼개진 앞 토막
+                 + sum(z[r, p, q] for r in range(p)))            # (r,q)가 p에서 쪼개진 뒤 토막
+        if left != right:
+            return False
+    return True
+
+
+def access_ok(x, y):
+    """제약 ②~⑥: 중간 항구마다, 칸마다"""
+    for q in mid:
+        yq = {0: 1}                                              # ⑥ 출입구는 항상 접근 가능
+        for i in cells:
+            yq[i] = y[q, i]
+        for i in cells:
+            staying = sum(x[p, r, i] for p in range(q) for r in range(q + 1, P))
+            unload = sum(x[p, q, i] for p in range(q))
+            load = sum(x[q, r, i] for r in range(q + 1, P))
+            if staying &gt; 1 - yq[i]: return False                 # ② 머무는 차가 있으면 접근 불가
+            if unload &gt; yq[i]: return False                      # ③ 내리려면 접근 가능해야
+            if load &gt; yq[i]: return False                        # ④ 실으려면 접근 가능해야
+            if yq[i] &gt; sum(yq[j] for j in pred[i]): return False  # ⑤ 아래 이웃이 받쳐 줘야
+    return True
+
+
+def cost(x):
+    return sum(2 * (F + dist[i]) * x[p, q, i] for (p, q, i) in xkeys)
+
+
+tried = feasible = 0
+best_cost, best = None, []
+for xv in product((0, 1), repeat=len(xkeys)):                    # x: 2^12 = 4096가지
+    x = dict(zip(xkeys, xv))
+    for zv in product((0, 1, 2), repeat=len(zkeys)):             # z: 0, 1, 2 → 3^4 = 81가지
+        z = dict(zip(zkeys, zv))
+        tried += 16                                              # y 16가지를 함께 센 것
+        if not demand_ok(x, z):
+            continue
+        for yv in product((0, 1), repeat=len(ykeys)):            # y: 2^4 = 16가지
+            y = dict(zip(ykeys, yv))
+            if not access_ok(x, y):
+                continue
+            feasible += 1
+            c = cost(x)
+            if best_cost is None or c &lt; best_cost:
+                best_cost, best = c, []
+            if c == best_cost:
+                best.append((x, y, z))
+
+print("넣어 본 조합:", tried)
+print("제약을 모두 지킨 조합(가능해):", feasible)
+print("가장 작은 목적함수 값:", best_cost)
+seen = set()
+for x, y, z in best:
+    key = (tuple(k for k in xkeys if x[k]), tuple((k, z[k]) for k in zkeys if z[k]))
+    if key in seen:
+        continue
+    seen.add(key)
+    print("  x = 1:", [k for k in xkeys if x[k]], " z &gt; 0:", {k: z[k] for k in zkeys if z[k]},
+          " y = 1:", [k for k in ykeys if y[k]])
+print("x, z 가 서로 다른 최적해의 수:", len(seen), " (y 까지 구별하면", len(best), "개)")</pre>
+
+    <h3>부록 3. roro_bruteforce.py</h3>
+    <p>솔버 없이 도는 프로그램입니다. 모형을 작은 문제에서 빠짐없이 뒤져 풀고(<code>solve</code>), 9장의 해 복원 절차로 경로를 만들고(<code>reconstruct</code>), 2장의 채점 규칙으로 검사합니다(<code>check</code>). <code>lower_bound</code>는 대회 LB 계산입니다. <code>python3 roro_bruteforce.py</code>로 실행하면 미니 문제 A, 미니 문제 B, 갈림길 배, 공식 예시, 가지가 있는 배를 차례로 풉니다. 칸 10개, 차 10대쯤까지만 금방 끝납니다. 1단계에서 본 문법을 많이 쓰므로 다섯 파일 가운데 읽기가 가장 어렵습니다.</p>
+<pre>"""tryAgain 모형을 아주 작은 문제에서 '모든 경우를 다 해 보기'로 푸는 검증용 프로그램.
+
+- 솔버 없이 Python만으로 돈다. 팀 코드를 실행한 것이 아니라 같은 모형을 다시 쓴 것이다.
+- solve()       : 모형의 최적해 찾기 (8장)
+- reconstruct() : 해를 경로 목록으로 바꾸기 = 팀의 get_solution (9장)
+- check()       : 대회 채점 규칙으로 검사 (2장)
+- 실행: python3 roro_bruteforce.py   (칸 10개, 차 10대 정도까지만 금방 끝난다)
+"""
+import itertools, sys, json
+from collections import Counter
+
+def bfs_orientation(N, E, accessible=None):
+    nbr = [[] for _ in range(N)]
+    for u, v in E:
+        nbr[u].append(v); nbr[v].append(u)
+    if accessible is None: accessible = [True]*N
+    INF = float('inf')
+    pred = [INF]*N; pos = [INF]*N; dist = [INF]*N
+    order = []
+    search = [0]; dist[0] = 0; pred[0] = -1; p = 0
+    while search:
+        nxt = []
+        for i in search:
+            order.append(i); pos[i] = p; p += 1
+            for j in nbr[i]:
+                if accessible[j] and pred[j] == INF:
+                    pred[j] = i; dist[j] = dist[i]+1; nxt.append(j)
+        search = nxt
+    return nbr, pred, pos, dist, order
+
+def compositions(o, d):
+    """[o,d) 구간을 연속한 구간(leg)들로 쪼개는 모든 방법"""
+    res = []
+    mids = list(range(o+1, d))
+    for r in range(len(mids)+1):
+        for cut in itertools.combinations(mids, r):
+            pts = [o, *cut, d]
+            res.append(tuple(zip(pts[:-1], pts[1:])))
+    return res
+
+def solve(N, E, P, K, F, verbose=True):
+    nbr, pred0, pos, dist, order = bfs_orientation(N, E)
+    predset = {i: [j for j in nbr[i] if pos[j] &lt; pos[i]] for i in range(1, N)}
+    cars = []
+    for k, ((o, d), q) in enumerate(K):
+        cars += [(k, o, d)]*q
+    best = [float('inf'), None]
+    nodes_by_dist = sorted(range(1, N), key=lambda i: (dist[i], pos[i]))
+
+    def accessible_ok(assign):
+        # assign: list of (p,q,i)
+        for port in range(1, P-1):
+            staying = {i for (p, q, i) in assign if p &lt; port &lt; q}
+            active = {i for (p, q, i) in assign if p == port or q == port}
+            if active &amp; staying: return False
+            # y: 가장 크게 잡을 수 있는 y (staying 아닌 노드 중 단조 경로로 닿는 것)
+            y = {0}
+            for i in order[1:]:
+                if i not in staying and any(j in y for j in predset[i]):
+                    y.add(i)
+            if not active &lt;= y: return False
+        return True
+
+    seen_multisets = set()
+    for combo in itertools.product(*[compositions(o, d) for (_, o, d) in cars]):
+        legs = sorted(l for c in combo for l in c)
+        key = tuple(legs)
+        if key in seen_multisets: continue
+        seen_multisets.add(key)
+        # 하한: 모든 leg가 가장 가까운 노드에
+        if 2*len(legs)*(F+1) &gt;= best[0]: continue
+        occ = {i: [] for i in range(1, N)}
+        assign = []
+        def dfs(idx, cost):
+            if cost + 2*(len(legs)-idx)*(F+1) &gt;= best[0]: return
+            if idx == len(legs):
+                if accessible_ok(assign):
+                    best[0] = cost; best[1] = (list(assign), combo)
+                return
+            p, q = legs[idx]
+            prev_same = idx &gt; 0 and legs[idx-1] == (p, q)
+            for i in nodes_by_dist:
+                if prev_same and pos[i] &lt; pos[assign[-1][2]]: continue  # 대칭 제거
+                if any(not (q &lt;= a or b &lt;= p) for a, b in occ[i]): continue
+                occ[i].append((p, q)); assign.append((p, q, i))
+                dfs(idx+1, cost + 2*(F+dist[i]))
+                assign.pop(); occ[i].pop()
+        dfs(0, 0)
+    cost, (assign, combo) = best
+    # z 복원
+    z = Counter()
+    for (k, o, d), comp in zip(cars, combo):
+        # 순차 분할: (o,d) -&gt; 첫 leg (o,m) + (m,d) ...  (긴 구간에서 짧은 구간으로)
+        cur_o = o
+        for (a, b) in comp[:-1]:
+            z[(a, b, d)] += 1
+    return dict(cost=cost, x=sorted(assign), z=dict(z), dist=dist, pos=pos,
+                predset=predset, cars=cars, combo=combo)
+
+def reconstruct(N, E, P, K, x, z):
+    """function.cpp의 get_solution을 그대로 옮긴 것"""
+    xs = set(x)
+    pool = {}
+    for k, ((o, d), q) in enumerate(K):
+        pool[(o, d)] = [k]*q
+    rem = dict(z)
+    left = len([v for v in rem.values() if v &gt; 0])
+    while left &gt; 0:
+        for key in list(rem):
+            value = rem[key]
+            p, q, r = key
+            amt = min(value, len(pool.get((p, r), [])))
+            if amt == 0: continue
+            for _ in range(amt):
+                k = pool[(p, r)].pop()
+                pool.setdefault((p, q), []).append(k)
+                pool.setdefault((q, r), []).append(k)
+            rem[key] -= amt
+            if amt == value: left -= 1
+    sol = {p: [] for p in range(P)}
+    for c in range(P):
+        acc = [True]*N
+        if 0 &lt; c &lt; P-1:
+            for i in range(1, N):
+                acc[i] = not any((p, r, i) in xs for p in range(c) for r in range(c+1, P))
+        nbr, pred, pos, dist, order = bfs_orientation(N, E, acc)
+        def route(i):
+            r = []
+            while i != 0:
+                r.append(i); i = pred[i]
+            r.append(0); return r
+        if c &gt; 0:
+            for i in order[1:]:
+                for p in range(c):
+                    if (p, c, i) in xs:
+                        sol[c].append([route(i), 0])   # 원 코드: 하역 경로의 수요 번호는 항상 0
+        if c &lt; P-1:
+            for i in reversed(order[1:]):
+                for r in range(c+1, P):
+                    if (c, r, i) in xs:
+                        k = pool[(c, r)].pop()
+                        sol[c].append([route(i)[::-1], k])
+    return sol
+
+def check(N, E, P, K, F, LB, solution):
+    """util.check_feasibility를 numpy 없이 옮긴 것"""
+    Eset = set(map(tuple, E))
+    alloc = [-1]*N
+    obj = 0; inf = []
+    for p in range(P):
+        for route, k in solution[p]:
+            if len(route) &lt;= 1: inf.append('short')
+            if len(route) != len(set(route)): inf.append('not simple')
+            for u, v in zip(route[:-1], route[1:]):
+                if (u, v) not in Eset and (v, u) not in Eset: inf.append(f'bad edge {(u,v)}')
+            if route[0] == 0:
+                if alloc[route[-1]] != -1: inf.append(f'load occupied {route}')
+                if any(alloc[i] != -1 for i in route[:-1]): inf.append(f'load blocked {route}')
+                alloc[route[-1]] = k
+            elif route[-1] == 0:
+                if alloc[route[0]] == -1: inf.append(f'unload empty {route}')
+                if any(alloc[i] != -1 for i in route[1:]): inf.append(f'unload blocked {route}')
+                alloc[route[0]] = -1
+            else:
+                inf.append('rehandling route (not expected)')
+            obj += F + len(route) - 1
+        cur = Counter(a for a in alloc if a &gt;= 0)
+        exp = {k: r for k, ((o, d), r) in enumerate(K) if o &lt;= p &lt; d}
+        if cur != exp: inf.append(f'port {p}: {dict(cur)} != {exp}')
+    return obj, obj - LB, inf
+
+def lower_bound(N, E, P, K, F):
+    _, _, _, dist, _ = bfs_orientation(N, E)
+    ds = sorted(dist[1:])
+    LB = 0
+    for p in range(P):
+        load = sum(q for ((o, d), q) in K if o == p)
+        unload = sum(q for ((o, d), q) in K if d == p)
+        LB += F*(load+unload) + sum(ds[:load]) + sum(ds[:unload])
+    return LB
+
+def run(name, N, E, P, K, F):
+    print('=====', name)
+    LB = lower_bound(N, E, P, K, F)
+    r = solve(N, E, P, K, F)
+    print('dist', r['dist']); print('pos', r['pos']); print('pred', r['predset'])
+    print('model cost', r['cost'], 'LB', LB, 'model obj', r['cost']-LB)
+    print('x (p,q,i):', r['x'])
+    print('z (p,q,r):', r['z'])
+    sol = reconstruct(N, E, P, K, r['x'], r['z'])
+    for p in range(P):
+        print(' port', p)
+        for route, k in sol[p]: print('    ', route, k)
+    print('check (total, obj, infeasibility):', check(N, E, P, K, F, LB, sol))
+    return r, sol
+
+if __name__ == '__main__':
+    LINE3 = [[0, 1], [1, 2]]                       # 일렬 배, 칸 2개
+    # 미니 문제 A: 항구 3개. 차 A(0→2), 차 B(0→1)
+    run('mini-A', 3, LINE3, 3, [[[0, 2], 1], [[0, 1], 1]], 10)
+    # 미니 문제 B: 항구 4개. 차 A(0→2), 차 B(1→3)
+    run('mini-B', 3, LINE3, 4, [[[0, 2], 1], [[1, 3], 1]], 10)
+    # 미니 문제 B를 갈림길이 있는 배(0-1, 1-2, 1-3)에서
+    run('mini-B-fork', 4, [[0, 1], [1, 2], [1, 3]], 4, [[[0, 2], 1], [[1, 3], 1]], 10)
+    # 공식 예시: 일렬 배 0-1-2-3-4, 항구 5개, F=10
+    run('official', 5, [[0, 1], [1, 2], [2, 3], [3, 4]], 5,
+        [[[0, 2], 2], [[1, 4], 1], [[2, 3], 1], [[1, 3], 1], [[3, 4], 1]], 10)
+    # 가지가 있는 배 (2장 그림 (가))
+    E1 = [[0, 1], [1, 2], [2, 3], [2, 4], [4, 5], [5, 6], [5, 7]]
+    run('branch', 8, E1, 4, [[[0, 3], 2], [[0, 2], 1], [[1, 3], 1], [[1, 2], 2], [[2, 3], 2]], 10)</pre>
+
+    <h3>부록 4. roro_model_ortools.py</h3>
+    <p>같은 모형을 무료 솔버로 풉니다. <code>pip install ortools</code>로 설치한 뒤 <code>python3 roro_model_ortools.py</code>로 실행합니다. 미니 문제 B, 공식 예시, 가지가 있는 배의 총비용(68, 190, 202)과 LP 완화의 값(46, 145, 202)이 나옵니다. 식과 코드가 한 줄씩 대응하게 적었으므로, 4단계의 "제약 빼 보기"는 이 파일로 합니다. OR-Tools 9.15에서 확인했습니다.</p>
+<pre>"""tryAgain의 모형(8장)을 무료 솔버로 푼다. Google OR-Tools 사용.
+
+- 설치: pip install ortools      (라이선스가 필요 없다)
+- 실행: python3 roro_model_ortools.py
+- 원본: 팀 코드 function.cpp 의 formulate(). 변수와 제약식의 번호 ①~⑥은 8장과 같다.
+"""
+from ortools.linear_solver import pywraplp
+
+
+def bfs_height(N, E):
+    """6장: 출입구(0)에서 너비 우선 탐색. 높이와 거리, 이웃 목록을 돌려준다."""
+    nbr = [[] for _ in range(N)]
+    for u, v in E:
+        nbr[u].append(v)
+        nbr[v].append(u)
+    height, dist = [None] * N, [None] * N
+    dist[0] = 0
+    layer, count = [0], 0
+    while layer:
+        next_layer = []
+        for i in layer:
+            height[i] = count
+            count += 1
+            for j in nbr[i]:
+                if dist[j] is None:
+                    dist[j] = dist[i] + 1
+                    next_layer.append(j)
+        layer = next_layer
+    return nbr, height, dist
+
+
+def solve(prob, relax=False):
+    """relax=True 이면 '0 또는 1'이라는 조건을 '0 이상 1 이하'로 풀어 준 LP 완화를 푼다 (5장)."""
+    N, E, P, K, F = prob["N"], prob["E"], prob["P"], prob["K"], prob["F"]
+    nbr, height, dist = bfs_height(N, E)
+
+    pred = {}                                   # pred[i] = 칸 i의 아래 이웃 목록
+    for i in range(1, N):
+        pred[i] = []
+        for j in nbr[i]:
+            if height[j] &lt; height[i]:
+                pred[i].append(j)
+
+    pairs = []                                  # 항구 쌍 (p, q), p &lt; q
+    for p in range(P):
+        for q in range(p + 1, P):
+            pairs.append((p, q))
+    cells = range(1, N)                         # 칸 (출입구 제외)
+    mid = range(1, P - 1)                       # 중간 항구
+
+    d = {}                                      # d[p, q] = 항구 p에서 실어 q에서 내릴 차의 수
+    for (p, q) in pairs:
+        d[p, q] = 0
+    for (o, dest), qty in K:
+        d[o, dest] = qty
+
+    s = pywraplp.Solver.CreateSolver("GLOP" if relax else "SCIP")
+    INF = s.infinity()
+
+    def var(lo, hi, name):          # 정수 변수(완화할 때는 실수 변수) 하나 만들기
+        if relax:
+            return s.NumVar(lo, hi, name)
+        return s.IntVar(lo, hi, name)
+
+    # --- 결정변수 ---
+    x, y, z = {}, {}, {}
+    for (p, q) in pairs:
+        for i in cells:
+            x[p, q, i] = var(0, 1, f"x_{p}_{q}_{i}")
+    for p in mid:
+        for i in range(N):
+            y[p, i] = var(0, 1, f"y_{p}_{i}")
+    for p in range(P):
+        for q in range(p + 1, P):
+            for r in range(q + 1, P):
+                z[p, q, r] = var(0, INF, f"z_{p}_{q}_{r}")
+
+    # --- 목적함수: 구간 하나 = 선적 경로 + 하역 경로 ---
+    cost = 0
+    for (p, q) in pairs:
+        for i in cells:
+            cost = cost + 2 * (F + dist[i]) * x[p, q, i]
+    s.Minimize(cost)
+
+    # --- 제약 ① 수요: 항구 쌍마다 구간의 개수 맞추기 ---
+    for (p, q) in pairs:
+        left = 0
+        for i in cells:
+            left = left + x[p, q, i]
+        right = d[p, q]
+        for r in range(p + 1, q):
+            right = right - z[p, r, q]          # (p,q)가 r에서 쪼개져 사라진 수
+        for r in range(q + 1, P):
+            right = right + z[p, q, r]          # (p,r)이 q에서 쪼개진 앞 토막
+        for r in range(p):
+            right = right + z[r, p, q]          # (r,q)가 p에서 쪼개진 뒤 토막
+        s.Add(left == right)
+
+    for q in mid:
+        s.Add(y[q, 0] == 1)                     # 제약 ⑥ 출입구는 접근 가능
+        for i in cells:
+            staying = 0                         # 항구 q에서 칸 i에 머무는 구간
+            for p in range(q):
+                for r in range(q + 1, P):
+                    staying = staying + x[p, r, i]
+            s.Add(staying &lt;= 1 - y[q, i])       # 제약 ② 머무는 차가 있으면 접근 불가
+
+            unload = 0                          # 항구 q에서 칸 i로부터 내리는 구간
+            for p in range(q):
+                unload = unload + x[p, q, i]
+            s.Add(unload &lt;= y[q, i])            # 제약 ③ 내리려면 접근 가능
+
+            load = 0                            # 항구 q에서 칸 i에 싣는 구간
+            for r in range(q + 1, P):
+                load = load + x[q, r, i]
+            s.Add(load &lt;= y[q, i])              # 제약 ④ 실으려면 접근 가능
+
+            below = 0                           # 아래 이웃들의 y
+            for j in pred[i]:
+                below = below + y[q, j]
+            s.Add(y[q, i] &lt;= below)             # 제약 ⑤ 아래 이웃이 받쳐 줘야
+
+    status = s.Solve()
+    assert status == pywraplp.Solver.OPTIMAL
+    xs, zs = {}, {}
+    for k in x:
+        if x[k].solution_value() &gt; 1e-6:
+            xs[k] = x[k].solution_value()
+    for k in z:
+        if z[k].solution_value() &gt; 1e-6:
+            zs[k] = z[k].solution_value()
+    return s.Objective().Value(), xs, zs, s.NumVariables(), s.NumConstraints()
+
+
+if __name__ == "__main__":
+    mini_b = {"N": 3, "E": [[0, 1], [1, 2]], "P": 4, "K": [[[0, 2], 1], [[1, 3], 1]], "F": 10}
+    official = {"N": 5, "E": [[0, 1], [1, 2], [2, 3], [3, 4]], "P": 5,
+                "K": [[[0, 2], 2], [[1, 4], 1], [[2, 3], 1], [[1, 3], 1], [[3, 4], 1]], "F": 10, "LB": 137}
+    branch = {"N": 8, "E": [[0, 1], [1, 2], [2, 3], [2, 4], [4, 5], [5, 6], [5, 7]], "P": 4,
+              "K": [[[0, 3], 2], [[0, 2], 1], [[1, 3], 1], [[1, 2], 2], [[2, 3], 2]], "F": 10}
+
+    for name, prob in [("미니 문제 B", mini_b), ("공식 예시", official), ("가지가 있는 배", branch)]:
+        cost, xs, zs, nvar, ncon = solve(prob)
+        print(f"== {name}: 변수 {nvar}개, 제약 {ncon}개, 총비용 = {cost:.0f}")
+        print("   x = 1 (실은 항구, 내린 항구, 칸):", sorted(xs))
+        print("   z &gt; 0 (실은 항구, 쪼갠 항구, 내릴 항구):", {k: round(v) for k, v in zs.items()})
+        lp, lx, lz, _, _ = solve(prob, relax=True)
+        frac = sorted(set(round(v, 4) for v in list(lx.values()) + list(lz.values()) if abs(v - round(v)) &gt; 1e-6))
+        print(f"   LP 완화의 값 = {lp:.2f}  (0도 1도 아닌 값들: {frac})")</pre>
+
+    <h3>부록 5. roro_model_gurobipy.py</h3>
+    <p>같은 모형을 팀이 쓴 솔버 Gurobi로 풉니다. <code>pip install gurobipy</code>로 깔리는 제한판(변수 2,000개, 제약 2,000개까지)으로 돌아가고, 공식 예시의 총비용 190이 나옵니다. gurobipy 14.0.0에서 확인했습니다. 대회 서버의 Gurobi는 12 버전이었고, 팀의 C++ 코드 자체는 이 문서에서 실행하지 않았습니다.</p>
+<pre>"""tryAgain의 모형(8장)을 gurobipy로 옮긴 실습용 코드. 팀이 쓴 솔버(Gurobi)와 같은 솔버다.
+
+- 원본: 팀 코드 function.cpp 의 formulate()
+- 설치: pip install gurobipy
+  (pip 설치본에 든 제한 라이선스는 변수 2000개, 제약 2000개까지 풀 수 있다)
+- 실행: python3 roro_model_gurobipy.py
+- 이 문서를 쓰면서 gurobipy 14.0.0 으로 실행해 총비용 190 이 나오는 것을 확인했다.
+"""
+import gurobipy as gp
+from gurobipy import GRB
+
+
+def bfs_orientation(N, E):
+    """6장: 출입구(0)에서 너비 우선 탐색. 높이 pos, 거리 dist, 이웃 목록 nbr를 돌려준다."""
+    nbr = [[] for _ in range(N)]
+    for u, v in E:
+        nbr[u].append(v)
+        nbr[v].append(u)
+    pos, dist = [None] * N, [None] * N
+    dist[0] = 0
+    layer, position = [0], 0
+    seen = {0}
+    while layer:
+        nxt = []
+        for i in layer:
+            pos[i] = position
+            position += 1
+            for j in nbr[i]:
+                if j not in seen:
+                    seen.add(j)
+                    dist[j] = dist[i] + 1
+                    nxt.append(j)
+        layer = nxt
+    return nbr, pos, dist
+
+
+def build_model(prob):
+    N, E, P, K, F = prob["N"], prob["E"], prob["P"], prob["K"], prob["F"]
+    nbr, pos, dist = bfs_orientation(N, E)
+    pred = {i: [j for j in nbr[i] if pos[j] &lt; pos[i]] for i in range(1, N)}
+    d = {(p, q): 0 for p in range(P) for q in range(p + 1, P)}
+    for (o, dest), qty in K:
+        d[o, dest] = qty
+
+    m = gp.Model("roro")
+    pairs = [(p, q) for p in range(P) for q in range(p + 1, P)]
+    nodes = range(1, N)          # 칸 (출입구 제외)
+    mid = range(1, P - 1)        # 첫 항구와 마지막 항구를 뺀 항구
+
+    # --- 변수 ---
+    x = m.addVars(((p, q, i) for (p, q) in pairs for i in nodes), vtype=GRB.BINARY, name="x")
+    y = m.addVars(((p, i) for p in mid for i in range(N)), vtype=GRB.BINARY, name="y")
+    z = m.addVars(((p, q, r) for p in range(P) for q in range(p + 1, P) for r in range(q + 1, P)),
+                  vtype=GRB.INTEGER, lb=0, name="z")
+
+    # --- 목적함수: 구간 하나 = 선적 경로 + 하역 경로 ---
+    m.setObjective(gp.quicksum(2 * (F + dist[i]) * x[p, q, i] for (p, q) in pairs for i in nodes),
+                   GRB.MINIMIZE)
+
+    # --- 제약 ① 수요 ---
+    for (p, q) in pairs:
+        m.addConstr(
+            gp.quicksum(x[p, q, i] for i in nodes)
+            == d[p, q]
+            - gp.quicksum(z[p, r, q] for r in range(p + 1, q))      # (p,q)가 r에서 쪼개져 없어짐
+            + gp.quicksum(z[p, q, r] for r in range(q + 1, P))      # (p,r)이 q에서 쪼개진 앞 토막
+            + gp.quicksum(z[r, p, q] for r in range(p)),            # (r,q)가 p에서 쪼개진 뒤 토막
+            name=f"demand_{p}_{q}")
+
+    for q in mid:
+        m.addConstr(y[q, 0] == 1, name=f"gate_{q}")                                   # ⑥
+        for i in nodes:
+            staying = gp.quicksum(x[p, r, i] for p in range(q) for r in range(q + 1, P))
+            m.addConstr(staying &lt;= 1 - y[q, i], name=f"occupied_{q}_{i}")              # ②
+            m.addConstr(gp.quicksum(x[p, q, i] for p in range(q)) &lt;= y[q, i],
+                        name=f"unload_{q}_{i}")                                       # ③
+            m.addConstr(gp.quicksum(x[q, r, i] for r in range(q + 1, P)) &lt;= y[q, i],
+                        name=f"load_{q}_{i}")                                         # ④
+            m.addConstr(y[q, i] &lt;= gp.quicksum(y[q, j] for j in pred[i]),
+                        name=f"propagate_{q}_{i}")                                    # ⑤
+    return m, x, y, z
+
+
+if __name__ == "__main__":
+    example = {
+        "N": 5, "E": [[0, 1], [1, 2], [2, 3], [3, 4]], "P": 5,
+        "K": [[[0, 2], 2], [[1, 4], 1], [[2, 3], 1], [[1, 3], 1], [[3, 4], 1]],
+        "F": 10, "LB": 137,
+    }
+    model, x, y, z = build_model(example)
+
+    # tryAgain이 건 설정 (10장). 주석을 풀어 가며 로그가 어떻게 달라지는지 비교해 볼 수 있다.
+    # model.Params.MIPGapAbs = 2 - 1e-3
+    # model.Params.Heuristics = 0.15
+    # model.Params.Method = 2
+    # model.Params.NoRelHeurTime = 5
+
+    model.optimize()
+    print("총비용 =", model.ObjVal, " 목적함수(총비용 - LB) =", model.ObjVal - example["LB"])
+    print("x = 1 (실은 항구, 내린 항구, 칸):", sorted(k for k, v in x.items() if v.X &gt; 0.5))
+    print("z &gt; 0 (p, 쪼갠 항구 q, r):", {k: round(v.X) for k, v in z.items() if v.X &gt; 0.5})</pre>
+  </section>
+
+  <div class="pager"><a href="#ch11">← 이전: 11장 결과·한계·개선 방향</a><span></span></div>
+</article>

@@ -1,0 +1,309 @@
+<article class="chapter" id="ch7">
+  <header>
+    <div class="kicker">7 / 16</div>
+    <h1>선형계획 ②: 꼭짓점을 계산으로</h1>
+  </header>
+
+  <section>
+    <p class="lead">6장에서 LP의 최적해는 가능 영역의 꼭짓점 가운데 있다는 것을 보았습니다. 변수가 둘이면 그림을 그려 모퉁이를 찾으면 됩니다. 하지만 변수가 수천, 수만 개인 문제에서는 그림을 그릴 수 없습니다. 이 장에서는 3장에서 배운 행렬과 연립방정식을 써서, 그림 없이 계산만으로 꼭짓점을 찾아내는 방법을 배웁니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 3장(행렬, Ax ≤ b, 열로 읽기, 연립방정식과 소거법, 2 × 2 행렬식, <code>solve2</code> 함수), 6장(LP, 도해법, 꼭짓점 정리).</li>
+      <li><strong>이 장을 읽고 나면.</strong> 어떤 LP든 여유·잉여 변수를 붙여 표준형으로 바꿀 수 있고, 기저와 기저가능해가 무엇인지 설명할 수 있으며, 공방 예의 모든 기저를 Python으로 직접 계산할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <div class="part">1부 · 부등식을 등식으로: 표준형</div>
+
+  <section>
+    <h2>여유 변수와 잉여 변수</h2>
+    <p>3장에서 우리는 연립방정식을 푸는 도구를 손에 넣었습니다. 문제는 LP의 제약이 등식(=)이 아니라 부등식(≤, ≥)이라는 점입니다. 부등식을 등식으로 바꿀 수만 있다면 연립방정식 도구를 그대로 쓸 수 있습니다.</p>
+    <p>공방 예의 목재 제약을 봅니다. 책상 x<sub>1</sub>개, 의자 x<sub>2</sub>개를 만들 때 쓰는 목재는 6x<sub>1</sub> + 4x<sub>2</sub>이고, 창고에 있는 목재는 24입니다.</p>
+    <div class="formula">6x<sub>1</sub> + 4x<sub>2</sub> ≤ 24</div>
+    <p>"쓴 목재가 24 이하"라는 말은 <strong>"남은 목재가 0 이상"</strong>이라는 말과 똑같습니다. 남은 목재의 양을 새 변수 s<sub>1</sub>이라 부르면 부등식이 등식으로 바뀝니다.</p>
+    <div class="formula">6x<sub>1</sub> + 4x<sub>2</sub> + s<sub>1</sub> = 24,&nbsp;&nbsp; s<sub>1</sub> ≥ 0</div>
+    <p>예를 들어 책상 2개, 의자 1개를 만들면 목재를 16만큼 쓰므로 남은 목재는 s<sub>1</sub> = 8입니다. 목재를 딱 24만큼 남김없이 썼다면 s<sub>1</sub> = 0입니다. 작업 시간 제약 x<sub>1</sub> + 2x<sub>2</sub> ≤ 6에도 남는 시간 s<sub>2</sub> ≥ 0을 붙입니다.</p>
+    <p>반대로 트럭 예의 제약은 ≥입니다.</p>
+    <div class="formula">9x + 5y ≥ 30</div>
+    <p>"실은 양이 30톤 이상"이라는 말은 <strong>"30톤보다 넘치게 실은 여유 공간이 0 이상"</strong>이라는 뜻입니다. 넘치는 양을 s ≥ 0이라 부르면 이번에는 <em>빼서</em> 등식을 만듭니다.</p>
+    <div class="formula">9x + 5y − s = 30,&nbsp;&nbsp; s ≥ 0</div>
+    <p>큰 트럭 3대와 작은 트럭 1대를 부르면 32톤을 실을 수 있으므로 s = 2톤이 남습니다. 딱 30톤을 실으면 s = 0입니다.</p>
+    <div class="defn"><b>정의</b>
+      <ul>
+        <li><strong>여유 변수(slack variable)</strong>: ≤ 제약에서 「남는 양」을 나타내려고 더하는 0 이상의 변수. (a·x + s = b, s ≥ 0)</li>
+        <li><strong>잉여 변수(surplus variable)</strong>: ≥ 제약에서 「넘치는 양」을 나타내려고 빼는 0 이상의 변수. (a·x − s = b, s ≥ 0)</li>
+      </ul>
+    </div>
+    <p>이 새 변수들은 계산 편의를 위한 빈 글자가 아닙니다. s<sub>1</sub> = 0이라는 것은 "목재 제약의 경계선 6x<sub>1</sub> + 4x<sub>2</sub> = 24 위에 서 있다"는 뜻이고, s<sub>1</sub> &gt; 0이면 "경계선 안쪽에 여유를 두고 있다"는 뜻입니다.</p>
+  </section>
+
+  <section>
+    <h2>모든 LP를 한 모양으로: 표준형</h2>
+    <p>문제를 푸는 알고리듬은 제약의 부등호가 제각각인 것보다 한 가지 정해진 모양으로 들어오는 편이 훨씬 다루기 쉽습니다. 모든 제약을 등식으로, 모든 변수를 0 이상으로 맞춘 모양을 <strong>표준형</strong>이라고 합니다.</p>
+    <div class="defn"><b>정의 (표준형)</b> 모든 제약이 등식(Ax = b)이고, 모든 변수가 0 이상(x ≥ 0)인 LP의 모양을 <strong>표준형(standard form)</strong>이라고 합니다. 이론을 정리할 때는 목적함수를 최소화(c·x)로 통일해 두는 경우가 많습니다.</div>
+    <p>어떤 LP든 다음 네 가지 규칙을 거치면 표준형이 됩니다.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>원래 모양</th><th>표준형으로 바꾸는 법</th><th>메모</th></tr></thead>
+      <tbody>
+        <tr><td>최대화 c·x</td><td>최소화 (−c)·x</td><td>부호를 뒤집으면 답은 같고 최적값은 부호만 반대</td></tr>
+        <tr><td>a·x ≤ β</td><td>a·x + s = β,&nbsp; s ≥ 0</td><td>여유 변수 s 추가</td></tr>
+        <tr><td>a·x ≥ β</td><td>a·x − s = β,&nbsp; s ≥ 0</td><td>잉여 변수 s 추가</td></tr>
+        <tr><td>부호 제한 없는 x<sub>j</sub></td><td>x<sub>j</sub> = x<sub>j</sub><sup>+</sup> − x<sub>j</sub><sup>−</sup>,&nbsp; x<sub>j</sub><sup>+</sup>, x<sub>j</sub><sup>−</sup> ≥ 0</td><td>양수 부분과 음수 부분의 차로 쪼개기</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>네 번째 줄을 짧게 봅니다. 어떤 수든 양수 두 개의 차로 쓸 수 있습니다(예: −5 = 0 − 5, +3 = 3 − 0). 그러니 음수도 될 수 있는 변수 x<sub>j</sub>가 있으면 0 이상인 변수 둘의 차 x<sub>j</sub><sup>+</sup> − x<sub>j</sub><sup>−</sup>로 바꿔 적으면 됩니다.</p>
+    <p>공방 예와 트럭 예의 LP 버전을 표준형으로 적어 봅니다.</p>
+    <div class="eq">
+      <div class="row"><span>공방 예: 최소화 −5x<sub>1</sub> − 4x<sub>2</sub></span><span class="all">식 2줄, 변수 4개 (m = 2, n = 4)</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6x<sub>1</sub> + 4x<sub>2</sub> + s<sub>1</sub> = 24,&nbsp;&nbsp; x<sub>1</sub> + 2x<sub>2</sub> + s<sub>2</sub> = 6,&nbsp;&nbsp; x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub> ≥ 0</span></div>
+      <div class="row"><span>트럭 예: 최소화 10x + 7y</span><span class="all">식 1줄, 변수 3개 (m = 1, n = 3)</span></div>
+      <div class="row"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9x + 5y − s = 30,&nbsp;&nbsp; x, y, s ≥ 0</span></div>
+    </div>
+    <p>공방 예에서 원래 문제의 5x<sub>1</sub> + 4x<sub>2</sub> 최대화는 −5x<sub>1</sub> − 4x<sub>2</sub> 최소화와 같은 뜻입니다. 앞으로 최대화 문제를 표나 코드로 다룰 때는 계산 편의를 위해 이익 5x<sub>1</sub> + 4x<sub>2</sub> 자체로 값을 읽기도 합니다.</p>
+  </section>
+
+  <div class="part">2부 · 기저와 기저가능해</div>
+
+  <section>
+    <h2>경계 직선의 교점 = 변수 몇 개를 0으로 두기</h2>
+    <p>6장에서 공방 예의 꼭짓점 (3, 3/2)를 구할 때 두 직선 6x<sub>1</sub> + 4x<sub>2</sub> = 24와 x<sub>1</sub> + 2x<sub>2</sub> = 6을 연립했습니다. 여유 변수의 눈으로 보면 이 말은 곧 <strong>s<sub>1</sub> = 0, s<sub>2</sub> = 0</strong>이라고 둔 것입니다.</p>
+    <p>그렇다면 나머지 세 꼭짓점은 어떨까요?</p>
+    <ul class="plain">
+      <li>꼭짓점 (0, 0): x<sub>1</sub> = 0, x<sub>2</sub> = 0으로 둔 것. 그러면 s<sub>1</sub> = 24, s<sub>2</sub> = 6이 됩니다.</li>
+      <li>꼭짓점 (4, 0): x<sub>2</sub> = 0, s<sub>1</sub> = 0으로 둔 것. 그러면 6x<sub>1</sub> = 24에서 x<sub>1</sub> = 4, s<sub>2</sub> = 6 − 4 = 2입니다.</li>
+      <li>꼭짓점 (0, 3): x<sub>1</sub> = 0, s<sub>2</sub> = 0으로 둔 것. 그러면 2x<sub>2</sub> = 6에서 x<sub>2</sub> = 3, s<sub>1</sub> = 24 − 12 = 12입니다.</li>
+    </ul>
+    <p>놀라운 규칙이 보입니다. 공방 예의 표준형은 <strong>등식이 2줄, 변수가 4개</strong>입니다. 꼭짓점마다 변수 4개 가운데 <strong>2개가 0</strong>이고, 나머지 <strong>2개만 연립방정식으로 풀어서</strong> 값을 얻었습니다!</p>
+    <div class="why"><p>왜 꼭 2개일까요? 2차원 평면에서 꼭짓점은 경계 직선 2개가 만나는 점입니다. 공방 예의 경계 직선은 x<sub>1</sub> = 0, x<sub>2</sub> = 0, 6x<sub>1</sub> + 4x<sub>2</sub> = 24(곧 s<sub>1</sub> = 0), x<sub>1</sub> + 2x<sub>2</sub> = 6(곧 s<sub>2</sub> = 0) 네 개입니다. 즉, "경계 직선 위에 있다"는 말이 곧 "변수 하나가 0이다"라는 뜻입니다. 두 경계 직선의 교점을 찾는 일은 네 변수 중 두 변수를 0으로 두고 남은 등식 2개를 푸는 일과 정확히 같습니다.</p></div>
+  </section>
+
+  <section>
+    <h2>기저, 기저해, 기저가능해</h2>
+    <p>이 생각을 등식 m줄, 변수 n개(n ≥ m)인 일반적인 표준형 Ax = b로 넓힙니다. 변수가 n개인데 등식이 m개뿐이므로, 보통 해가 무수히 많습니다. 하지만 n − m개의 변수를 0으로 묶어 두면 미지수가 m개, 등식도 m개가 되어 정사각 연립방정식이 됩니다.</p>
+    <div class="defn"><b>정의</b> 등식이 m개, 변수가 n개인 표준형 Ax = b에서:
+      <ul>
+        <li><strong>기저(basis)</strong>: 등식 개수 m개만큼 고른 변수들의 묶음. 단, 그 변수들에 해당하는 열 m개로 만든 정사각 행렬의 행렬식이 0이 아니어야 합니다(연립방정식의 해가 하나로 정해지도록).</li>
+        <li><strong>기저 변수(basic variable)</strong>: 기저에 뽑힌 m개의 변수. 나머지 n − m개는 <strong>비기저 변수(nonbasic variable)</strong>라고 하며 0으로 둡니다.</li>
+        <li><strong>기저해(basic solution)</strong>: 비기저 변수를 모두 0으로 두고, 기저 변수 m개를 연립방정식으로 풀어 얻은 해.</li>
+        <li><strong>기저가능해(basic feasible solution)</strong>: 기저해 가운데 모든 변수가 0 이상(x ≥ 0)인 해.</li>
+      </ul>
+    </div>
+    <p>공방 예에서 m = 2, n = 4입니다. 4개 변수 (x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>)에서 2개를 고르는 방법은 C(4, 2) = 6가지입니다. 3장의 열 관점으로 각 변수의 열을 적어 보면 A의 열들은 x<sub>1</sub> → (6, 1), x<sub>2</sub> → (4, 2), s<sub>1</sub> → (1, 0), s<sub>2</sub> → (0, 1)이고 오른쪽은 b = (24, 6)입니다. 여섯 가지 조합을 2 × 2 행렬식과 크라메르 공식(또는 소거법)으로 전부 풀어 표로 만들어 봅니다.</p>
+    <div class="scroll">
+    <table class="tab">
+      <thead><tr><th>기저 (고른 2개)</th><th>2 × 2 행렬식</th><th>기저해 (x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>)</th><th>x ≥ 0?</th><th>이익 5x<sub>1</sub> + 4x<sub>2</sub></th><th>그림에서의 위치</th></tr></thead>
+      <tbody>
+        <tr><td>{s<sub>1</sub>, s<sub>2</sub>}</td><td>1·1 − 0·0 = 1</td><td>(0, 0, 24, 6)</td><td>예</td><td>0</td><td>꼭짓점 (0, 0)</td></tr>
+        <tr><td>{x<sub>1</sub>, s<sub>2</sub>}</td><td>6·1 − 0·1 = 6</td><td>(4, 0, 0, 2)</td><td>예</td><td>20</td><td>꼭짓점 (4, 0)</td></tr>
+        <tr class="piv"><td>{x<sub>1</sub>, x<sub>2</sub>}</td><td>6·2 − 4·1 = 8</td><td>(3, 3/2, 0, 0)</td><td>예</td><td>21</td><td>꼭짓점 (3, 3/2) ★</td></tr>
+        <tr><td>{x<sub>2</sub>, s<sub>1</sub>}</td><td>4·0 − 1·2 = −2</td><td>(0, 3, 12, 0)</td><td>예</td><td>12</td><td>꼭짓점 (0, 3)</td></tr>
+        <tr><td>{x<sub>1</sub>, s<sub>1</sub>}</td><td>6·0 − 1·1 = −1</td><td>(6, 0, −12, 0)</td><td>아니요 (s<sub>1</sub> &lt; 0)</td><td>—</td><td>영역 밖 교점 (6, 0)</td></tr>
+        <tr><td>{x<sub>2</sub>, s<sub>2</sub>}</td><td>4·1 − 0·2 = 4</td><td>(0, 6, 0, −6)</td><td>아니요 (s<sub>2</sub> &lt; 0)</td><td>—</td><td>영역 밖 교점 (0, 6)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 305" role="img" aria-label="공방 예의 네 경계 직선이 만드는 여섯 개의 교점. 가능 영역의 네 꼭짓점 (0,0), (4,0), (3,1.5), (0,3)이 기저가능해이고, 영역 밖의 (6,0)과 (0,6)은 음수 성분을 가진 기저해이다">
+        <polygon class="f-steel" opacity=".48" points="80,260 224,260 188,206 80,152"/>
+        <g class="s-line" stroke-width="1.2"><line x1="80" y1="260" x2="345" y2="260"/><line x1="80" y1="260" x2="80" y2="25"/></g>
+        <g class="s-steel" stroke-width="1.5"><line x1="80" y1="44" x2="224" y2="260"/></g>
+        <g class="s-hull" stroke-width="1.5"><line x1="80" y1="152" x2="296" y2="260"/></g>
+        <g class="f-fg"><circle cx="80" cy="260" r="4.5"/><circle cx="224" cy="260" r="4.5"/><circle cx="80" cy="152" r="4.5"/></g>
+        <circle cx="188" cy="206" r="5.5" class="f-crane"/>
+        <g class="f-bay" stroke-width="1.6"><circle cx="296" cy="260" r="4.5"/><circle cx="80" cy="44" r="4.5"/></g>
+        <g font-size="11.5" text-anchor="middle" class="t-muted">
+          <text x="80" y="278">0</text><text x="116" y="278">1</text><text x="152" y="278">2</text><text x="188" y="278">3</text><text x="224" y="278">4</text><text x="260" y="278">5</text><text x="296" y="278">6</text>
+          <text x="66" y="228">1</text><text x="66" y="192">2</text><text x="66" y="156">3</text><text x="66" y="120">4</text><text x="66" y="84">5</text><text x="66" y="48">6</text>
+        </g>
+        <g font-size="12">
+          <text x="352" y="264">x<sub>1</sub></text><text x="86" y="20">x<sub>2</sub></text>
+          <text x="90" y="248">{s<sub>1</sub>, s<sub>2</sub>} (0, 0)</text>
+          <text x="224" y="246" text-anchor="middle">{x<sub>1</sub>, s<sub>2</sub>} (4, 0)</text>
+          <text x="198" y="202" class="t-crane" font-weight="500">{x<sub>1</sub>, x<sub>2</sub>} (3, 3/2)</text>
+          <text x="90" y="146">{x<sub>2</sub>, s<sub>1</sub>} (0, 3)</text>
+          <text x="296" y="246" text-anchor="middle" class="t-muted">(6, 0) s<sub>1</sub> = −12</text>
+          <text x="90" y="48" class="t-muted">(0, 6) s<sub>2</sub> = −6</text>
+        </g>
+        <g font-size="12.5">
+          <rect x="405" y="42" width="290" height="205" rx="6" class="f-bay" stroke-width="1"/>
+          <text x="422" y="68" font-weight="500">교점 6개 = 기저 6개</text>
+          <circle cx="430" cy="96" r="4.5" class="f-fg"/>
+          <text x="444" y="100">채운 점 4개: 모든 변수가 0 이상</text>
+          <text x="444" y="120" class="t-muted" font-size="11.5">→ 기저가능해 = 가능 영역의 꼭짓점</text>
+          <circle cx="430" cy="152" r="4.5" class="f-bay" stroke-width="1.6"/>
+          <text x="444" y="156">빈 점 2개: 여유 변수가 음수</text>
+          <text x="444" y="176" class="t-muted" font-size="11.5">→ 제약선을 넘었으므로 영역 밖</text>
+          <text x="422" y="212" class="t-steel">s<sub>1</sub> = 0 : 6x<sub>1</sub> + 4x<sub>2</sub> = 24</text>
+          <text x="422" y="232" class="t-hull">s<sub>2</sub> = 0 : x<sub>1</sub> + 2x<sub>2</sub> = 6</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>네 경계 직선(x<sub>1</sub> = 0, x<sub>2</sub> = 0, s<sub>1</sub> = 0, s<sub>2</sub> = 0)이 둘씩 만나서 만드는 6개의 교점이 정확히 C(4, 2) = 6개의 기저해에 대응합니다.</figcaption>
+    </figure>
+    <p>그림과 표가 딱 맞아떨어집니다! 가능하지 않은 기저해 둘을 보세요. (6, 0)은 x<sub>1</sub> + 2x<sub>2</sub> = 6과 x<sub>2</sub> = 0의 교점이지만, 목재 제약 6·6 = 36 ≤ 24를 어겨서 s<sub>1</sub> = −12 &lt; 0이 되었습니다. (0, 6)은 6x<sub>1</sub> + 4x<sub>2</sub> = 24와 x<sub>1</sub> = 0의 교점이지만, 시간 제약 2·6 = 12 ≤ 6을 어겨서 s<sub>2</sub> = −6 &lt; 0이 되었습니다. 반대로 s<sub>1</sub>, s<sub>2</sub>가 모두 0 이상인 네 점은 정확히 가능 영역의 네 꼭짓점입니다.</p>
+    <div class="thm"><b>핵심 사실 (꼭짓점 = 기저가능해)</b> 표준형 LP에서 가능 영역의 꼭짓점과 기저가능해는 정확히 같습니다.</div>
+    <div class="why"><p>점 x가 기저가능해라면 비기저 변수(n − m개)가 모두 0이고, 남은 m개의 기저 변수는 연립방정식의 유일한 해로 꽉 묶여 있습니다. 만약 x가 영역 안의 다른 두 점의 한가운데에 놓인다면, 비기저 변수는 0 이상인 두 수의 평균이 0이어야 하므로 두 점에서도 모두 0이어야 합니다. 그러면 두 점 역시 같은 연립방정식을 만족해야 하니 원래 점과 같아집니다. 따라서 기저가능해는 다른 두 점의 중간에 놓일 수 없는 꼭짓점입니다. 반대로 꼭짓점에서는 양수인 변수들이 서로 얽혀 움직일 여지가 없어야 하므로, 항상 m개 이하의 독립인 열만 양수가 되어 기저를 이룹니다.</p></div>
+    <p>3장에서 만든 <code>solve2</code> 함수로 위의 표 전체를 Python으로 단숨에 계산해 봅니다.</p>
+<pre class="py">
+def det2(a, b, c, d):
+    return a * d - b * c
+
+def solve2(A, b):
+    d = det2(A[0][0], A[0][1], A[1][0], A[1][1])
+    if d == 0:
+        return []
+    return [det2(b[0], A[0][1], b[1], A[1][1]) / d,
+            det2(A[0][0], b[0], A[1][0], b[1]) / d]
+
+names = ["x1", "x2", "s1", "s2"]
+cols = [[6, 1], [4, 2], [1, 0], [0, 1]]
+rhs = [24, 6]
+cost = [5, 4, 0, 0]
+
+for i in range(4):
+    for j in range(i + 1, 4):
+        B = [[cols[i][0], cols[j][0]], [cols[i][1], cols[j][1]]]
+        sol = solve2(B, rhs)
+        if len(sol) == 0:
+            print(names[i], names[j], "-&gt; 해 없음")
+        elif sol[0] &gt;= 0 and sol[1] &gt;= 0:
+            z = cost[i] * sol[0] + cost[j] * sol[1]
+            print(names[i], names[j], "-&gt;", sol, "가능, 이익 =", z)
+        else:
+            print(names[i], names[j], "-&gt;", sol, "영역 밖")
+</pre>
+<pre class="out">
+x1 x2 -> [3.0, 1.5] 가능, 이익 = 21.0
+x1 s1 -> [6.0, -12.0] 영역 밖
+x1 s2 -> [4.0, 2.0] 가능, 이익 = 20.0
+x2 s1 -> [3.0, 12.0] 가능, 이익 = 12.0
+x2 s2 -> [6.0, -6.0] 영역 밖
+s1 s2 -> [24.0, 6.0] 가능, 이익 = 0.0
+</pre>
+    <ul class="code">
+      <li><b>1~9행</b> 3장에서 만든 2 × 2 행렬식과 크라메르 공식 함수입니다.</li>
+      <li><b>11~14행</b> 네 변수의 이름, 행렬 A의 각 열(6장의 두 식에서 뽑은 계수), 오른쪽 값 <code>[24, 6]</code>, 이익 계수 <code>[5, 4, 0, 0]</code>입니다.</li>
+      <li><b>16~18행</b> 네 열에서 두 열 <code>i</code>, <code>j</code>를 고르는 여섯 가지 짝마다 2 × 2 행렬 <code>B</code>를 만듭니다. <code>B[0]</code>은 첫째 행, <code>B[1]</code>은 둘째 행입니다.</li>
+      <li><b>19~26행</b> <code>solve2</code>로 기저 변수의 값을 구하고, 둘 다 0 이상이면 기저가능해(꼭짓점)로 판정해 이익을 계산합니다. 하나라도 음수이면 영역 밖의 기저해입니다.</li>
+    </ul>
+    <p>그러면 이제 모든 LP를 "기저를 전부 만들어 풀고 가장 좋은 것을 고르면" 끝날까요? 변수가 4개, 식이 2개일 때는 C(4, 2) = 6개뿐이라 금방이지만, 변수가 100개이고 식이 50개만 되어도 C(100, 50)은 약 10<sup>29</sup>(10 뒤에 0이 29개)입니다. 2장에서 본 조합 폭발이 여기서도 일어납니다. 그래서 8장의 <strong>심플렉스법</strong>은 기저를 전부 보지 않고, 더 좋아지는 이웃 기저로 옮겨 가며 금방 최적에 닿습니다.</p>
+    <div class="aside"><p><strong>정수해와 행렬식 미리 보기.</strong> 위 표에서 기저 <code>{x1, x2}</code>의 행렬식이 8이었기 때문에 <code>x2 = 12/8 = 3/2</code>라는 분수가 나왔습니다. 3장에서 "계수와 오른쪽이 모두 정수일 때 행렬식이 ±1이면 해는 반드시 정수"라고 했습니다. 그러므로 만약 어떤 LP의 <em>가능한 모든 기저</em>에서 행렬식이 ±1이라면, 꼭짓점(= 기저가능해)이 전부 정수이고, LP만 풀어도 정수 최적해가 나옵니다. 이 멋진 성질은 14장에서 다시 만납니다.</p></div>
+  </section>
+
+  <div class="part">3부 · 조심할 두 가지 경우</div>
+
+  <section>
+    <h2>축퇴: 한 꼭짓점에 이름표가 여럿</h2>
+    <p>지금까지 공방 예에서는 꼭짓점 4개와 기저가능해 4개가 1대 1로 딱 맞았습니다. 하지만 언제나 그런 것은 아닙니다.</p>
+    <p>공방 예에 "책상은 많아야 3개까지만 만든다"는 제약 x<sub>1</sub> ≤ 3을 하나 더 넣어 봅시다. 여유 변수 s<sub>3</sub> ≥ 0을 붙이면 x<sub>1</sub> + s<sub>3</sub> = 3입니다. 이제 등식이 m = 3줄, 변수가 n = 5개(x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub>)입니다.</p>
+    <p>점 (3, 3/2)에서 다섯 변수의 값을 계산해 보면 x<sub>1</sub> = 3, x<sub>2</sub> = 3/2, 그리고 s<sub>1</sub> = 0, s<sub>2</sub> = 0, s<sub>3</sub> = 0입니다. 2차원 평면의 한 점 (3, 3/2)를 세 경계 직선(s<sub>1</sub> = 0, s<sub>2</sub> = 0, s<sub>3</sub> = 0)이 동시에 지나갑니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 225" role="img" aria-label="공방 예에 x1 ≤ 3 제약을 추가한 그림. 세 직선 6x1+4x2=24, x1+2x2=6, x1=3이 모두 점 (3, 1.5)에서 만나고, 이 한 꼭짓점에 세 개의 기저가 대응한다">
+        <polygon class="f-steel" opacity=".48" points="70,185 220,185 220,110 70,35"/>
+        <g class="s-line" stroke-width="1.2"><line x1="70" y1="185" x2="355" y2="185"/><line x1="70" y1="185" x2="70" y2="18"/></g>
+        <line x1="170" y1="35" x2="270" y2="185" class="s-steel" stroke-width="1.5"/>
+        <line x1="70" y1="35" x2="340" y2="170" class="s-hull" stroke-width="1.5"/>
+        <line x1="220" y1="185" x2="220" y2="25" class="s-crane" stroke-width="1.8"/>
+        <circle cx="220" cy="110" r="5.5" class="f-crane"/>
+        <g font-size="11.5" text-anchor="middle" class="t-muted">
+          <text x="70" y="203">0</text><text x="120" y="203">1</text><text x="170" y="203">2</text><text x="220" y="203">3</text><text x="270" y="203">4</text><text x="320" y="203">5</text>
+          <text x="56" y="139">1</text><text x="56" y="89">2</text><text x="56" y="39">3</text>
+        </g>
+        <g font-size="12">
+          <text x="362" y="189">x<sub>1</sub></text><text x="76" y="16">x<sub>2</sub></text>
+          <text x="228" y="34" class="t-crane">x<sub>1</sub> = 3 (s<sub>3</sub> = 0)</text>
+          <text x="230" y="104" font-weight="500">(3, 3/2)에서 세 직선이 만남</text>
+          <text x="278" y="180" class="t-muted">s<sub>1</sub> = 0</text>
+          <text x="325" y="155" class="t-muted">s<sub>2</sub> = 0</text>
+        </g>
+        <g font-size="12.5">
+          <rect x="420" y="35" width="275" height="150" rx="6" class="f-bay" stroke-width="1"/>
+          <text x="436" y="62" font-weight="500">한 점 (3, 3/2)에 기저가 세 개</text>
+          <text x="436" y="92">① {x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>} → (3, 3/2, 0, 0, 0)</text>
+          <text x="436" y="118">② {x<sub>1</sub>, x<sub>2</sub>, s<sub>2</sub>} → (3, 3/2, 0, 0, 0)</text>
+          <text x="436" y="144">③ {x<sub>1</sub>, x<sub>2</sub>, s<sub>3</sub>} → (3, 3/2, 0, 0, 0)</text>
+          <text x="436" y="170" class="t-muted" font-size="11.5">세 번째 기저 변수의 값이 0!</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>축퇴의 예. 등식이 3줄이므로 기저 변수는 3개여야 하는데, (3, 3/2)에서는 x<sub>1</sub>과 x<sub>2</sub>만 양수이고 s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub>이 모두 0입니다. 0인 셋 중 어느 것을 기저에 끼워 넣어도 같은 점이 나옵니다.</figcaption>
+    </figure>
+    <p>이제 m = 3이므로 기저에는 변수 3개가 들어가야 합니다. 그런데 (3, 3/2)에서 0이 아닌 변수는 x<sub>1</sub>과 x<sub>2</sub> 둘뿐입니다. 그래서 세 번째 기저 변수로 s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub> 가운데 아무거나 하나를 0인 채로 끼워 넣어야 합니다. (단, 남은 열 3개 중 s<sub>1</sub>이 빠지면 나머지 3개의 행렬식이 0이 아닌지 확인해야 합니다. 여기서는 셋 다 행렬식이 0이 아닙니다.) 어느 것을 골라도 똑같은 점 (3, 3/2)가 나옵니다.</p>
+    <div class="defn"><b>정의</b> 기저해에서 기저 변수 가운데 값이 0인 것이 있으면 그 기저해를 <strong>축퇴(degenerate)</strong>되었다고 합니다.</div>
+    <p>기저가 꼭짓점의 「이름표」라면, 축퇴는 <strong>한 꼭짓점에 이름표가 여러 개 붙은 상황</strong>입니다. 6장의 「꼭짓점 = 기저가능해」는 여전히 참이지만, "꼭짓점 하나에 기저가 딱 하나만 있다"는 뜻은 아닙니다. 0과 1을 쓰는 큰 모형에서는 제약 여러 개가 같은 점에 겹치는 일이 매우 흔해서, 8장의 심플렉스법에서 이름표만 바뀌고 점은 움직이지 않는 "제자리걸음"이 종종 생깁니다.</p>
+  </section>
+
+  <section>
+    <h2>최적해가 여럿인 경우: 최적면</h2>
+    <p>6장 연습문제에서도 잠깐 본 상황을 다시 봅니다. 공방 예에서 목적함수가 5x<sub>1</sub> + 4x<sub>2</sub> 대신 6x<sub>1</sub> + 4x<sub>2</sub>라면 어떨까요?</p>
+    <p>네 꼭짓점의 값을 계산해 보면 (0, 0) → 0, (4, 0) → 24, (3, 3/2) → 24, (0, 3) → 12입니다. 두 기저 {x<sub>1</sub>, s<sub>2</sub>}의 (4, 0)과 {x<sub>1</sub>, x<sub>2</sub>}의 (3, 3/2)가 모두 최댓값 24를 줍니다. 그리고 두 꼭짓점을 잇는 변 위의 모든 점(예: (3.5, 0.75))에서도 6·3.5 + 4·0.75 = 24입니다.</p>
+    <p>이처럼 최적해가 점 하나가 아니라 변 하나(또는 더 높은 차원에서는 평평한 면 전체)일 때, 최적해들을 모두 모은 집합을 <strong>최적면(optimal face)</strong>이라고 부릅니다.</p>
+    <ul class="plain">
+      <li>최적해가 하나뿐이면 최적면은 꼭짓점 하나입니다.</li>
+      <li>등고선이 변과 나란하면 최적면은 그 변 전체이고, 그 변의 양 끝은 여전히 꼭짓점(기저가능해)입니다.</li>
+    </ul>
+    <p>이 구분은 10장에서 다시 중요해집니다. 8장의 심플렉스법은 꼭짓점만 밟고 다니므로 최적면이 변 전체일 때도 그 끝의 꼭짓점 하나((4, 0)이나 (3, 3/2))를 답으로 내놓습니다. 반면 10장의 내부점법은 가능 영역 안쪽을 가로질러 최적면의 한가운데 점(예: (3.5, 0.75))으로 다가갑니다.</p>
+  </section>
+
+  <section>
+    <h2>가이드와 연결</h2>
+    <div class="gref"><p>가이드의 「심플렉스와 배리어」 절은 "지금 어느 꼭짓점에 있는지를 나타내는 정보를 기저(basis)라고 합니다"라고 설명합니다. 이 장에서 본 것처럼 m개 변수의 이름표(기저)만 알면 비기저 변수를 0으로 두고 연립방정식을 풀어 그 꼭짓점의 좌표를 언제든 복원할 수 있습니다.</p></div>
+    <div class="gref"><p>가이드가 tryAgain 모형을 설명하며 "계수가 모두 0, 1, −1이다", "제약이 수만 줄이다"라고 말할 때, 그 모형은 0과 1 변수에 여유 변수들이 더해진 표준형으로 솔버에 들어갑니다. 제약 수가 많고 계수가 단순한 조합 모형에서는 축퇴(한 꼭짓점에 여러 기저가 붙는 현상)가 매우 자주 나타납니다.</p></div>
+  </section>
+
+  <section>
+    <div class="sum">
+      <ul>
+        <li>여유 변수(≤에 +s)와 잉여 변수(≥에 −s)를 쓰면 모든 LP를 등식 Ax = b, x ≥ 0의 표준형으로 바꿀 수 있습니다.</li>
+        <li>등식 m개, 변수 n개일 때 n − m개를 0으로 두고 나머지 m개(기저 변수)를 연립방정식으로 푼 해가 기저해입니다.</li>
+        <li>기저해 가운데 모든 변수가 0 이상인 것이 기저가능해이며, 이것이 정확히 가능 영역의 꼭짓점입니다.</li>
+        <li>기저 변수 가운데 값이 0인 것이 끼어 있으면 축퇴이며, 한 꼭짓점에 여러 기저가 대응할 수 있습니다.</li>
+        <li>최적해가 여럿일 때 그 모임을 최적면이라 부르며, 최적면 안에도 반드시 꼭짓점이 있습니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>연습문제</h2>
+    <details>
+      <summary>다음 LP를 표준형(최소화, 등식, 변수 ≥ 0)으로 바꾸세요. 최대화 3x − y, 제약 x + y ≤ 5, x − 2y ≥ −4, x ≥ 0, y는 부호 제한 없음.</summary>
+      <p>먼저 최대화를 최소화로 바꾸면 최소화 −3x + y입니다. y는 부호 제한이 없으므로 y = y<sup>+</sup> − y<sup>−</sup> (y<sup>+</sup>, y<sup>−</sup> ≥ 0)로 쪼갭니다. 첫째 제약에는 여유 변수 s<sub>1</sub> ≥ 0을 더하고, 둘째 제약에는 잉여 변수 s<sub>2</sub> ≥ 0을 뺍니다. 결과는 최소화 −3x + y<sup>+</sup> − y<sup>−</sup>, 제약 x + y<sup>+</sup> − y<sup>−</sup> + s<sub>1</sub> = 5, x − 2y<sup>+</sup> + 2y<sup>−</sup> − s<sub>2</sub> = −4, 모든 변수 ≥ 0입니다. (오른쪽 수 −4를 양수로 두고 싶으면 둘째 식 양변에 −1을 곱해 −x + 2y<sup>+</sup> − 2y<sup>−</sup> + s<sub>2</sub> = 4로 둡니다.)</p>
+    </details>
+    <details>
+      <summary>트럭 LP의 표준형 9x + 5y − s = 30 (m = 1, n = 3)에서 기저는 변수 1개입니다. 세 가지 기저 {x}, {y}, {s}의 기저해를 모두 구하고, 어느 것이 기저가능해이고 최적해인지 찾으세요.</summary>
+      <p>등식이 1줄이므로 2개를 0으로 두고 1개를 풉니다. ① {x}: y = s = 0이면 9x = 30, x = 10/3 → (10/3, 0, 0), 모두 ≥ 0이므로 기저가능해, 비용 100/3. ② {y}: x = s = 0이면 5y = 30, y = 6 → (0, 6, 0), 기저가능해, 비용 42. ③ {s}: x = y = 0이면 −s = 30, s = −30 → (0, 0, −30), s &lt; 0이라 가능하지 않습니다(원점 (0, 0)은 30톤을 못 실어 영역 밖). 따라서 기저가능해는 (10/3, 0)과 (0, 6) 둘이고 최적은 (10/3, 0), 100/3입니다.</p>
+    </details>
+    <details>
+      <summary>6장 연습문제의 LP(최대화 3x<sub>1</sub> + 2x<sub>2</sub>, 제약 2x<sub>1</sub> + x<sub>2</sub> ≤ 8, x<sub>1</sub> + x<sub>2</sub> ≤ 5, x<sub>1</sub>, x<sub>2</sub> ≥ 0)에 여유 변수 s<sub>1</sub>, s<sub>2</sub>를 붙여 표준형으로 쓰고, C(4, 2) = 6개의 기저를 모두 계산해 어느 4개가 꼭짓점인지 확인하세요.</summary>
+      <p>등식은 2x<sub>1</sub> + x<sub>2</sub> + s<sub>1</sub> = 8, x<sub>1</sub> + x<sub>2</sub> + s<sub>2</sub> = 5입니다. 6개 기저(값은 (x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>)): ① {s<sub>1</sub>, s<sub>2</sub>}: (0, 0, 8, 5) 가능, 이익 0. ② {x<sub>1</sub>, s<sub>2</sub>}: (4, 0, 0, 1) 가능, 이익 12. ③ {x<sub>1</sub>, x<sub>2</sub>}: (3, 2, 0, 0) 가능, 이익 13 ★. ④ {x<sub>2</sub>, s<sub>1</sub>}: (0, 5, 3, 0) 가능, 이익 10. ⑤ {x<sub>1</sub>, s<sub>1</sub>}: (5, 0, −2, 0) 영역 밖(s<sub>1</sub> = −2). ⑥ {x<sub>2</sub>, s<sub>2</sub>}: (0, 8, 0, −3) 영역 밖(s<sub>2</sub> = −3). 6장의 네 꼭짓점과 정확히 일치합니다.</p>
+    </details>
+    <details>
+      <summary>본문의 축퇴 예(공방 예에 x<sub>1</sub> ≤ 3, 곧 x<sub>1</sub> + s<sub>3</sub> = 3 추가)에서 점 (3, 3/2)에 대응하는 기저 ① {x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>}의 계수 열 3개가 실제로 해를 하나로 정하는지 확인하세요. 만약 기저로 {s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub>} 대신 {x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>}를 골랐다면 x<sub>1</sub> = 0이 되어 어떤 점이 되나요?</summary>
+      <p>기저 {x<sub>1</sub>, x<sub>2</sub>, s<sub>1</sub>}이면 비기저는 s<sub>2</sub> = 0, s<sub>3</sub> = 0입니다. 셋째 식 x<sub>1</sub> + 0 = 3에서 x<sub>1</sub> = 3이 곧바로 정해지고, 둘째 식 3 + 2x<sub>2</sub> + 0 = 6에서 x<sub>2</sub> = 3/2가 정해지며, 첫째 식 18 + 6 + s<sub>1</sub> = 24에서 s<sub>1</sub> = 0이 하나로 정해집니다. 한편 {x<sub>2</sub>, s<sub>1</sub>, s<sub>2</sub>}를 고르면 비기저가 x<sub>1</sub> = 0, s<sub>3</sub> = 0인데, 셋째 식에 넣으면 0 + 0 = 3이라는 모순이 생깁니다(세 열의 행렬식이 0이라 기저가 될 수 없는 묶음입니다).</p>
+    </details>
+    <details>
+      <summary>공방 예에서 목적함수가 x<sub>1</sub> + 2x<sub>2</sub>라면 최적해와 최적면은 무엇인가요?</summary>
+      <p>목적함수가 둘째 제약 x<sub>1</sub> + 2x<sub>2</sub> ≤ 6의 왼쪽과 똑같습니다. 따라서 가능 영역 안에서 x<sub>1</sub> + 2x<sub>2</sub>의 최댓값은 6이고, 이 값을 주는 (0, 3)과 (3, 3/2)를 잇는 변 전체가 최적면입니다. 꼭짓점 최적해는 (0, 3)과 (3, 3/2) 둘입니다.</p>
+    </details>
+    <details>
+      <summary>표준형 LP에 변수가 10개, 등식이 4개 있습니다. 가능한 기저는 많아야 몇 개인가요? 왜 모든 기저를 다 풀어 보는 방법은 큰 문제에 쓸 수 없나요?</summary>
+      <p>10개에서 4개를 고르는 경우의 수는 C(10, 4) = (10 × 9 × 8 × 7) / (4 × 3 × 2 × 1) = 210개입니다. 10개일 때는 다 해 볼 수 있지만, 변수가 100개이고 등식이 50개만 되어도 C(100, 50) ≈ 10<sup>29</sup>개로 우주의 나이보다 긴 시간이 걸립니다. 그래서 모든 꼭짓점을 훑지 않고 좋은 쪽으로만 옮겨 다니는 심플렉스법(8장)이 필요합니다.</p>
+    </details>
+  </section>
+
+  <section class="refs">
+    <h2>더 읽을 자료</h2>
+    <ul>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="http://www.kocw.net/home/search/kemView.do?kemId=1390032">KOCW 「선형계획의 대수적 해법과 쌍대문제」 (한국공학대 허재석, 2021)</a> — 1~2강이 표준형과 기저가능해입니다.</li>
+      <li><span class="tagc">무료</span><span class="tagc">한국어</span><a href="https://ko.wikipedia.org/wiki/선형_계획법">위키백과 「선형 계획법」</a> — 표준형과 기본 개념 정리.</li>
+      <li><span class="tagc">무료</span><a href="https://optimization-online.org/2013/12/4161/">J. Lee, <em>A First Course in Linear Optimization</em> (3판)</a> — 영어, 무료 교재. 3장 Algebra versus Geometry가 기저해와 꼭짓점의 관계를 다룹니다(링크의 PDF는 목차 부분 포함).</li>
+      <li><span class="tagc">교과서</span><a href="http://athenasc.com/linoptbook.html">D. Bertsimas, J. N. Tsitsiklis, <em>Introduction to Linear Optimization</em> (Athena Scientific, 1997)</a> — 영어, 대학 수준. 2장 The geometry of linear programming이 꼭짓점과 기저가능해의 동치와 축퇴를 엄밀히 다룹니다.</li>
+      <li><span class="tagc">무료</span><a href="https://ocw.mit.edu/courses/15-053-optimization-methods-in-management-science-spring-2013/pages/lecture-notes/">MIT OCW 15.053 강의 노트 (2013)</a> — 영어, 대학 수준. 9강이 여유 변수와 표준형 정리입니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><a href="#ch6">← 이전: 6장 선형계획 ①: 그림으로 풀기</a><a href="#ch8">다음: 8장 심플렉스법 →</a></div>
+</article>

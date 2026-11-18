@@ -1,0 +1,209 @@
+<article class="chapter" id="ch1">
+  <header>
+    <div class="kicker">1 / 16</div>
+    <h1>들어가며: 이 책의 지도</h1>
+  </header>
+
+  <section>
+    <p class="lead">이 책은 2025년 최적화 대회의 1등 풀이를 이해하는 데 필요한 수학을 고등학교 수학에서 출발해 설명합니다. 이 장에서는 그 대회의 문제가 무엇인지, 1등 팀이 어떤 방식으로 풀었는지, 그래서 무엇을 어떤 순서로 배울지를 봅니다.</p>
+    <ul class="plain">
+      <li><strong>미리 알아야 할 것.</strong> 없습니다. 이 책 전체로는 이과 고3 수준의 수학(연립방정식, 부등식, 집합과 명제, 수열의 합, 미적분, 경우의 수)과 Python 기초(변수, if, for, 리스트, 함수)를 씁니다.</li>
+      <li><strong>이 장을 읽고 나면.</strong> 문제의 줄거리와 이 책의 열여섯 장이 각각 무슨 일을 하는지 알게 됩니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>이 책은 무엇인가</h2>
+    <p>「최적화 그랜드 챌린지(OGC)」는 해마다 열리는 최적화 대회입니다. 2025년 대회의 문제는 자동차 운반선에 차를 싣고 내리는 순서를 정하는 것이었고, <strong>tryAgain</strong>이라는 팀이 1등을 했습니다. 이 팀의 풀이를 설명한 문서가 따로 있는데, 이 책에서는 그것을 「가이드」라고 부릅니다.</p>
+    <p>가이드는 풀이를 따라가는 문서라서, 그 밑에 깔린 이론은 짧게만 말하고 지나갑니다. "선형계획은 빨리 풀린다", "분지한계법으로 최적임을 증명한다", "이 식은 강한 식이다" 같은 문장이 그렇습니다. 이 책은 그 문장들이 무슨 뜻이고 왜 맞는지를 처음부터 설명합니다.</p>
+    <ul class="plain">
+      <li><strong>하는 일.</strong> 그림과 비유로 생각을 잡고, 숫자가 작은 예를 손으로 끝까지 계산하고, 그다음에 정의와 일반적인 사실을 적습니다. 장마다 연습문제와 풀이가 있습니다.</li>
+      <li><strong>하지 않는 일.</strong> 솔버(최적화 문제를 풀어 주는 프로그램)의 사용법은 다루지 않습니다. 대학 교재처럼 모든 것을 증명하지도 않습니다. 증명은 「왜 그런가」라는 직관적인 설명으로 바꾸거나 「참고」 상자로 뺐습니다.</li>
+      <li><strong>코드.</strong> Python으로 짧게, 한 줄씩 풀이를 붙였습니다. 손계산을 확인하거나 방법을 직접 돌려 보는 용도입니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>문제 한눈에: 자동차 운반선</h2>
+    <p>자동차 운반선은 차 수천 대를 싣고 여러 항구를 도는 큰 배입니다. 차는 크레인으로 들어 올리지 않고 제 바퀴로 굴러서 들어가고 나옵니다. 그래서 이런 배를 Roll-on Roll-off, 줄여서 RORO선이라 하고, 이 책에서는 대회 문제를 <strong>RORO 문제</strong>라고 부릅니다.</p>
+    <p>배 안은 주차장과 비슷합니다. 차 한 대를 세우는 자리를 <strong>칸</strong>이라 하고, 배에는 문이 하나뿐인데 이것을 <strong>출입구</strong>라고 합니다. 차는 출입구에서 칸까지 다른 칸들을 지나서 갑니다. 그런데 지나갈 칸에 다른 차가 서 있으면 지나갈 수 없습니다. 좁은 골목에 차가 한 줄로 주차된 모습을 떠올리면 됩니다.</p>
+    <p>가장 작은 예를 봅니다. 칸이 한 줄로 두 개 있는 배가 항구 0, 1, 2를 차례로 들릅니다. 항구 0에서 차 두 대를 싣는데, 차 A는 항구 1에서, 차 B는 항구 2에서 내립니다. 항구 1에서는 A를 내리고 새 차 C를 실어 항구 2까지 갑니다.</p>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 250" role="img" aria-label="칸이 한 줄로 두 개 있는 배의 두 가지 배치. 왼쪽은 먼저 내릴 차 A를 출입구 가까운 칸 1에, 나중에 내릴 차 B를 안쪽 칸 2에 둔 좋은 배치. 오른쪽은 반대로 두어 항구 1에서 A가 나가려 할 때 B가 길을 막는 나쁜 배치">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g font-size="13" font-weight="500"><text x="30" y="26">좋은 배치: 먼저 내릴 차를 문 가까이</text><text x="390" y="26">나쁜 배치: 먼저 내릴 차가 안쪽에</text></g>
+        <g class="s-line" stroke-width="1.3">
+          <line x1="96" y1="92" x2="130" y2="92"/><line x1="206" y1="92" x2="240" y2="92"/>
+          <line x1="456" y1="92" x2="490" y2="92"/><line x1="566" y1="92" x2="600" y2="92"/>
+        </g>
+        <g stroke-width="1.3">
+          <rect x="30" y="66" width="66" height="52" rx="6" class="f-bay"/>
+          <rect x="130" y="66" width="76" height="52" rx="6" class="f-hull"/>
+          <rect x="240" y="66" width="76" height="52" rx="6" class="f-steel"/>
+          <rect x="390" y="66" width="66" height="52" rx="6" class="f-bay"/>
+          <rect x="490" y="66" width="76" height="52" rx="6" class="f-steel"/>
+          <rect x="600" y="66" width="76" height="52" rx="6" class="f-hull"/>
+        </g>
+        <g font-size="12.5" text-anchor="middle">
+          <text x="63" y="97">출입구</text><text x="168" y="89">차 A</text><text x="168" y="106" class="t-muted" font-size="11">항구 1에서 내림</text><text x="278" y="89">차 B</text><text x="278" y="106" class="t-muted" font-size="11">항구 2에서 내림</text>
+          <text x="423" y="97">출입구</text><text x="528" y="89">차 B</text><text x="528" y="106" class="t-muted" font-size="11">항구 2에서 내림</text><text x="638" y="89">차 A</text><text x="638" y="106" class="t-muted" font-size="11">항구 1에서 내림</text>
+        </g>
+        <g font-size="11.5" text-anchor="middle" class="t-muted"><text x="63" y="56">노드 0</text><text x="168" y="56">칸 1</text><text x="278" y="56">칸 2</text><text x="423" y="56">노드 0</text><text x="528" y="56">칸 1</text><text x="638" y="56">칸 2</text></g>
+        <g class="s-ok" stroke-width="1.6"><path d="M168,126 Q115,168 63,126" marker-end="url(#ar1)"/></g>
+        <g class="s-crane" stroke-width="1.6"><path d="M638,126 Q600,160 566,136" stroke-dasharray="5 4"/><line x1="548" y1="124" x2="566" y2="146"/><line x1="566" y1="124" x2="548" y2="146"/></g>
+        <g font-size="12"><text x="30" y="188" class="t-ok">항구 1: A가 바로 나간다</text><text x="390" y="188" class="t-crane">항구 1: A가 나가려는데 B가 길을 막는다</text></g>
+        <g font-size="12" class="t-muted"><text x="30" y="210">B는 그대로 서 있고, 빈 칸 1에 C를 싣는다</text><text x="390" y="210">B를 잠깐 내리고, A를 내리고, B를 다시 싣는다</text><text x="30" y="232">총비용 68</text><text x="390" y="232">총비용 92</text></g>
+      </svg>
+      </div>
+      <figcaption>칸이 두 개인 배. 차가 칸에 들어가거나 나올 때마다 「경로」가 하나 생기고, 경로 하나의 비용을 10 + (지나간 통로 수)로 계산했습니다. 칸 1을 오가는 경로는 11, 칸 2를 오가는 경로는 12입니다.</figcaption>
+    </figure>
+    <p>왼쪽 배치의 비용을 세어 봅니다. 항구 0에서 B를 칸 2에(12), A를 칸 1에(11) 싣습니다. 항구 1에서 A를 내리고(11) C를 칸 1에 싣습니다(11). 항구 2에서 C(11)와 B(12)를 내립니다. 합은 68입니다.</p>
+    <p>오른쪽 배치에서는 항구 1에서 일이 꼬입니다. 안쪽의 A를 내리려면 문 앞의 B가 비켜야 합니다. B를 내리고(11), A를 내리고(12), B를 다시 싣고 C도 실어야 합니다(12 + 11). 항구 0과 항구 2의 비용은 23씩으로 왼쪽과 같으므로 합은 23 + 46 + 23 = 92입니다. 길을 막은 차를 잠깐 내렸다 다시 싣는 일을 <strong>재배치</strong>라고 하는데, 이 재배치 한 번이 24만큼의 낭비를 만들었습니다.</p>
+    <p>실제 대회 문제는 칸이 수백 개이고 통로가 그물처럼 얽혀 있으며, 항구도 여러 곳이고 차도 수백 대입니다. 어느 차를 어느 칸에 둘지의 경우의 수는 상상할 수 없이 많습니다. 그중에서 총비용이 가장 작은 것을 찾는 것이 문제입니다.</p>
+    <div class="defn"><b>문제의 말</b> 뒤에서 계속 쓸 말을 모아 둡니다.
+      <ul>
+        <li><strong>칸, 출입구.</strong> 차 한 대를 세우는 자리와, 하나뿐인 문. 배 안의 구조는 4장에서 「그래프」라는 그림으로 나타냅니다. 그때 출입구는 노드 0, 칸은 노드 1, 2, …가 됩니다.</li>
+        <li><strong>항구, 수요.</strong> 배는 항구 0, 1, 2, …를 차례로 들릅니다. 수요는 "항구 p에서 실어 항구 q에서 내릴 차 몇 대"입니다.</li>
+        <li><strong>경로와 비용.</strong> 차를 한 번 싣거나 내릴 때 출입구와 칸 사이를 지나는 길이 경로입니다. 경로 하나의 비용은 고정비 F에 지나간 통로 수를 더한 값입니다(위 그림에서는 F = 10).</li>
+        <li><strong>재배치.</strong> 길을 막는 차를 잠깐 내렸다가 다시 싣는 일. 경로가 그만큼 늘어납니다.</li>
+        <li><strong>대회 LB.</strong> 대회가 문제마다 정해 준 기준값입니다. 차들이 서로 길을 막지 않는다고 칠 때의 비용이고, 점수는 (총비용 − LB)로 매깁니다. 작을수록 좋습니다.</li>
+        <li><strong>머무는 차.</strong> 어떤 항구에서 싣지도 내리지도 않고 그대로 서 있는 차. 위 그림 왼쪽에서 항구 1의 B가 그렇습니다. 내리는 차는 문에 가까운 것부터, 싣는 차는 안쪽 칸에 갈 것부터 움직이면 서로 막지 않으므로, 끝까지 길을 막는 것은 머무는 차뿐입니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>1등 팀은 어떻게 풀었나</h2>
+    <p>이런 문제를 푸는 방법은 크게 두 가지입니다. 하나는 "먼저 내릴 차를 문 가까이에 둔다" 같은 그럴듯한 규칙을 궁리해서 프로그램으로 짜는 것입니다. 다른 하나는 문제를 <em>수식으로 적어서</em> 그 수식을 풀어 주는 프로그램(솔버)에 넘기는 것입니다. 1등 팀은 두 번째 길을 갔습니다.</p>
+    <p>수식으로 적는다는 것은 이런 뜻입니다. "항구 p에서 실어 q에서 내리는 차를 칸 i에 둔다"를 0 또는 1의 값을 갖는 변수 하나로 나타내고, "길이 막히면 안 된다" 같은 규칙을 그 변수들의 1차 부등식으로 적습니다. 그러면 문제 전체가 "1차 부등식들을 지키면서 1차식 하나를 가장 작게 만드는 정수들을 찾아라"가 됩니다. 이런 꼴의 문제를 정수계획이라고 하고, 솔버가 풀 수 있습니다.</p>
+    <p>이 방법이 통하려면 세 가지 질문에 답할 수 있어야 합니다. 이 책의 뼈대가 이 세 질문입니다.</p>
+    <div class="obj">
+      <div><span class="f">질문 1 · 어떻게 식으로 적나</span><p>"길이 막히면 안 된다"를 어떻게 부등식으로 바꿀까요? 논리를 0과 1의 식으로 옮기는 요령이 있습니다. 11장과 12장.</p></div>
+      <div><span class="f">질문 2 · 솔버는 어떻게 푸나</span><p>후보가 천문학적으로 많은데 어떻게 가장 좋은 것을 찾고, 그것이 가장 좋다는 것을 증명할까요? 6~10장(선형계획)과 13장(분지한계법).</p></div>
+      <div><span class="f">질문 3 · 왜 그 식이 좋은 식인가</span><p>같은 문제도 식으로 적는 방법은 여러 가지이고, 어떻게 적느냐에 따라 푸는 시간이 몇 초에서 몇 년까지 달라집니다. 14장.</p></div>
+    </div>
+    <p>1등 팀이 문제를 적은 식 전체를 이 책에서는 <strong>tryAgain 모형</strong>이라고 부릅니다. 12장에서 한 줄씩 읽고, 16장에서 책 전체의 이론으로 다시 읽습니다.</p>
+  </section>
+
+  <section>
+    <h2>이 책의 지도</h2>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 720 330" role="img" aria-label="열여섯 장의 구성. 첫 줄은 도구인 2장부터 5장, 둘째 줄은 선형계획인 6장부터 10장, 셋째 줄은 정수계획인 11장부터 15장, 마지막 줄은 16장 종합">
+        <defs><marker id="ar1b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker></defs>
+        <g font-size="12" class="t-muted"><text x="14" y="48">도구</text><text x="14" y="128">선형계획</text><text x="14" y="143">(변수가 실수)</text><text x="14" y="208">정수계획</text><text x="14" y="223">(변수가 정수)</text><text x="14" y="288">종합</text></g>
+        <g class="s-muted" stroke-width="1.3">
+          <line x1="206" y1="44" x2="222" y2="44" marker-end="url(#ar1b)"/><line x1="332" y1="44" x2="348" y2="44" marker-end="url(#ar1b)"/><line x1="458" y1="44" x2="474" y2="44" marker-end="url(#ar1b)"/>
+          <line x1="206" y1="124" x2="222" y2="124" marker-end="url(#ar1b)"/><line x1="332" y1="124" x2="348" y2="124" marker-end="url(#ar1b)"/><line x1="458" y1="124" x2="474" y2="124" marker-end="url(#ar1b)"/><line x1="584" y1="124" x2="600" y2="124" marker-end="url(#ar1b)"/>
+          <line x1="206" y1="204" x2="222" y2="204" marker-end="url(#ar1b)"/><line x1="332" y1="204" x2="348" y2="204" marker-end="url(#ar1b)"/><line x1="458" y1="204" x2="474" y2="204" marker-end="url(#ar1b)"/><line x1="584" y1="204" x2="600" y2="204" marker-end="url(#ar1b)"/>
+        </g>
+        <g stroke-width="1.2">
+          <rect x="100" y="22" width="106" height="44" rx="6" class="f-bay"/><rect x="226" y="22" width="106" height="44" rx="6" class="f-bay"/><rect x="352" y="22" width="106" height="44" rx="6" class="f-bay"/><rect x="478" y="22" width="106" height="44" rx="6" class="f-bay"/>
+          <rect x="100" y="102" width="106" height="44" rx="6" class="f-steel"/><rect x="226" y="102" width="106" height="44" rx="6" class="f-steel"/><rect x="352" y="102" width="106" height="44" rx="6" class="f-steel"/><rect x="478" y="102" width="106" height="44" rx="6" class="f-steel"/><rect x="604" y="102" width="106" height="44" rx="6" class="f-steel"/>
+          <rect x="100" y="182" width="106" height="44" rx="6" class="f-hull"/><rect x="226" y="182" width="106" height="44" rx="6" class="f-hull"/><rect x="352" y="182" width="106" height="44" rx="6" class="f-hull"/><rect x="478" y="182" width="106" height="44" rx="6" class="f-hull"/><rect x="604" y="182" width="106" height="44" rx="6" class="f-hull"/>
+          <rect x="226" y="262" width="358" height="44" rx="6" class="f-crane"/>
+        </g>
+        <g font-size="12.5" text-anchor="middle">
+          <text x="153" y="41">2 말과 기호</text><text x="279" y="41">3 벡터·행렬</text><text x="405" y="41">4 그래프·BFS</text><text x="531" y="41">5 높이·이분 그래프</text>
+          <text x="153" y="121">6 그림으로 풀기</text><text x="279" y="121">7 꼭짓점 계산</text><text x="405" y="121">8 심플렉스법</text><text x="531" y="121">9 쌍대성</text><text x="657" y="121">10 내부점법</text>
+          <text x="153" y="201">11 논리 적기</text><text x="279" y="201">12 흐름·순서</text><text x="405" y="201">13 분지한계법</text><text x="531" y="201">14 강한 정식화</text><text x="657" y="201">15 분해 기법</text>
+          <text x="405" y="289">16 종합: tryAgain 모형을 이론으로 다시 읽기</text>
+        </g>
+        <g font-size="10.5" text-anchor="middle" class="t-muted">
+          <text x="153" y="57">변수·제약·목적함수</text><text x="279" y="57">연립방정식</text><text x="405" y="57">최단거리</text><text x="531" y="57">접근 가능</text>
+          <text x="153" y="137">부등식의 영역</text><text x="279" y="137">기저</text><text x="405" y="137">피벗</text><text x="531" y="137">하한의 증명</text><text x="657" y="137">크로스오버</text>
+          <text x="153" y="217">이진변수·big-M</text><text x="279" y="217">tryAgain 모형</text><text x="405" y="217">완화·gap</text><text x="531" y="217">절단평면</text><text x="657" y="217">열 생성</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption>가로 화살표는 읽는 순서입니다. 번호 순서대로 읽으면 앞 장에서 배우지 않은 것이 뒤 장에 갑자기 나오는 일이 없습니다. 줄 사이의 주요 연결: 3장의 연립방정식은 7장에서, 5장의 높이와 접근 가능은 12장의 tryAgain 모형에서, 6~9장의 선형계획은 13장의 분지한계법에서 쓰입니다.</figcaption>
+    </figure>
+    <div class="scroll">
+    <table class="long">
+      <thead><tr><th>장</th><th>한 줄 요약</th><th>출발점이 되는 고교 수학</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>최적화 문제를 이루는 세 가지 재료와, 식을 읽는 기호</td><td>1차식, 부등식, Σ, 경우의 수</td></tr>
+        <tr><td>3</td><td>수 여러 개를 묶어 다루는 벡터와 행렬, 연립방정식 풀이</td><td>연립일차방정식(가감법)</td></tr>
+        <tr><td>4</td><td>배 안을 점과 선으로 그리고, 가까운 곳부터 넓혀 가며 최단거리 재기</td><td>수학적 귀납법(참고에서만)</td></tr>
+        <tr><td>5</td><td>칸에 높이를 매겨 "길이 있는가"를 이웃만 보고 판정하기</td><td>명제(조건과 결론)</td></tr>
+        <tr><td>6</td><td>변수가 둘인 선형계획을 좌표평면에 그려서 풀기</td><td>직선의 방정식, 부등식의 영역</td></tr>
+        <tr><td>7</td><td>그림 없이 연립방정식으로 꼭짓점 구하기</td><td>연립방정식, 조합 C(n, r)</td></tr>
+        <tr><td>8</td><td>꼭짓점에서 더 좋은 이웃 꼭짓점으로 옮겨 가는 심플렉스법</td><td>식의 대입과 정리</td></tr>
+        <tr><td>9</td><td>"이보다 좋은 답은 없다"를 한 줄로 증명하는 법</td><td>부등식의 성질</td></tr>
+        <tr><td>10</td><td>영역의 안쪽을 가로질러 답에 다가가는 내부점법</td><td>ln의 미분, 극값, 접선</td></tr>
+        <tr><td>11</td><td>"한다, 안 한다"와 "이면"을 0과 1의 부등식으로 적기</td><td>명제와 진리집합, 대우</td></tr>
+        <tr><td>12</td><td>흐름, 묶음, 순서를 식으로 적기. tryAgain 모형 읽기</td><td>Σ, 경우의 수</td></tr>
+        <tr><td>13</td><td>답을 상한과 하한 사이에 가두고, 나누고 버리며 좁혀 가는 분지한계법</td><td>부등식, 가우스 기호</td></tr>
+        <tr><td>14</td><td>같은 문제를 더 "빡빡하게" 적는 법과, 풀면서 식을 덧붙이는 절단평면</td><td>부등식의 영역</td></tr>
+        <tr><td>15</td><td>큰 문제를 쪼개 푸는 두 가지 방법</td><td>1차식의 계산</td></tr>
+        <tr><td>16</td><td>배운 이론으로 tryAgain 모형과 솔버 설정을 다시 읽기. 용어 찾아보기</td><td>—</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>읽는 길</h2>
+    <ul class="plain">
+      <li><strong>처음부터 끝까지.</strong> 기본은 번호 순서입니다. 한 장은 한두 시간 분량입니다.</li>
+      <li><strong>빠른 길.</strong> 가이드를 읽는 데 꼭 필요한 것만 먼저 보려면 2 → 4 → 5 → 6 → 11 → 12 → 13장 순서로 읽으세요. 13장에는 8·9장을 가리키는 문단이 조금 있지만, 건너뛰어도 흐름은 따라갈 수 있습니다. 나머지 장은 궁금해질 때 돌아와 읽으면 됩니다.</li>
+      <li><strong>심화 표시.</strong> 제목 옆에 <span class="star">심화</span>가 붙은 절은 건너뛰어도 뒤를 읽는 데 지장이 없습니다.</li>
+      <li><strong>연습문제.</strong> 장 끝에 있고 모두 풀이가 달려 있습니다. 화면으로 볼 때는 문제를 누르면 풀이가 펼쳐집니다. 먼저 종이에 풀어 본 뒤 펼쳐 보세요.</li>
+      <li><strong>코드.</strong> 본문의 Python 코드는 그대로 복사해 실행할 수 있습니다. 왼쪽의 줄 번호는 설명용이니 빼고 입력하세요. 숫자를 바꿔 돌려 보면 훨씬 잘 이해됩니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>상자 읽는 법</h2>
+    <p>본문에는 색과 모양이 다른 상자가 나옵니다. 각각 이런 역할입니다.</p>
+    <div class="recall"><p>고등학교에서 이미 배운 내용을 떠올리는 상자입니다. 새 개념은 대개 여기서 출발합니다.</p></div>
+    <div class="defn"><b>정의</b> 새 용어의 뜻을 정하는 상자입니다. <strong>굵은 글씨</strong>가 새 용어입니다.</div>
+    <div class="thm"><b>핵심 사실</b> 기억해 둘 결론입니다. 대학 교재라면 「정리」라고 부를 것들입니다.</div>
+    <div class="why"><p>바로 위의 사실이 왜 맞는지를 직관적으로 설명합니다. 엄밀한 증명은 아니지만, 납득하고 넘어가기에는 충분하도록 썼습니다.</p></div>
+    <div class="aside"><p>엄밀한 증명, 대학에서 쓰는 표기, 더 깊은 이야기입니다. 궁금한 사람만 읽으면 됩니다.</p></div>
+    <div class="warn"><p>틀리기 쉬운 곳을 짚습니다.</p></div>
+    <div class="gref"><p>가이드의 어느 대목이 이 내용을 쓰는지 알려 줍니다. 가이드를 아직 읽지 않았다면 지나가도 됩니다.</p></div>
+  </section>
+
+  <section>
+    <h2>시작 전 점검</h2>
+    <p>아래 질문에 답해 보세요. 막히는 것이 있어도 괜찮습니다. 어느 장에서 다시 설명하는지 적어 두었습니다.</p>
+    <details>
+      <summary>연립방정식 6x + 4y = 24, x + 2y = 6을 푸세요.</summary>
+      <p>둘째 식에 2를 곱해 첫째 식에서 빼면 4x = 12, x = 3. 둘째 식에 넣으면 y = 3/2. 3장에서 이 풀이를 표로 정리하는 법을 배우고, 이 연립방정식은 책 내내 다시 나옵니다.</p>
+    </details>
+    <details>
+      <summary>부등식 2x + y ≤ 4를 만족하는 점 (x, y)는 직선 2x + y = 4의 어느 쪽에 있나요?</summary>
+      <p>원점 (0, 0)을 넣으면 0 ≤ 4로 성립하므로, 직선을 경계로 원점이 있는 쪽(직선 포함)입니다. 「부등식의 영역」을 배우지 않았어도 괜찮습니다. 6장에서 처음부터 설명합니다.</p>
+    </details>
+    <details>
+      <summary>Σ<sub>k=1</sub><sup>4</sup> (2k + 1)의 값은?</summary>
+      <p>3 + 5 + 7 + 9 = 24. Σ가 들어간 식을 읽는 법은 2장에서 다시 정리합니다.</p>
+    </details>
+    <details>
+      <summary>명제 "비가 오면 땅이 젖는다"의 대우는 무엇인가요?</summary>
+      <p>"땅이 젖지 않았으면 비가 오지 않았다." 원래 명제와 참·거짓이 같습니다. 11장에서 "~이면 ~이다"를 부등식으로 옮길 때 씁니다.</p>
+    </details>
+    <details>
+      <summary>y = ln x의 도함수는? x가 0에 가까워지면(x &gt; 0) ln x는 어떻게 되나요?</summary>
+      <p>도함수는 1/x이고, x → 0+일 때 ln x → −∞입니다. 10장의 내부점법이 이 두 성질을 씁니다. 미적분이 필요한 장은 10장뿐입니다.</p>
+    </details>
+    <details>
+      <summary>Python에서 <code>for i in range(3): print(i * i)</code>는 무엇을 출력하나요?</summary>
+      <p>0, 1, 4를 한 줄에 하나씩 출력합니다. range(3)은 0, 1, 2입니다. 이 정도를 읽을 수 있으면 이 책의 코드는 모두 읽을 수 있습니다.</p>
+    </details>
+  </section>
+
+  <section>
+    <h2>숫자와 출처에 대해</h2>
+    <ul class="plain">
+      <li>손계산 예와 연습문제의 숫자는 모두 프로그램으로 다시 계산해 확인했습니다. 분수는 분수 그대로 계산했고, 정수 문제는 전수 탐색으로 확인했습니다.</li>
+      <li>이 책은 같은 내용을 대학 수준으로 쓴 「MIP 이론 배경 교재」를 고등학생용으로 다시 쓴 것입니다. 더 엄밀한 정의와 증명이 궁금하면 그 교재를 보세요.</li>
+      <li>1등 팀의 프로그램과 솔버를 직접 실행하지는 않았습니다. tryAgain 모형에 관한 숫자는 같은 모형을 Python으로 다시 만들어 계산한 것입니다.</li>
+      <li>「더 읽을 자료」의 링크는 원래 교재를 쓸 때(2026년 11월 18일) 실제로 열어 확인한 것만 실었습니다. 대부분 대학 수준이고 영어 자료가 많습니다. 지금 읽지 못해도 괜찮습니다.</li>
+    </ul>
+  </section>
+
+  <div class="pager"><span></span><a href="#ch2">다음: 2장 최적화 문제의 말과 기호 →</a></div>
+</article>
